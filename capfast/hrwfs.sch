@@ -1,5 +1,5 @@
 [schematic2]
-uniq 76
+uniq 77
 [tools]
 [detail]
 w 424 1899 100 0 n#75 hrwfsApply.hrwfsApply#72.CLID 352 1888 544 1888 hrwfsCarTree.hrwfsCarTree#73.ICID
@@ -27,9 +27,9 @@ xform 0 656 1200
 p 1552 64 100 0 1 author:S.M.Beard
 p 1776 48 100 0 -1 border:C
 p 1552 32 100 0 1 checked:B.Goodrich
-p 1776 16 100 0 -1 date:$Date: 2001-06-11 08:02:18 $
-p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.6 2001-06-11 08:02:18 cjm Exp $
+p 1776 16 100 0 -1 date:$Date: 2001-06-24 18:51:04 $
+p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.7 2001-06-24 18:51:04 gemvx Exp $
 p 1792 176 100 0 -1 project:Gemini Wavefront Sensing System
-p 1552 144 100 0 -1 revision:$Revision: 1.6 $
+p 1552 144 100 0 -1 revision:$Revision: 1.7 $
 p 1792 112 100 0 -1 title:Under Top Level Schematic for HRWFS Database
 [comments]
