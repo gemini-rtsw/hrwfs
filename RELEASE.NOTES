@@ -138,3 +138,4 @@ dev
   - add keywords: INPORT, DATE-OBS, TIME-OBS, CCDSIZE, CCDSEC, CCDSEC1, CCDSEC2,
                   DATASEC1, DATASEC2, BIASSEC1, BIASSEC2
   - add keyword FRAME, tidy up ccdsec keywords
+  - Fix a bug in detWriteFitsUint16

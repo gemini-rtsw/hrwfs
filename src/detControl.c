@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.18 2001-06-11 07:45:52 cjm Exp $"};
+   "$Id: detControl.c,v 1.19 2001-06-15 01:51:32 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   14 jun 2001 - cb Fix a bug in detWriteFitsUint16
  *   07 jun 2001 - cb Fix a bug in detFrameSize, add FRAME keyword
  *   05 jun 2001 - cb add fits keywords:
  *                 FILTER1, FILTER2, ACLENS, FLDSTOP, CALSRC, ACFOCUS, DETTEMP
@@ -4457,7 +4458,8 @@ uint32 detObserveStart
 
       if ( (nframe <= 0) && (nframe != -1) )
       {
-         ERROR_SET1 (S_detControl_BAD_ATTRIBUTE, "Invalid number of frames, %ld",
+         ERROR_SET1 (S_detControl_BAD_ATTRIBUTE, 
+                     "Invalid number of frames, %ld",
                      ERROR_LOG_NOW, nframe);
          errorNumber = S_detControl_BAD_ATTRIBUTE;
          return (errorNumber);
@@ -6412,28 +6414,6 @@ void detObserveEnd
          goto ERROR_EXIT;
       }
 
-      if ( obsId->windowingFlag == TRUE )
-      {
-         if ( detFrameReduceUint16 ( obsId ) == ERROR )
-         {
-            ERROR_LOG ("Failed to reduce data");
-            if ( obsId->outOptions == 1 )
-            {
-               dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
-               dhsBdDsFree ( obsId->dhsDataset, &dummyDhsErrno );
-               free (obsId->pCurFrame); /* windowingFlag = TRUE */
-               obsId->pCurFrame = NULL;
-            }
-            else
-            {
-               free (obsId->pDispFrame);
-               obsId->pDispFrame = NULL;
-               free (obsId->pCurFrame); /* windowingFlag = TRUE */
-               obsId->pCurFrame = NULL;
-            }
-            goto ERROR_EXIT;
-         }
-      }
 
 #ifdef DEBUG
       /* ADD 23 SEPT */
@@ -13325,7 +13305,6 @@ STATUS detWriteFitsUint16
    fprintf (fp, "FRAME   ='%20s'/                                                ", obsId->frame);
    headerCount++;
    fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
-   fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
    headerCount++;
    fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
    headerCount++;
@@ -13389,6 +13368,7 @@ STATUS detWriteFitsUint16
    extra   = nPixels % 1440;
 
    pFileData = pImageBuffer;
+
    for (block=0; block<nBlocks; block++)
    {
       if ( fwrite (pFileData, sizeof (uint16), 1440, fp) != 1440 )
