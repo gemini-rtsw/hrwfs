@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="20"
-	nstr="66"
+	nstr="65"
 	ndynamic="25"
 	nplot="0"
 	nrd="2"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="3840"
+	nwords_dspy="4030"
 	nwords_sta="1052"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1988"
-	osta="936"
-	odynamic="1988"
-	oplot="3704"
-	ord="3704"
-	oes="3828"
-	okd="3828"
-	opc="58"
-	ostr="304"
-	ocmap="936"
-	ocrules="936"
+	odyng="1982"
+	osta="930"
+	odynamic="1982"
+	oplot="3698"
+	ord="3698"
+	oes="4018"
+	okd="4018"
+	opd="4030"
+	opo="4030"
+	opc="68"
+	ostr="314"
+	ocmap="930"
+	ocrules="930"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -63,19 +72,17 @@ display {
 	}
 	textix="$(sensor): OBSERVE AND SAVE DATA"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="106"
-		width="93"
+		width="125"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -90,97 +97,89 @@ display {
 	object {
 		x="336"
 		y="69"
-		width="119"
+		width="123"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="181"
-		width="380"
+		width="484"
 		height="16"
 		groupid="0"
 	}
 	textix="A: DHS label (NONE if not known) ... ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="107"
-		width="91"
-		height="21"
+		width="99"
+		height="18"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="88"
 		width="147"
-		height="21"
+		height="19"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="159"
-		width="125"
+		width="181"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="49"
-		width="112"
-		height="24"
+		width="169"
+		height="21"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="48"
-		width="115"
-		height="24"
+		width="153"
+		height="21"
 		groupid="0"
 	}
 	textix="OBS STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="25"
 		y="244"
-		width="380"
+		width="468"
 		height="16"
 		groupid="0"
 	}
 	textix="C: File PATH (for non-DHS files) ... ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -238,61 +237,56 @@ display {
 	object {
 		x="25"
 		y="269"
-		width="380"
+		width="441"
 		height="16"
 		groupid="0"
 	}
 	textix="D: Output file name (if DHS not used) .. :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="665"
 		y="70"
-		width="119"
+		width="162"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="665"
 		y="108"
-		width="91"
+		width="146"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="665"
-		y="89"
-		width="147"
+		y="92"
+		width="203"
 		height="21"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
-		x="665"
-		y="49"
-		width="115"
+		x="663"
+		y="50"
+		width="171"
 		height="24"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -324,25 +318,23 @@ display {
 	object {
 		x="25"
 		y="219"
-		width="380"
+		width="460"
 		height="16"
 		groupid="0"
 	}
 	textix="B: Output options . ... ...  ... ... ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="295"
-		width="380"
+		width="458"
 		height="16"
 		groupid="0"
 	}
 	textix="E: Simulated file name (NONE if no file) :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "<<basic attribute>>" {
 	attr {
@@ -516,7 +508,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text update" {
 	object {
@@ -794,7 +785,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -936,7 +926,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text update" {
 	object {
@@ -1166,7 +1155,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -1404,7 +1392,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -1599,6 +1586,86 @@ display {
 		name=""
 		args=""
 	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
 	clr="0"
 	bclr="6"
 	menu_title=""
@@ -1653,6 +1720,86 @@ display {
 		name=""
 		args=""
 	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
 	clr="0"
 	bclr="6"
 	menu_title=""
@@ -1666,7 +1813,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"
