@@ -13,7 +13,8 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
- *   09 Jan 2001: CB - Add detPowerOn
+ *   20 Mar 2002: CB - Major modification to download the code from EEPROMS
+ *   09 Jan 2002: CB - Add detPowerOn
  *   07 Jun 2001 - cb add frame in obsId structure
  *   05 Jun 2001 - cb add detTemp, instName, inport in obsId structure
  *                 modify the ccdsec,...
@@ -272,11 +273,11 @@ typedef   unsigned long   DHS_CONNECT;
 #define   DET_CONTROL_OMF_VME_FILE            "vme-47.lod"
                                     /* OMF file to download to VME DSP.       */
 
-#define   DET_CONTROL_HRWFS_OMF_TIM_FILE      "tim-47.lod"
+#define   DET_CONTROL_HRWFS_OMF_TIM_FILE      "timrom.lod"
                                     /* OMF file to download to TIMING DSP.    */
                                     /* for HRWFS and acquisition camera.      */
 
-#define   DET_CONTROL_OMF_UTL_FILE            "util.lod"
+#define   DET_CONTROL_OMF_UTL_FILE            "utilrom.lod"
                                     /* OMF file to download to UTILITY DSP.   */
 
 #define   DET_CONTROL_PAR_FILE_PATH           "./data"

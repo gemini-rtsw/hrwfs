@@ -8,7 +8,7 @@ string $(sadtop)$(wfs)name = "HRWFS/AC DC";
 #
 # Set up version of the software
 #
-string $(sadtop)$(wfs)version = "V2-1";
+string $(sadtop)$(wfs)version = "V3-0";
 
 #
 # Set default values for some SIR records

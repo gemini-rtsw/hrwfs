@@ -1,15 +1,38 @@
        COMMENT *
 
-Gemini WFS Utility Board Boot Code
-Controller: SDSU2 
-Revision: 3.02  (must agree with status word U_FW_VER in P: memory)
+SDSU2 Utility Board Boot Code
+Instrument: Gemini WFS
+Revision: 3.03  (must agree with status word U_FW_VER in P: memory)
 (This code is adapted from utilboot.asm, Rev. 3.01, written by Dr. Bob Leach 
 at SDSU for use with the timII board.)
 
+    (c) 2002				(c) 2002
+    National Research Council		Conseil national de recherches
+    Ottawa, Canada, K1A 0R6 		Ottawa, Canada, K1A 0R6
+    All rights reserved			Tous droits reserves
+
+    NRC disclaims any warranties,	Le CNRC denie toute garantie
+    expressed, implied, or statu-	enoncee, implicite ou legale,
+    tory, of any kind with respect	de quelque nature que se soit,
+    to the software, including		concernant le logiciel, y com-
+    without limitation any war-		pris sans restriction toute
+    ranty of merchantability or		garantie de valeur marchande
+    fitness for a particular pur-	ou de pertinence pour un usage
+    pose.  NRC shall not be liable	particulier.  Le CNRC ne
+    in any event for any damages,	pourra en aucun cas etre tenu
+    whether direct or indirect,		responsable de tout dommage,
+    special or general, consequen-	direct ou indirect, particul-
+    tial or incidental, arising		ier ou general, accessoire ou
+    from the use of the software.	fortuit, resultant de l'utili-
+					sation du logiciel.
+
+
+Modifications:
 
 98/01/27 TDH -added code to initialization section to set DACs to 0.0V on 
               reset/power up.
 98/02/21 TDH -removed definitions to header file 'utilhead.asm'
+2002/01/17 TDH -fixed bug in WRM when writing to EEPROM and added AFE reply
 
 	*
 
@@ -64,7 +87,7 @@ at SDSU for use with the timII board.)
         ORG     P:ROM_ID,P:ROM_ID+P_OFF
 
 U_FW_ID		DC	$000000	; Institution | Location | Instrument
-U_FW_VER	DC	$030203	; Version 3.02, Board #3 = Utility
+U_FW_VER	DC	$030303	; Version 3.03, Board #3 = Utility
 
 
 
@@ -283,12 +306,13 @@ FINISH1	MOVE    X:<HDR_ID,A	; Get header of incoming command
 	MOVE	X0,X:(R3)+	; Put value of X0 on the transmitter stack
 	JMP	<XMT_CHK	; Go transmit
 
-; Delay after EEPROM write in DSP internal memory because code cannot 
-;   execute from EEPROM during a write operation
-DLY_ROM	DO	X:<C50000,LP_WRR 
+; EEPROM write routine. This must be in DSP internal memory because 
+; code cannot execute from external memory during a write operation
+WR_ROM	MOVE	X1,P:(R0)	; Write to Program memory
+	DO	X:<C50000,LP_WRR 
 	MOVEP	Y:WATCH,A	; Delay 10 millisec for EEPROM write
 LP_WRR
-        JMP     <FINISH
+	JMP	<FINISH
 
 ; Clear error condition and interrupt on SSI receiver
 CLR_SSI MOVEP   X:SSISR,X:RCV_ERR ; Read SSI status register
@@ -333,7 +357,7 @@ RDX     JCLR    #21,X0,RDY	; Test address bit for X: memory
 RDY     JCLR    #22,X0,RDR	; Test address bit for Y: memory
         MOVE    Y:(R0),X0	; Read from Y data memory
 	JMP     <FINISH1	; Send out a header with the value
-RDR	JCLR	#23,X0,ERROR	; Test for read of EEPROM memory
+RDR	JCLR	#23,X0,AF_ERR	; Test for read of EEPROM memory
 	MOVEC	#$03,OMR	; Development mode - disable internal P: memory
 	NOP
 	MOVE	P:(R0),X0	; Read from EEPROM
@@ -347,13 +371,13 @@ RDR	JCLR	#23,X0,ERROR	; Test for read of EEPROM memory
 
 WRMEM	MOVE    X:(R4),R0	; Get the desired address
 	MOVE	X:(R4)+,X0	; We need a 24-bit version of the address
-	MOVE    X:(R4)+,X1	; Get value into X1 some MOVE works easily
+	MOVE    X:(R4)+,X1	; Get value into X1 so MOVE works easily
 	JCLR    #20,X0,WRX	; Test address bit for Program memory
 	MOVE	R0,X0		; Get 16-bit version of the address
 	MOVE	X:<C512,A	; If address >= $200 then its an EEPROM write
 	CMP	X0,A		;   and a delay 10 milliseconds is needed
+	JLE	<WR_ROM		; Jump to EEPROM write routine if needed
 	MOVE	X1,P:(R0)	; Write to Program memory
-	JLE	<DLY_ROM	; Jump to delay routine if needed   
 	JMP     <FINISH
 WRX	JCLR    #21,X0,WRY	; Test address bit for X: memory
 	MOVE    X1,X:(R0)	; Write to X: memory
@@ -361,14 +385,15 @@ WRX	JCLR    #21,X0,WRY	; Test address bit for X: memory
 WRY	JCLR    #22,X0,WRR	; Test address bit for Y: memory
 	MOVE    X1,Y:(R0)	; Write to Y: memory
 	JMP	<FINISH
-WRR	JCLR    #23,X0,ERROR	; Test address bit for ROM memory
-	MOVE	#3,OMR		; Development mode - disable internal P: memory
-	NOP
-	MOVE	X1,P:(R0)	; Write to EEPROM
-	MOVE	#2,OMR		; Normal mode - enable internal P: memory
-	NOP
-	JMP	<DLY_ROM	; Delay 10 milliseconds for EEPROM write
+WRR	JCLR    #23,X0,AF_ERR	; Test address bit for ROM memory
+	MOVE	R0,X0		; Get 16-bit version of the address
+	MOVE	X:<C512,A	; If address < $200 then its an error
+	CMP	X0,A		;  (can't write to ROM at <$200)
+	JLE	<WR_ROM		; Jump to EEPROM write routine if okay
 
+; Send 'AFE' response if the RDM or WRM address is bad
+AF_ERR	MOVE	X:<AFE,X0	; Send the message - there was an error
+	JMP	<FINISH1
 
 ; *****  Load Application  *****
 ; Read EEPROM code into DSP locations starting at P:APL_ADR
@@ -459,6 +484,7 @@ TIMING  DC      $030202 ; Header to timing board
 UTIL	DC	$030302	; Header to utility board
 ERR	DC	'ERR'	; For sending error messages
 DON	DC	'DON'	; For sending completion messages
+AFE	DC	'AFE'	; For sending address error messages
 RCV_ERR DC      0	; Dummy location for receiver clearing
 
 ; Miscellaneous

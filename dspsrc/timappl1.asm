@@ -2,12 +2,35 @@
 Gemini WFS Timing Board Code
 CCD: EEV CCD47
 Controller: SDSU2
-Revision: 1.20   (must agree with T_SW_ID in Y: memory table)
+Revision: 1.25   (must agree with T_SW_ID in Y: memory table)
 (This code is adapted from timEEV written by Dr. Bob Leach at SDSU)
 
 This is the full version of the timing board code. It does allow
 arbitrary binning in the X (serial) direction, and there is checksum 
 calculation and the option of producing simulated data.
+
+    (c) 2002				(c) 2002
+    National Research Council		Conseil national de recherches
+    Ottawa, Canada, K1A 0R6 		Ottawa, Canada, K1A 0R6
+    All rights reserved			Tous droits reserves
+
+    NRC disclaims any warranties,	Le CNRC denie toute garantie
+    expressed, implied, or statu-	enoncee, implicite ou legale,
+    tory, of any kind with respect	de quelque nature que se soit,
+    to the software, including		concernant le logiciel, y com-
+    without limitation any war-		pris sans restriction toute
+    ranty of merchantability or		garantie de valeur marchande
+    fitness for a particular pur-	ou de pertinence pour un usage
+    pose.  NRC shall not be liable	particulier.  Le CNRC ne
+    in any event for any damages,	pourra en aucun cas etre tenu
+    whether direct or indirect,		responsable de tout dommage,
+    special or general, consequen-	direct ou indirect, particul-
+    tial or incidental, arising		ier ou general, accessoire ou
+    from the use of the software.	fortuit, resultant de l'utili-
+					sation du logiciel.
+
+
+Modifications:
 
 97/07/25 BML -initial coding
 
@@ -132,6 +155,29 @@ calculation and the option of producing simulated data.
               -moved the clear of IDLING in T_STATUS from the idling code to
               the beginning of the readout.
 98/09/10 TDH -made the ADC input offsets parameters
+             -added an assembler directive for IMO/non-IMO clocking
+98/11/13 TDH -fixed bug in on-the-fly command processing: needed extra 
+              command buffer pointer increment
+             -fixed bug in ABORT function: changed to use stored constant
+              (X:<ONE) instead of immediate value (#1)
+99/01/06 TDH -implemented infinite series readout (if T_NFRAME=0)
+             -changed abort function so that it sends an empty frame
+              (no pixel data) as the last frame
+             -made the minimum exposure time one tick (81.92 us)
+             -added reset of simulated data pixel counter between 
+              successive frames in a series
+             -added delay to last entry in parallel clock waveform tables
+99/06/07 TDH -changed image data transmision handling of data > $7FFF
+              in sync bit mode to reflect new PAL operation
+             -changed dump gate sequence to remove unecessary instruction
+             -changed to use dump gate for XTAIL flush
+	     -added delay in simulated data transmission because of
+	      new boot code (3.02) which speeds up execution
+             -changed simulated data mode to use simulated ADC pipeline
+             -changed X binning loop to increment the pixel counter
+2001/02/06 TDH -no changes for version 1.24
+2002/03/15 TDH -changes to make the code work as an EEPROM application
+               -corrected bias voltages VRD and VOD
 
 
 Assembler directives:
@@ -176,7 +222,7 @@ APL_NUM	EQU	1	; Application number from 1 to 10
 	IF	DOWNLOAD
 	ORG	P:APL_ADR,P:APL_ADR		; Download address
 	ELSE
-	ORG     P:APL_ADR,P:(2*APL_NUM-1)*$100	; EEPROM generation
+	ORG	P:APL_ADR,P:APL_ROM+APL_NUM*N_W_APL/3	; EEPROM generation
 	ENDIF
 
 
@@ -224,21 +270,21 @@ CLK00
 ; In sync bit mode, a bit mask is used so that data added to checksum is the 
 ; same as the data transmitted
 
-X_NORM	MOVE	Y:XMT_MSK,Y1	; get bit mask
-
-	MOVE	Y:RDAD0,A	; get pixel value (output 0)
-	AND	Y1,A1		; mask off lowest 15 bits (if sync mode)
-	MOVEP	A1,Y:WRFO	; transmit value
+X_NORM	MOVE	Y:RDAD0,A	; get pixel value (output 0)
+	JCLR	#15,A,WR_CH0	; skip if data less than 16 bits
+	JCLR	#ESYNC,Y:MODE,WR_CH0	; skip if not sync bit mode
+	MOVE	Y:B_0_14,A	; get saturation value
+WR_CH0	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
 	REP	#2
 	NOP			; delay for transmission
 
 	MOVE	Y:RDAD1,A	; get pixel value (output 1)
-	AND	Y1,A1		; mask off lowest 15 bits (if sync mode)
-	MOVEP	A1,Y:WRFO	; transmit value
+	JCLR	#15,A,WR_CH1	; skip if data less than 16 bits
+	JCLR	#ESYNC,Y:MODE,WR_CH1	; skip if not sync bit mode
+	MOVE	Y:B_0_14,A	; get saturation value
+WR_CH1	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
-	REP	#2
-	NOP			; delay for transmission
 
 	RTS
 
@@ -255,9 +301,6 @@ RDCCD	BCLR    #IDLING,Y:<T_STATUS	; Revise status
 
 ; Start exposure
 EXPOSE	BSET	#EXPING,Y:<T_STATUS	; Set status to expose
-	MOVE	Y:<T_EXP_TMR,A	; check exposure timer
-	TST	A
-	JEQ	<ST_READ	; if exposure timer is zero, start readout
 	MOVEP	#$800,X:TCR	; timer counts to zero every 81.92us
 	MOVEP	#1,X:TCSR	; enable hardware timer in mode 0
 CHK_COM	JSR	<GET_RCV	; check for another command and reset WDT
@@ -271,7 +314,7 @@ CHK_TMR	JCLR	#TMR_ST,X:TCSR,CHK_COM	; check hardware timer
 	JNE	<CHK_COM	; if exposure timer is not zero, loop back
 
 ; End of exposure, start readout
-ST_READ	BCLR	#EXPING,Y:<T_STATUS	; clear expose status
+	BCLR	#EXPING,Y:<T_STATUS	; clear expose status
 	BCLR	#TMR_EN,X:TCSR	; disable hardware timer
 	BSET	#RDING,Y:<T_STATUS	; set status to readout
 	BSET	#WW,X:PBD	; Set word width = 1 for 16-bit image data
@@ -343,6 +386,9 @@ XMT_PID	MOVEP	A1,Y:WRFO	; transmit parameter ID
 
 	ENDIF
 
+; Skip readout if abort command received
+	JSET	#ABT_EXP,Y:<T_STATUS,END_RD	; skip readout if aborted
+
 ; Discard initial unread rows (YSTART)
 	MOVE	Y:<YSTART,A
 	TST	A
@@ -360,7 +406,6 @@ LDROWS
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
@@ -400,7 +445,7 @@ LYBIN
 	MOVE    A,X:(R6)        ; Flush out the pipeline
 
 	MOVE    #<INT_SIG,R0	; address of signal integration waveform
-	NOP
+	JSSET	#SIMD,Y:<MODE,ADC_SIM	; simulate ADC pipeline
 	MOVE    Y:(R0)+,X0      ; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	REP	X0		; Repeat X0 times
@@ -445,7 +490,7 @@ LFLUSH3
 	JEQ	LXBIN		; skip if binning = 1 (XBIN1=0)
 	DO	A,LXBIN		; bin pixels together
 	MOVE    #<XBINCLK,R0	; address of serial (binning) clocking waveform
-	NOP
+	MOVE	(R2)+		; increment pixel counter
 	MOVE    Y:(R0)+,X0      ; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	REP	X0		; Repeat X0 times
@@ -454,7 +499,7 @@ LFLUSH3
 LXBIN
 
 	MOVE    #<INT_SIG,R0	; address of signal integration waveform
-	NOP
+	JSSET	#SIMD,Y:<MODE,ADC_SIM	; simulate ADC pipeline
 	MOVE    Y:(R0)+,X0      ; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	REP	X0		; Repeat X0 times
@@ -486,17 +531,14 @@ LXSPA
 LXSUB	; End of all X subapertures
 
 ; Flush out remaining pixels in serial register (XTAIL)
-	MOVE	Y:<XTAIL,A
-	TST	A
-	JEQ	LXTAIL
-	DO	A,LXTAIL
-	MOVE    #<XCLOCK,R0	; Address of serial (skip) clocking waveform
-	MOVE	(R2)+		; increment pixel counter
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
+	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
+	MOVE	R2,X0		; get pixel counter
 	MOVE    Y:(R0)+,A       ; Start the pipeline
-	REP	X0		; Repeat X0 times
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
+	MOVE	Y:<XTAIL,A	; get # of pixels to add to counter
+	ADD	X0,A		; increment pixel counter
+	MOVE	A,R2		; save pixel counter
 
 LXTAIL
 
@@ -524,10 +566,10 @@ LYSPA
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
+
 LYSUB	; End of all Y subapertures
 
 ;	JMP	<LDROWS		; debug (continuous readout)
@@ -536,7 +578,7 @@ LYSUB	; End of all Y subapertures
 	DO	#2,LPLFLSH
 	JSR	(R1)		; Retrieve and transmit image data
 	MOVE    #<INT_SIG,R0	; address of signal integration waveform
-	MOVE	(R2)+		; increment pixel counter
+	JSSET	#SIMD,Y:<MODE,ADC_SIM	; simulate ADC pipeline
 	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A	; Start the pipeline
 	REP	X0		; Repeat X0 times
@@ -545,8 +587,8 @@ LYSUB	; End of all Y subapertures
 LPLFLSH
 	JSR	(R1)		; Retrieve and transmit image data
 
-; Finish readout
 	IF	!CCDTOOL
+; Transmit checksum
 	JCLR	#ESYNC,Y:<MODE,XMIT_CS	; Skip if not sync bit mode
 	BSET	#FD15,X:PBD		; Set sync bit value to 1
 	MOVE	Y:B_0_14,Y0		; Get mask ($7fff)
@@ -554,7 +596,9 @@ LPLFLSH
 XMIT_CS	MOVEP	B1,Y:WRFO		; transmit checksum
 	ENDIF
 
-	BCLR	#RDING,Y:<T_STATUS	; clear readout status
+; Finish readout
+END_RD	BCLR	#RDING,Y:<T_STATUS	; clear readout status
+	MOVE	Y:PCINIT,R2	; Reset simulated data pixel counter
 	BSET	#TIO,X:PBD	; TIO = 1
 	BCLR	#TMR_EN,X:TCSR	; disable hardware timer
 	CLR	A
@@ -564,22 +608,31 @@ XMIT_CS	MOVEP	B1,Y:WRFO		; transmit checksum
 	REP	#11		; divide by 2048 = 2^11
 	ASR	B
 	SUB	B,A		; subtract
-	JPL	CONT
+	JGT	CONT
  	BSET	#E_OVR,Y:<T_ERROR	; flag exposure overrun error
-	CLR	A		; set exposure time to zero
-CONT	MOVE	A0,Y:<T_EXP_TMR	; copy to exposure timer
+	MOVE	X:<ONE,A0		; set exposure time to one
+CONT	MOVE	A0,Y:<T_EXP_TMR		; copy to exposure timer
+	JSET	#INF_FRM,Y:T_STATUS,EXPOSE	; if inf. series, do next exp.
 	CLR	A
 	MOVE	Y:<T_FRAMEC,A0	; get frame counter
 	DEC	A
 	MOVE	A0,Y:<T_FRAMEC
 	JNE	EXPOSE
 	MOVE	Y:<T_NFRAME,A
-	MOVE	A,Y:<T_FRAMEC	; reset frame counter
+	TST	A			; check if infinite series is requested
+	JNE	<RST_FRC		; skip if not
+	BSET	#INF_FRM,Y:<T_STATUS	; set bit for infinite series
+RST_FRC	MOVE	A,Y:<T_FRAMEC		; reset frame counter
 	JCLR	#RDSYNC,Y:<T_STATUS,RDCDON	; if no new RDC, finish
 	BCLR	#RDSYNC,Y:<T_STATUS	; Clear RDC sync request
 	JMP	EXPOSE
 RDCDON	BCLR	#WW,X:PBD	; Clear word width for 32-bit commands
 	BCLR	#FMODE,X:PBD	; Disable sync bit
+	BCLR	#INF_FRM,Y:<T_STATUS	; Clear infinite series request
+	JCLR	#ABT_EXP,Y:<T_STATUS,START	; finished if no ABT request
+	BCLR	#ABT_EXP,Y:<T_STATUS	; Clear ABT request
+	MOVE	Y:NP_SAV,A		; get saved copy of N_PIXEL
+	MOVE	A,Y:<N_PIXEL		; reset N_PIXEL
 	JMP	<START		; reset command buffer and return to idling
 
 ; Do frame transfer to flush out image area before first exposure
@@ -596,16 +649,21 @@ LFT1
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
 
 ; Setup frame counter and exposure timer
-	MOVE	Y:<T_NFRAME,A	; copy number of frames to frame counter
-	MOVE	A,Y:<T_FRAMEC
-	MOVE	Y:<T_EXP_TIM,A	; copy exposure time to exposure timer
-	MOVE	A,Y:<T_EXP_TMR
+	MOVE	Y:<T_NFRAME,A	; get number of frames
+	TST	A			; check if infinite series is requested
+	JNE	<SET_FRC		; skip if not
+	BSET	#INF_FRM,Y:<T_STATUS	; set bit for infinite series
+SET_FRC MOVE	A,Y:<T_FRAMEC	; copy number of frames to frame counter
+	MOVE	Y:<T_EXP_TIM,A	; get exposure time
+	TST	A		; check if zero
+	JGT	<SET_ET		; skip if greater than zero
+	MOVE	X:<ONE,A	; minimum exposure timer count is one	
+SET_ET	MOVE	A,Y:<T_EXP_TMR	; set exposure timer
 
 ; Reset simulated data pixel counter
 	MOVE	Y:PCINIT,R2
@@ -692,7 +750,8 @@ DON_FO
 	ENDIF
 
 ;  Process the receiver entry - is it a valid comand during exposure ?
-LKP_CMD	MOVE    X:(R4)+,A       ; Get the command buffer entry
+LKP_CMD	MOVE	(R4)+		; increment past header
+	MOVE    X:(R4)+,A       ; Get the command buffer entry
 	MOVE    Y:ABT,X1	; Compare to 'ABT'
 	CMP     X1,A
 	JEQ	ABORT		; If 'ABT' go to ABORT
@@ -721,10 +780,16 @@ RET_EXP	MOVE	#<RCV_BUF,R3
 ; to a value of one. This will halt the exposure on the next timer tick and
 ; force the readout to finish when the current frame is complete.
 
-ABORT	MOVE	#1,A
+ABORT	MOVE	X:<ONE,A
 	MOVE	A,Y:T_EXP_TMR	; Force exposure timer to end
 	MOVE	A,Y:T_FRAMEC	; Force frame count to end
-	JMP	<RET_EXP	; Finish readout
+	MOVE	Y:<N_PIXEL,A	; get number of pixels
+	MOVE	A,Y:NP_SAV	; save number of pixels
+	CLR	A
+	MOVE	A,Y:<N_PIXEL		; set number of pixels to zero
+	BCLR	#INF_FRM,Y:<T_STATUS	; clear request for infinite series 
+	BSET	#ABT_EXP,Y:<T_STATUS	; set flag that abort command received 
+	JMP	<RET_EXP		; Finish readout
 
 
 ; *****  Synchronize readouts  *****
@@ -732,7 +797,11 @@ ABORT	MOVE	#1,A
 ; frame set is aborted and a new one started immediately.
 
 SYNC	BSET	#RDSYNC,Y:<T_STATUS	; Set flag to request RDC sync
-	JMP	<ABORT			; Abort readout of current frame
+	MOVE	X:<ONE,A
+	MOVE	A,Y:T_EXP_TMR	; Force exposure timer to end
+	MOVE	A,Y:T_FRAMEC	; Force frame count to end
+	BCLR	#INF_FRM,Y:<T_STATUS	; clear request for infinite series 
+	JMP	<RET_EXP	; Finish readout
 
 
 ; *****  Write parameter (on-the-fly changes)  *****
@@ -934,17 +1003,28 @@ DLY	NOP
 
 ; Write simulated data to serial transmitter
 X_SIM	MOVE	Y:B_0_11,Y1	; get bit mask ($000FFF)
-	MOVE	R2,A		; get simulated pixel value
+	MOVE	Y:ADC_OUT,A		; get simulated pixel value
 	AND	Y1,A1 Y:SIMDATA0,Y0	; mask off lowest 12 bits
 	OR	Y0,A1		; add output header (output 0)
 	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
+	REP	#2
+	NOP			; delay for transmission
 
 	AND	Y1,A1 Y:SIMDATA1,Y0	; mask off lowest 12 bits
 	OR	Y0,A1		; add output header (output 1)
 	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
 
+	RTS
+
+
+; Simulate the ADC pipeline
+ADC_SIM	MOVE	Y:ADC_2,A	; Move pixel from stage 2 to output
+	MOVE	A,Y:ADC_OUT
+	MOVE	Y:ADC_IN,A	; Move pixel from input to stage 2
+	MOVE	A,Y:ADC_2
+	MOVE	R2,Y:ADC_IN	; Put current pixel in input stage
 	RTS
 
 
@@ -962,9 +1042,10 @@ X_SIM	MOVE	Y:B_0_11,Y1	; get bit mask ($000FFF)
 	IF	DOWNLOAD 	; Memory offsets for downloading code
 	ORG	X:COM_TBL,X:COM_TBL
 	ELSE			; Memory offsets for generating EEPROMs
-        ORG     P:COM_TBL,P:(2*APL_NUM-1)*$100+APL_LEN
+	ORG	X:COM_TBL,P:APL_ROM+APL_NUM*N_W_APL/3+APL_LEN
 	ENDIF
 
+	DC	'ABT',START	; Ignore
 	DC	'RDC',RDCCD 	; Begin CCD readout    
 	DC	'INI',INIT 	; Initialize
   	DC	'DON',START	; Ignore
@@ -977,18 +1058,25 @@ X_SIM	MOVE	Y:B_0_11,Y1	; get bit mask ($000FFF)
 	DC	'IDL',IDL	; Set to IDLE mode (timboot/CCDtool compat.)
 	DC	'STP',STP	; Unset from IDLE mode (CCDtool compatibility)
 	DC	'SBV',INIT	; Initialize (CCDtool/utilappl compatibility)
+	DC	0,START,0,START	; Fill up table with null commands
+	DC	0,START,0,START
+	DC	0,START,0,START
 	ELSE
 	DC	'IDL',FINISH	; Do nothing (timboot compatibility)
+	DC	0,START,0,START	; Fill up table with null commands
+	DC	0,START,0,START
+	DC	0,START,0,START
+	DC	0,START,0,START
 	ENDIF
 
 
 
 ; *****************   Y Data (Defined in ICD 1.6/1.10)   ******************
 
-	IF	DOWNLOAD
-	ORG	Y:0,Y:0		; Download address
-	ELSE
-	ORG     Y:0,P:		; EEPROM address continues from P: above
+	IF	DOWNLOAD 	; Memory offsets for downloading code
+	ORG	Y:0,Y:0
+	ELSE			; Memory offsets for generating EEPROMs
+	ORG	Y:0,P:APL_ROM+APL_NUM*N_W_APL/3+APL_LEN+32
 	ENDIF
 
 	IF	CCDTOOL
@@ -1000,7 +1088,7 @@ DUM2	DC      0		; Not used (for compatibility with CCDtool)
 
 ; ***** Status values *****
 
-T_SW_ID		DC	$012004	; Software version 01.20 (CCD47, full-feature)
+T_SW_ID		DC	$012504	; Software version 01.25 (CCD47, full-feature)
 
 T_STATUS	DC	0	; Status word
 ; Bit definitions
@@ -1008,6 +1096,8 @@ IDLING  	EQU     0	; Set if idling
 EXPING		EQU	1	; Set if exposing
 RDING		EQU	2	; Set if reading out
 RDSYNC		EQU	3	; Set if RDC received during exposure
+INF_FRM		EQU	4	; Set if infinite series of frames is requested
+ABT_EXP		EQU	5	; Set if abort command received
 
 T_ERROR		DC	0	; Error word
 ; Bit definitions
@@ -1131,7 +1221,7 @@ YISCLOCK DC	YSCLOCK-YISCLOCK-2
 	DC	CLKA+P_DELAY+00+I2+00+00+S2+00+0000+SR2R+SR1L+0000+000+RG
 	DC	CLKA+P_DELAY+00+I2+I3+00+S2+S3+0000+SR2R+SR1L+0000+000+RG
 	DC	CLKA+P_DELAY+00+00+I3+00+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
-	DC	CLKA+0000000+00+00+00+00+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
+	DC	CLKA+P_DELAY+00+00+00+00+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
 
 ; IMO parallel (storage only) clocking: 0-1-2-3-0
 YSCLOCK DC	XCLOCK-YSCLOCK-2
@@ -1140,7 +1230,7 @@ YSCLOCK DC	XCLOCK-YSCLOCK-2
 	DC	CLKA+P_DELAY+00+00+00+00+S2+00+0000+SR2R+SR1L+0000+000+RG
 	DC	CLKA+P_DELAY+00+00+00+00+S2+S3+0000+SR2R+SR1L+0000+000+RG
 	DC	CLKA+P_DELAY+00+00+00+00+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
-	DC	CLKA+0000000+00+00+00+00+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
+	DC	CLKA+P_DELAY+00+00+00+00+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
 
 	ELSE
 ; non-IMO parallel (storage and image) clocking: 1-2-3-1
@@ -1150,7 +1240,7 @@ YISCLOCK DC	YSCLOCK-YISCLOCK-2
 	DC	CLKA+P_DELAY+00+I2+I3+00+S2+S3+SR1R+SR2R+SR1L+SR2L+000+RG
 	DC	CLKA+P_DELAY+00+00+I3+00+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
 	DC	CLKA+P_DELAY+I1+00+I3+S1+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
-	DC	CLKA+0000000+I1+00+00+S1+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
+	DC	CLKA+P_DELAY+I1+00+00+S1+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
 
 ; non-IMO parallel (storage only) clocking: 1-2-3-1
 YSCLOCK DC	XCLOCK-YSCLOCK-2
@@ -1159,7 +1249,7 @@ YSCLOCK DC	XCLOCK-YSCLOCK-2
 	DC	CLKA+P_DELAY+I1+00+00+00+S2+S3+SR1R+SR2R+SR1L+SR2L+000+RG
 	DC	CLKA+P_DELAY+I1+00+00+00+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
 	DC	CLKA+P_DELAY+I1+00+00+S1+00+S3+SR1R+SR2R+SR1L+SR2L+000+RG
-	DC	CLKA+0000000+I1+00+00+S1+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
+	DC	CLKA+P_DELAY+I1+00+00+S1+00+00+SR1R+SR2R+SR1L+SR2L+000+RG
 
 	ENDIF
 
@@ -1186,8 +1276,7 @@ XCLOCK	DC	XDUMP-XCLOCK-2
 	ENDIF
 
 ; Serial register dump using dump gate
-XDUMP	DC	END_WAVE1-XDUMP-2
-	DC	CLKB+P_DELAY+DG
+XDUMP	DC	CLKB+P_DELAY+DG
 	DC	CLKB+0000000+00
 
 END_WAVE1
@@ -1276,8 +1365,8 @@ SI_LO	EQU	$160	; Storage and Image Low  (-8.0 V)
 SI2_HI	EQU	$CBE	; Implanted phase (S2,I2) High (+6.0 V)
 
 ;  CCD DC bias voltages
-VOD	EQU	$D0C03	; 24.0 V, pin #1
-VRD	EQU	$D4405	; 12.0 V, pin #2
+VOD	EQU	$D0957	; 20.0 V, pin #1
+VRD	EQU	$D42B0	; 10.0 V, pin #2
 VABD	EQU	$D8FFF	; 20.0 V, pin #3
 VOG	EQU	$F0000	; -5.0 V, pin #9
 VABG	EQU	$F4000	; -5.0 V, pin #10
@@ -1365,10 +1454,16 @@ RDC	DC	'RDC'
 WRP	DC	'WRP'
 LDP	DC	'LDP'
 
+; Temporary store of N_PIXEL
+NP_SAV	DC	1048576
+
+; ADC pipeline simulation 
+ADC_IN	DC	0
+ADC_2	DC	0
+ADC_OUT	DC	0
+
 ; Constants
-ONE	DC	1
-PCINIT	DC	1-3	; Initial value for pixel counter 
-			; (offset by three for garbage pixels)
+PCINIT	DC	0	; Initial value for pixel counter 
 
 ; Check for Y: data memory overflow
         IF	@CVS(N,*)>$20000
@@ -1377,7 +1472,7 @@ PCINIT	DC	1-3	; Initial value for pixel counter
 
 ; Check for overflow in the EEPROM case
 	IF !DOWNLOAD
-		IF	@CVS(N,@LCV(L))>(2*APL_NUM+1)*$100
+		IF	@CVS(N,@LCV(L))>APL_ROM+(APL_NUM+1)*N_W_APL/3
 	WARN    'EEPROM overflow!'	; Make sure next application
 		ENDIF			;  will not be overwritten
 	ENDIF

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.24 2002-01-11 03:50:21 cboyer Exp $"};
+   "$Id: detControl.c,v 1.25 2002-03-28 03:20:20 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   20 Mar 2002 - cb Major modifications to download the timing and utility
+ *                 code from EEPROMS
  *   10 Jan 2001 - cb For observe comment do not init EPOCH, EQUINOX, FRAME if
  *                 dhsOutOptions = 3 (sequencer)
  *                 detWriteFitsUint16: strings are now left-justified
@@ -143,6 +145,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 
 #define DEBUG_DOWNLOAD          /* Define this macro to enable debug messages */
                                 /* when downloading DSP code                  */
+
+#define TIM_EEPROM_PROGRAM      /* Comment this macro if you want to write the*/
+                                /* TIMING EEPROM                              */
 
 #define DHS_WAIT_TIMEOUT   3600 /* Timeout waiting for DHS semaphore 60s      */
 
@@ -392,8 +397,6 @@ STATUS   detControl
 
    char         defFileName [ STRING_SIZE ] ;
                                     /* Default file name according to the site*/
-
-   uint32       tryDownload ;       /* Counter to stop attempt for downloading*/
 
    /* Variables used to define the buffer to be used for storing data.   */
 
@@ -675,34 +678,7 @@ STATUS   detControl
     * startup. The health is set to WARNING if this fails
     */
 
-#ifdef DEBUG_DOWNLOAD
-   sdsuPrintRepBuf (sdsuId) ;
-#endif
-
-   tryDownload = 0 ;
-   while ( (detDownloadDefault (pWfsName, pRecordPrefix, sdsuId) == ERROR) 
-           && ( tryDownload < 10 ) )
-   {
-         /* RESET REP BUFFER, VME and CONTROLLER */
-#ifdef DEBUG_DOWNLOAD
-         sdsuPrintRepBuf (sdsuId) ;
-#endif
-         if ( sdsu_initRepBuf (sdsuId) == ERROR )
-            ERROR_LOG ("Failed to reset to zero the reply buffer ");
-#ifdef DEBUG_DOWNLOAD
-         sdsuPrintRepBuf (sdsuId) ;
-#endif
-         if ( sdsuReset (sdsuId, SDSU_RESET_VME | SDSU_RESET_CONTROLLER) 
-              == ERROR )
-            ERROR_LOG ("Failed to reset SDSU interface and controller");
-#ifdef DEBUG_DOWNLOAD
-         sdsuPrintRepBuf (sdsuId) ;
-#endif
-
-         tryDownload ++ ;
-   }
-
-   if ( tryDownload == 10 )
+   if ( detDownloadDefault (pWfsName, pRecordPrefix, sdsuId) == ERROR ) 
    {
       ERROR_LOG ("Failed to download default DSP code on startup");
       initFailed = TRUE;
@@ -720,23 +696,27 @@ STATUS   detControl
     *
     */
 
+#ifdef TIM_EEPROM_PROGRAM
    if (detCheckGeometry (pWfsName, sdsuId, obsId ) == ERROR)
    {
       ERROR_LOG ("Error while checking default detector geometry on startup");
       initFailed = TRUE;
    }
+#endif
 
    /*
     * Create data buffer to hold several frames of data, using the xPixels 
     * and yPixels determined above.
     */
 
+#ifdef TIM_EEPROM_PROGRAM
    if (sdsuBufferCreate (sdsuId, (obsId->xMax * obsId->yMax), maxFrames) 
        == ERROR)
    {
       ERROR_LOG ("Failed to create data buffer on startup");
       initFailed = TRUE;
    }
+#endif
 
    /*
     * Initialise the readout process with our frame callback.
@@ -744,11 +724,13 @@ STATUS   detControl
     * INTERRUPTS ENABLED. SWITCH TO SIMPLE VERSION. 23 SEPT 99
     */
 
+#ifdef TIM_EEPROM_PROGRAM
    if (sdsuSimpleReadoutOpen (sdsuId, NULL, detObserveEnd, 1, TRUE) == ERROR)
    {
       ERROR_LOG ("Failed to start readout task on startup");
       initFailed = TRUE;
    }
+#endif
 
    /*
     * Read the default settings from the detector controller init file
@@ -835,6 +817,7 @@ STATUS   detControl
                     "Defining temperature control parameters: %#lx %#lx",
                     tempCode, tempCoeff);
 
+#ifdef TIM_EEPROM_PROGRAM
       if ( (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", tempCode )
             == ERROR) ||
            (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_TCF", (uint32)tempCoeff )
@@ -843,6 +826,7 @@ STATUS   detControl
          ERROR_LOG ("Error setting temperasture control parameters");
          initFailed = TRUE;
       }
+#endif
       readTempReadyFlag = TRUE ;
    }
 
@@ -860,6 +844,7 @@ STATUS   detControl
       MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
                     offsetVect[0], offsetVect[1]);
 
+#ifdef TIM_EEPROM_PROGRAM
       if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
                          (uint32) offsetVect[0] ) == ERROR )
       {
@@ -879,6 +864,7 @@ STATUS   detControl
          "Failed to activate TIMING DSP parameters with LDP command");
          initFailed = TRUE;
       }
+#endif
    }
 
    /*
@@ -7400,6 +7386,8 @@ uint32 detInit
    )
 {
    uint32       errorNumber;      /* Error number reported by task.           */
+   uint32       applNum;          /* Application code number                  */
+   long         dnloadFromEeprom; /* Download from eeprom                     */
    long         initState;        /* Initialisation state.                    */
    long         simulate;         /* TRUE if SDSU interface is simulated.     */
 
@@ -7407,9 +7395,17 @@ uint32 detInit
                               /* Status string.                               */
    char         pFilePath [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
                               /* Path name for file.                          */
-   char         pOmfFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
-                              /* File name.                                   */
-   char         pFullOmfFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
+   char         pVmeOmfFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                              /* VME File name.                               */
+   char         pTimOmfFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                              /* Timing File name.                            */
+   char         pUtlOmfFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                              /* UTILITY File name.                           */
+   char         pFullVmeOmfFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
+                              /* Combined path name and file name.            */
+   char         pFullTimOmfFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
+                              /* Combined path name and file name.            */
+   char         pFullUtlOmfFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
                               /* Combined path name and file name.            */
    BOOL         limitAdrsRange;  /* Flag for limiting address range in DSP    */
                                  /* memory                                    */
@@ -7477,12 +7473,23 @@ uint32 detInit
    }
 
    /*
-    * Obtain the VME address of the SDSU controller.
-    * An address of zero signifies simulation mode.
+    * Obtain the attributes
     */
 
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, 
                           (char *) pVmeAddress);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, pFilePath);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, pVmeOmfFileName);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, pTimOmfFileName);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, pUtlOmfFileName);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5,
+                          (char *) &newMaxFrames);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6,
+                          (char *) &dnloadFromEeprom);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 7,
+                          (char *) &applNum);
+
+   /* Check wether the controller is simulated or not */
 
    MESSAGE_LOG2 (MSG_MINDEBUG, "VME address = %ld = %#lx", 
                  *pVmeAddress, *pVmeAddress);
@@ -7591,16 +7598,10 @@ uint32 detInit
       detSdsuIdHr = *pSdsuId;
    }
 
-   /* Now obtain the path of the directory containing the DSP code. */
-
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, pFilePath);
-
    /* Determine whether any code should be downloaded to the VME DSP */
 
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, pOmfFileName);
-
-   if ( (strcmp (pOmfFileName, "") != 0) && 
-        (strcmp (pOmfFileName, "NONE") != 0) )
+   if ( (strcmp (pVmeOmfFileName, "") != 0) && 
+        (strcmp (pVmeOmfFileName, "NONE") != 0) )
    {
 
       /*
@@ -7613,18 +7614,18 @@ uint32 detInit
 
       if ( strcmp (pFilePath, "") == 0 )
       {
-         strncpy (pFullOmfFileName, pOmfFileName, 
+         strncpy (pFullVmeOmfFileName, pVmeOmfFileName, 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
       }
       else
       {
-         sprintf (pFullOmfFileName, "%s/%s", pFilePath, pOmfFileName );
+         sprintf (pFullVmeOmfFileName, "%s/%s", pFilePath, pVmeOmfFileName );
       }
 
       MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to VME DSP...",
-         pFullOmfFileName);
+         pFullVmeOmfFileName);
 
-      if (sdsuFileDnload (*pSdsuId, pFullOmfFileName, SDSU_IDENT_VME, 
+      if (sdsuFileDnload (*pSdsuId, pFullVmeOmfFileName, SDSU_IDENT_VME, 
                           limitAdrsRange) == ERROR)
       {
          ERROR_LOG ("Failed to download OMF file to VME DSP");
@@ -7649,38 +7650,25 @@ uint32 detInit
       }
    }
 
-   /* Determine whether any code should be downloaded to the Timing DSP */
+#ifdef DEBUG
+   sdsuPrintRepBuf (*pSdsuId);
+#endif
 
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, pOmfFileName);
+   /* Determine whether any code should be loaded from EEPROM for the Timing */
+   /* and utility boards */
 
-   if ( (strcmp (pOmfFileName, "") != 0) && 
-        (strcmp (pOmfFileName, "NONE") != 0) )
+   if ( dnloadFromEeprom == TRUE )
    {
+      sprintf ( pFullTimOmfFileName, "%s/%s", DET_CONTROL_OMF_FILE_PATH,
+                DET_CONTROL_HRWFS_OMF_TIM_FILE);
 
-      /*
-       * The ability to limit the address range is ignored. It is rarely needed
-       * and can only be done by executing sdsuFileDnload at the console (since
-       * sdsuFileDnload expects to prompt for the values).
-       */
+      MESSAGE_LOG1 (MSG_LOG, "Reading TIMING OMF file %s ...",
+                    pFullTimOmfFileName);
 
-      limitAdrsRange = 0;
-      if ( strcmp (pFilePath, "") == 0 )
+      if (sdsuFileSymbolDnload (*pSdsuId, pFullTimOmfFileName, SDSU_IDENT_TIM)
+          == ERROR)
       {
-         strncpy (pFullOmfFileName, pOmfFileName, 
-                  EPICS_MAX_BYTES_STRING_ATTRIB);
-      }
-      else
-      {
-         sprintf (pFullOmfFileName, "%s/%s", pFilePath, pOmfFileName );
-      }
-
-      MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to TIMING DSP...", 
-                    pFullOmfFileName);
-
-      if (sdsuFileDnload (*pSdsuId, pFullOmfFileName, SDSU_IDENT_TIM, 
-                          limitAdrsRange) == ERROR)
-      {
-         ERROR_LOG ("Failed to download OMF file to TIMING DSP");
+         ERROR_LOG ("Failed to read symbol from TIMING OMF file");
          errorNumber = S_detControl_SDSU_ERROR;
 
          /*
@@ -7691,49 +7679,126 @@ uint32 detInit
 
          epToVxSetHealth( pRecordPrefix, "WARNING" );
       }
+
+      if ( sdsuPrimitive ( *pSdsuId, "LDA", 2 , &applNum, NULL ) == ERROR )
+      {
+         ERROR_LOG ("Failed to load TIM DSP software from EEPROM");
+         errorNumber = S_detControl_SDSU_ERROR;
+         epToVxSetHealth( pRecordPrefix, "WARNING" );
+      }
+      MESSAGE_LOG1 (MSG_LOG, "TIMING code (applNum=%d) loaded from EEPROM OK",
+                    (int) applNum);
+
+      sprintf ( pFullUtlOmfFileName, "%s/%s", DET_CONTROL_OMF_FILE_PATH,
+                DET_CONTROL_OMF_UTL_FILE);
+
+      MESSAGE_LOG1 (MSG_LOG, "Reading UTILITY OMF file %s ...",
+                    pFullUtlOmfFileName);
+
+      if (sdsuFileSymbolDnload (*pSdsuId, pFullUtlOmfFileName, SDSU_IDENT_UTL)
+          == ERROR)
+      {
+         ERROR_LOG ("Failed to read symbol from UTILITY OMF file");
+         errorNumber = S_detControl_SDSU_ERROR;
+
+         /*
+          * If an OMF file could not be downloaded the SDSU controller is in
+          * a state where it can only obey a subset of the commands and cannot
+          * make observations, so set the health to WARNING.
+          */
+
+         epToVxSetHealth( pRecordPrefix, "WARNING" );
+      }
+
+      applNum = 1; /* only one version */
+      if ( sdsuPrimitive ( *pSdsuId, "LDA", 3 , &applNum, NULL ) == ERROR )
+      {
+         ERROR_LOG ("Failed to load UTIL DSP software from EEPROM");
+         errorNumber = S_detControl_SDSU_ERROR;
+         epToVxSetHealth( pRecordPrefix, "WARNING" );
+      }
+      MESSAGE_LOG (MSG_LOG, "UTILITY code loaded from EEPROM OK");
    }
-
-   /* Determine whether any code should be downloaded to the Utility DSP */
-
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, pOmfFileName);
-
-   if ( (strcmp (pOmfFileName, "") != 0) && 
-        (strcmp (pOmfFileName, "NONE") != 0) )
+   else
    {
-
-      /* The ability to limit the address range is ignored. It is rarely needed
-       * and can only be done by executing sdsuFileDnload at the console (since
-       * sdsuFileDnload expects to prompt for the values).
-       */
-
-      limitAdrsRange = 0;
-
-      if ( strcmp (pFilePath, "") == 0 )
+      if ( (strcmp (pTimOmfFileName, "") != 0) &&
+           (strcmp (pTimOmfFileName, "NONE") != 0) )
       {
-         strncpy (pFullOmfFileName, pOmfFileName, 
-                  EPICS_MAX_BYTES_STRING_ATTRIB);
-      }
-      else
-      {
-         sprintf (pFullOmfFileName, "%s/%s", pFilePath, pOmfFileName );
-      }
 
-      MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to UTILITY DSP...", 
-                    pFullOmfFileName);
-
-      if (sdsuFileDnload (*pSdsuId, pFullOmfFileName, SDSU_IDENT_UTL, 
-                          limitAdrsRange) == ERROR)
-      {
-         ERROR_LOG ("Failed to download OMF file to UTILITY DSP");
-         errorNumber = S_detControl_SDSU_ERROR;
+         if ( strcmp (pFilePath, "") == 0 )
+         {
+            strncpy (pFullTimOmfFileName, pTimOmfFileName,
+                     EPICS_MAX_BYTES_STRING_ATTRIB);
+         }
+         else
+         {
+            sprintf (pFullTimOmfFileName, "%s/%s", pFilePath, pTimOmfFileName );
+         }
 
          /*
-          * If an OMF file could not be downloaded the SDSU controller is in
-          * a state where it can only obey a subset of the commands and cannot
-          * make observations, so set the health to WARNING.
+          * The ability to limit the address range is ignored.
+          * It is rarely needed and can only be done by executing
+          * sdsuFileDnload at the console (since
+          * sdsuFileDnload expects to prompt for the values).
+          */
+         limitAdrsRange = 0;
+
+         MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to TIMING DSP...",
+                       pFullTimOmfFileName);
+
+         if (sdsuFileDnload (*pSdsuId, pFullTimOmfFileName, SDSU_IDENT_TIM,
+                             limitAdrsRange) == ERROR)
+         {
+            ERROR_LOG ("Failed to download OMF file to TIMING DSP");
+            errorNumber = S_detControl_SDSU_ERROR;
+
+            /*
+             * If an OMF file could not be downloaded the SDSU controller is in
+             * a state where it can only obey a subset of the commands and can't
+             * make observations, so set the health to WARNING.
+             */
+
+            epToVxSetHealth( pRecordPrefix, "WARNING" );
+         }
+      }
+
+      if ( (strcmp (pUtlOmfFileName, "") != 0) &&
+           (strcmp (pUtlOmfFileName, "NONE") != 0) )
+      {
+         if ( strcmp (pFilePath, "") == 0 )
+         {
+            strncpy (pFullUtlOmfFileName, pUtlOmfFileName,
+                     EPICS_MAX_BYTES_STRING_ATTRIB);
+         }
+         else
+         {
+            sprintf (pFullUtlOmfFileName, "%s/%s", pFilePath, pUtlOmfFileName );
+         }
+
+         /* The ability to limit the address range is ignored. It is rarely
+          * needed and can only be done by executing sdsuFileDnload at the
+          * console (since sdsuFileDnload expects to prompt for the values).
           */
 
-         epToVxSetHealth( pRecordPrefix, "WARNING" );
+         limitAdrsRange = 0;
+
+         MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to UTILITY DSP...",
+                       pFullUtlOmfFileName);
+
+         if (sdsuFileDnload (*pSdsuId, pFullUtlOmfFileName, SDSU_IDENT_UTL,
+                             limitAdrsRange) == ERROR)
+         {
+            ERROR_LOG ("Failed to download OMF file to UTILITY DSP");
+            errorNumber = S_detControl_SDSU_ERROR;
+
+            /*
+             * If an OMF file could not be downloaded the SDSU controller is in
+             * a state where it can only obey a subset of the commands and can't
+             * make observations, so set the health to WARNING.
+             */
+
+            epToVxSetHealth( pRecordPrefix, "WARNING" );
+         }
       }
    }
 
@@ -13999,6 +14064,7 @@ STATUS detDownloadDefault
     * (omfPath, vmeFile, timFile and utlFile use general filename parameters)
     */
 
+   uint32       applNum;
    BOOL         limitAdrsRange;     /* Flag for limiting addr range in DSP mem*/
 
    uint32       mode;
@@ -14047,12 +14113,12 @@ STATUS detDownloadDefault
    }
 
    /*
-    * Download default OMF code to the TIMING DSP, unless the default file
-    * name is "NONE" or blank. If the code could not be downloaded, the
+    * Read symbol table from TIMING OMF file, unless the default file
+    * name is "NONE" or blank. Then load the application code from the EEPROM.
+    * If the symbol table read or the EEPROM load fails, the
     * controller health is set "BAD", since it cannot do anything until this
     * code is downloaded.
     */
-
 
    if ( (strcmp (DET_CONTROL_HRWFS_OMF_TIM_FILE, "") != 0) &&
         (strcmp (DET_CONTROL_HRWFS_OMF_TIM_FILE, "NONE") != 0) )
@@ -14067,21 +14133,33 @@ STATUS detDownloadDefault
 
       sprintf (pFullOmfFileName, "%s/%s", DET_CONTROL_OMF_FILE_PATH,
                DET_CONTROL_HRWFS_OMF_TIM_FILE);
-      MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to TIMING DSP...", 
+      MESSAGE_LOG1 (MSG_LOG, "Reading TIMING OMF file %s ...", 
                     pFullOmfFileName);
 
-      if (sdsuFileDnload (sdsuId, pFullOmfFileName, SDSU_IDENT_TIM, 
-                          limitAdrsRange) == ERROR)
+      if (sdsuFileSymbolDnload (sdsuId, pFullOmfFileName, SDSU_IDENT_TIM) 
+          == ERROR)
       {
-         ERROR_LOG ("Failed to download default OMF file to TIMING DSP");
+         ERROR_LOG ("Failed to read symbol from TIMING OMF file");
          epToVxSetHealth( pRecordPrefix, "BAD" );
          return (ERROR);
       }
+#ifdef TIM_EEPROM_PROGRAM
+      applNum = 0; /* high speed version for application code */
+      if ( sdsuPrimitive ( sdsuId, "LDA", 2 , &applNum, NULL ) == ERROR )
+      {
+         ERROR_LOG ("Failed to load TIM DSP software from EEPROM");
+         epToVxSetHealth( pRecordPrefix, "BAD" );
+         return (ERROR);
+      }
+      MESSAGE_LOG (MSG_LOG, "TIMING code loaded from EEPROM OK");
+#endif
    }
 
-   /*
-    * Download default OMF code to the UTILITY DSP, unless the default file
-    * name is "NONE" or blank. If the code could not be downloaded, the
+
+   /* 
+    * Read symbol table from UTILITY OMF file, unless the default file
+    * name is "NONE" or blank. Then load the application code from the EEPROM.
+    * If the symbol table read of the EEPROM load fails, the
     * controller health is set "BAD", since it cannot do anything until this
     * code is downloaded.
     */
@@ -14099,16 +14177,27 @@ STATUS detDownloadDefault
 
       sprintf (pFullOmfFileName, "%s/%s", DET_CONTROL_OMF_FILE_PATH, 
                DET_CONTROL_OMF_UTL_FILE);
-      MESSAGE_LOG1 (MSG_LOG, "Downloading OMF file %s to UTILITY DSP...", 
+      MESSAGE_LOG1 (MSG_LOG, "Reading UTILITY OMF file %s ...", 
                     pFullOmfFileName);
 
-      if (sdsuFileDnload (sdsuId, pFullOmfFileName, SDSU_IDENT_UTL, 
-                          limitAdrsRange) == ERROR)
+      if (sdsuFileSymbolDnload (sdsuId, pFullOmfFileName, SDSU_IDENT_UTL) 
+          == ERROR)
       {
-         ERROR_LOG ("Failed to download default OMF file to UTILITY DSP");
+         ERROR_LOG ("Failed to read symbol from UTILITY OMF file");
          epToVxSetHealth( pRecordPrefix, "BAD" );
          return (ERROR);
       }
+
+#ifdef TIM_EEPROM_PROGRAM
+      applNum = 1; /* only one version */
+      if ( sdsuPrimitive ( sdsuId, "LDA", 3 , &applNum, NULL ) == ERROR )
+      {
+         ERROR_LOG ("Failed to load UTIL DSP software from EEPROM");
+         epToVxSetHealth( pRecordPrefix, "BAD" );
+         return (ERROR);
+      }
+      MESSAGE_LOG (MSG_LOG, "UTILITY code loaded from EEPROM OK");
+#endif
    }
 
    /*
@@ -14120,6 +14209,7 @@ STATUS detDownloadDefault
     * APPROPRIATE DEFAULTS.
     */
 
+#ifdef TIM_EEPROM_PROGRAM
    if (sdsuParamWrite (sdsuId, SDSU_IDENT_VME, "V_PSIZE", 1024) == ERROR)
    {
       ERROR_LOG ("Failed to increase the HRWFS packet size");
@@ -14140,6 +14230,7 @@ STATUS detDownloadDefault
          }
       }
    }
+#endif
 
    /*
     * After successfully downloading new OMF code, the controller must be
@@ -14147,6 +14238,7 @@ STATUS detDownloadDefault
     * "LDP" command to the timing DSP.
     */
 
+#ifdef TIM_EEPROM_PROGRAM
    if (sdsuPrimitive (sdsuId, "INI", SDSU_IDENT_UTL, NULL, NULL) == ERROR)
    {
       ERROR_LOG ("Failed to initialise UTILITY DSP with INI command");
@@ -14159,6 +14251,7 @@ STATUS detDownloadDefault
       epToVxSetHealth( pRecordPrefix, "BAD" );
       return (ERROR);
    }
+#endif
 
    return (OK);
 }
@@ -14258,6 +14351,12 @@ STATUS detCheckGeometry
        * outputs parameters from the SDSU controller and use these to calculate
        * the default size expected by the DSP code.
        */
+
+#ifdef DEBUG
+      sdsuPrintRepBuf (sdsuId);
+      sdsuClear1RepBuf (sdsuId);
+      sdsuPrintRepBuf (sdsuId);
+#endif
 
       if ( (sdsuParamRead (sdsuId, SDSU_IDENT_TIM, "T_XSIZE", &xChip) ==
             ERROR) ||

@@ -127,7 +127,7 @@
 #define SDSU_MEM_START_P (SDSU_MEM_SPACE_P | 0x000000)
 #define SDSU_MEM_START_X (SDSU_MEM_SPACE_X | 0x000000)
 #define SDSU_MEM_START_Y (SDSU_MEM_SPACE_Y | 0x000000)
-#define SDSU_MEM_START_E (SDSU_MEM_SPACE_E | 0x004000)
+#define SDSU_MEM_START_E (SDSU_MEM_SPACE_E | 0x002000)
 #define SDSU_MEM_END_P  (SDSU_MEM_SPACE_P | 0x001fff)
 #define SDSU_MEM_END_X  (SDSU_MEM_SPACE_X | 0x001fff)
 #define SDSU_MEM_END_Y  (SDSU_MEM_SPACE_Y | 0x003fff)
@@ -409,6 +409,7 @@ IMPORT STATUS sdsuM (uint32 ptr, char * pMemSpace, uint32 destId,
                      SDSU_ID context);
 IMPORT STATUS sdsuPrintCmdBuf (SDSU_ID context, const BOOL printAll);
 IMPORT STATUS sdsuPrintRepBuf (SDSU_ID context);
+IMPORT STATUS sdsuClear1RepBuf (SDSU_ID context);
 IMPORT STATUS sdsuPrimitiveWrite (SDSU_ID context, SDSU_CMD_DEF * pCmdDef,
        const uint32 sourceId, const uint32 destId, uint32 * pCmdArg);
 IMPORT STATUS sdsuPrimitiveRead (SDSU_ID context, SDSU_CMD_DEF * pCmdDef,
@@ -425,10 +426,14 @@ IMPORT STATUS sdsuPrimitiveMultiWRM (SDSU_ID context, const uint32 destId,
      uint32 address, uint32 * data, const uint32 wordCount);
 IMPORT STATUS sdsuMemoryDnload (SDSU_ID context, FILE * fd, const uint32 destId,
      uint32 * pStart, uint32 * pFinish);
+IMPORT STATUS sdsuMemorySymbolDnload (SDSU_ID context, FILE * fd,
+                                      const uint32 destId);
 IMPORT STATUS sdsuMemoryUpload (SDSU_ID context, FILE * fd, const uint32 destId,
      uint32 * pStart, uint32 * pFinish);
 IMPORT STATUS sdsuFileDnload (SDSU_ID context, char * pFileName, 
        const uint32 destId, const BOOL limitAdrsRange);
+IMPORT STATUS sdsuFileSymbolDnload (SDSU_ID context, char * pFileName,
+       const uint32 destId);
 IMPORT STATUS sdsuFileUpload (SDSU_ID context, char * pFileName, 
        const uint32 destId, const BOOL limitAdrsRange);
 

@@ -1,8 +1,31 @@
        COMMENT *
-Gemini WFS Timing Board Header
-Controller: SDSU2 (preproduction PALs)
-Revision: 3.02 (matches corresponding boot code version)
+SDSU2 Timing Board Boot Code
+Instrument: Gemini WFS
+Revision: 3.04 (matches corresponding boot code version)
 (This code is adapted from timEEV written by Dr. Bob Leach at SDSU)
+
+    (c) 2002				(c) 2002
+    National Research Council		Conseil national de recherches
+    Ottawa, Canada, K1A 0R6 		Ottawa, Canada, K1A 0R6
+    All rights reserved			Tous droits reserves
+
+    NRC disclaims any warranties,	Le CNRC denie toute garantie
+    expressed, implied, or statu-	enoncee, implicite ou legale,
+    tory, of any kind with respect	de quelque nature que se soit,
+    to the software, including		concernant le logiciel, y com-
+    without limitation any war-		pris sans restriction toute
+    ranty of merchantability or		garantie de valeur marchande
+    fitness for a particular pur-	ou de pertinence pour un usage
+    pose.  NRC shall not be liable	particulier.  Le CNRC ne
+    in any event for any damages,	pourra en aucun cas etre tenu
+    whether direct or indirect,		responsable de tout dommage,
+    special or general, consequen-	direct ou indirect, particul-
+    tial or incidental, arising		ier ou general, accessoire ou
+    from the use of the software.	fortuit, resultant de l'utili-
+					sation du logiciel.
+
+
+Modifications:
 
 97/10/08 BML -initial coding
 
@@ -11,6 +34,10 @@ Revision: 3.02 (matches corresponding boot code version)
 99/03/02 TDH -added N_W_APL, the EEPROM space allotment for each application
              -increased APL_LEN to allow for longer applications
              -changed APL_ADR to $105 to accomodate longer boot code
+
+00/07/18 TDH -no changes necessary for boot code version 3.03
+
+02/01/11 TDH -added APL_ROM, address offset for EEPROM applications
 
 	*
 
@@ -23,7 +50,8 @@ RCV_BUF EQU     $60	; Starting address of receiver buffer in X:
 COM_TBL EQU     $80     ; Starting address of command table in X: memory
 NUM_COM EQU     24      ; Number of entries in command table
 APL_ADR	EQU	$105	; P: memory location where application code begins
-APL_LEN	EQU	$400	; Maximum length of application program
+APL_LEN	EQU	$300	; Maximum length of application program
+APL_ROM	EQU	$2AAB	; Start of application storage in EEPROM (word address)
 N_W_APL	EQU	$F00	; Total number of EEPROM words per application
 
 ROM_OFF	EQU	$4000	; Boot program offset address in EEPROM

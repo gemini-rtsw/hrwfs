@@ -1,10 +1,32 @@
 	COMMENT *
-
-Gemini WFS Timing Board Boot Code
-Controller: SDSU2 
-Revision: 3.03  (must agree with status word T_FW_VER in P: memory)
+SDSU2 Timing Board Boot Code
+Instrument: Gemini WFS
+Revision: 3.04  (must agree with status word T_FW_VER in P: memory)
 (This code is adapted from timboot.asm, Rev. 3.00, written by Dr. Bob Leach 
 at SDSU for use with the TIMII board.)
+
+    (c) 2002				(c) 2002
+    National Research Council		Conseil national de recherches
+    Ottawa, Canada, K1A 0R6 		Ottawa, Canada, K1A 0R6
+    All rights reserved			Tous droits reserves
+
+    NRC disclaims any warranties,	Le CNRC denie toute garantie
+    expressed, implied, or statu-	enoncee, implicite ou legale,
+    tory, of any kind with respect	de quelque nature que se soit,
+    to the software, including		concernant le logiciel, y com-
+    without limitation any war-		pris sans restriction toute
+    ranty of merchantability or		garantie de valeur marchande
+    fitness for a particular pur-	ou de pertinence pour un usage
+    pose.  NRC shall not be liable	particulier.  Le CNRC ne
+    in any event for any damages,	pourra en aucun cas etre tenu
+    whether direct or indirect,		responsable de tout dommage,
+    special or general, consequen-	direct ou indirect, particul-
+    tial or incidental, arising		ier ou general, accessoire ou
+    from the use of the software.	fortuit, resultant de l'utili-
+					sation du logiciel.
+
+
+Modifications:
 
 98/07/01 TDH -reformatted source code and added comments 
 
@@ -20,6 +42,8 @@ at SDSU for use with the TIMII board.)
               power disspation (switches draw a lot of current from the +5V
               supply when +/-15V supplies are off).
 
+02/01/11 TDH -added an increment to correct the address of the EEPROM
+              applications in the LDA function
 
 	*
 
@@ -62,7 +86,7 @@ at SDSU for use with the TIMII board.)
 	ORG     P:ROM_ID,P:ROM_ID+ROM_OFF
 
 T_FW_ID		DC	$000000	; board serial number
-T_FW_VER	DC	$030302	; Version 3.02, board #2 = timing
+T_FW_VER	DC	$030402	; Version 3.04, board #2 = timing
 
 
 
@@ -467,9 +491,10 @@ LDAPPL	MOVE	X:(R4)+,X0	; Number of application program
 	MOVE	#N_W_APL,Y0 	; Space allowed per application
 	MPY	X0,Y0,A  #APL_ADR,R7
 	ASR	A		; Correct for 24-bit multiply
-	MOVE	A0,R0		; EEPROM address = # x N_W_APL
+	MOVE	A0,R0		; EEPROM address = # x N_W_APL +1
 	BSET	#15,R0		; All EEPROM accesses are with A15=1
 	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
+	MOVE	(R0)+		; Dummy move to increment R0
 	DO	#APL_LEN,LD_LA2	; Loop through application program
 	DO	#3,LD_LA1
 	MOVE	P:(R0)+,A2	; Read from EEPROM

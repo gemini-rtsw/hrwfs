@@ -1,8 +1,31 @@
-       COMMENT *
-Gemini WFS VME Interface Board Boot Code
-Controller: SDSU2 
-Revision: 3.05  (must agree with status word V_FW_VER in P: memory)
+	COMMENT *
+SDSU2 VME Interface Board Boot Code
+Instrument: Gemini WFS
+Revision: 3.09a  (must agree with status word V_FW_VER in P: memory)
 (This code is adapted from vmeboot v3.00 written by Dr. Bob Leach at SDSU)
+
+    (c) 2002				(c) 2002
+    National Research Council		Conseil national de recherches
+    Ottawa, Canada, K1A 0R6 		Ottawa, Canada, K1A 0R6
+    All rights reserved			Tous droits reserves
+
+    NRC disclaims any warranties,	Le CNRC denie toute garantie
+    expressed, implied, or statu-	enoncee, implicite ou legale,
+    tory, of any kind with respect	de quelque nature que se soit,
+    to the software, including		concernant le logiciel, y com-
+    without limitation any war-		pris sans restriction toute
+    ranty of merchantability or		garantie de valeur marchande
+    fitness for a particular pur-	ou de pertinence pour un usage
+    pose.  NRC shall not be liable	particulier.  Le CNRC ne
+    in any event for any damages,	pourra en aucun cas etre tenu
+    whether direct or indirect,		responsable de tout dommage,
+    special or general, consequen-	direct ou indirect, particul-
+    tial or incidental, arising		ier ou general, accessoire ou
+    from the use of the software.	fortuit, resultant de l'utili-
+					sation du logiciel.
+
+
+Modifications:
 
 98/05/22 TDH -removed common constant definitions to vmehead.asm
              -added command RRS
@@ -31,7 +54,20 @@ Revision: 3.05  (must agree with status word V_FW_VER in P: memory)
               EEPROM access
              -changed FW_ID comments (now board serial #)
 
-        *
+99/05/11 TDH -added save of buffer pointer in command timeout case
+
+99/10/13 TDH -change port B set up to use BDD_SET constant
+             -change interrupt generation to wait for cycle to finish
+              (requires hardware change)
+
+00/02/28 TDH -no changes required for header file version 3.08
+
+2000/10/16 TDH -changed how reply is sent from SRA routine to avoid dummy reply
+
+2002/03/22 TDH -disabled IRQ_TST polling so that code is compatible with
+                unmodified hardware
+
+	*
 
 ; Define listing page width
         PAGE    132             ; Printronix page width - 132 columns
@@ -76,7 +112,7 @@ Revision: 3.05  (must agree with status word V_FW_VER in P: memory)
 ;   the address of the SWI = software interrupt, which we never use. 
         ORG     P:ROM_ID,P:ROM_ID+ROM_OFF
 V_FW_ID		DC	$000000	; board serial number
-V_FW_VER	DC      $030501	; Version 3.05, board #1 = VMEINF Rev. 7A
+V_FW_VER	DC      $03090a	; Version 3.09, board #1 = VMEINF Rev. 7A
 
 
 
@@ -108,16 +144,15 @@ INIT				; Must define this address for all cases
 				;   CKOUT enabled
 
 ; Port B
-        MOVEP   #$0,X:PBC       ; Port B Control Register enabling port B
-                                ;   pins as general purpose I/O.
-        MOVEP   #$11B4,X:PBDDR  ; Set direction of port B pins.
+        MOVEP   #%00,X:PBC       	; Set port B to general purpose I/O.
+        MOVEP   #BDD_SET,X:PBDDR	; Set direction of port B pins
 	MOVEP	#$0084,X:PBD	; REQBUS/I = bit 7 = 1 => not requesting bus
 				; WL = bit 12 = 0 => 24 bits written to VMEbus
 				; MODE = bit 2 = 1 => D32 incoming data
 
 ; Port C
 	MOVEP   #$0140,X:PCC	; Enable SSI functions SCK and STD only
-	MOVEP	#$0020,X:PCDDR	; PC5 is an output
+	MOVEP	#CDD_SET,X:PCDDR	; Set direction of port C pins
 	MOVEP	#$0003,X:CRA	; SSI: 64 MHz / 16 = 4 MHz output, 8 bits/word
 	MOVEP   #$1338,X:CRB
 
@@ -127,9 +162,8 @@ INIT				; Must define this address for all cases
 	MOVE	A,X:CLRRDFIFO	; Clear to non-automatic RDFIFO cycling
 	JSR	<XMIT	
 	REP	#50		; Wait for serial data transmission
-	NOP
-	MOVE	A,X:RSTFIFO	; Reset FIFO
 	CLR	A
+	MOVE	A,X:RSTFIFO	; Reset FIFO
 	MOVE	A,X:SELBLT	; Make sure BLT = block transfer line is cleared
 
 	MOVEP	#$1191,X:BCR	; Wait states for external memory accesses
@@ -237,16 +271,17 @@ RCV_L1	CMP	Y0,A  Y0,X:<NWORDS ; Y0 = NWORDS from above
 	ENDDO
 	JMP	<MV_COM
 RCV_L2	NOP
-
-TIM_OUT	MOVE	(R5)+		; Increment R5 past header
-	JMP	<START		; Send reply
+TIM_OUT
+	MOVE	(R5)+		; Increment R5 past header
+	JSR	<R_PROC		; Save buffer pointer
+	JMP	<START		; Ignore incomplete command 
 
 ; We've got the complete command, so put it on the COM_BUF stack
 MV_COM	DO	X:<NWORDS,XFER
 	MOVE	X:(R5)+,A	; R5 = R#PROC from VME_TST or FO_TST
 	MOVE	A,X:(R3)+
 XFER
-	JSR	<R_PROC
+	JSR	<R_PROC		; Save buffer pointer
 
 ; Process the receiver entry - is its destination number = D_BRD_HDR?
 PRC_RCV MOVE    R3,A            ; Pointer to current contents of receiver
@@ -275,9 +310,12 @@ L3
 	MOVE	R0,X:<LRPLADR	; Save VMEbus lower address for future use
 	MOVE	X:<CFFFF,M0	; Restore linear addressing to R0
 
-; Generate a VMEbus interrupt if OPTIONS bit INTR is set
+; Generate a VMEbus interrupt if OPTIONS bit INTR is set and wait for
+; interrupt cycle to finish (as indicated by IRQ going high again).
  	JCLR    #INTR,X:OPTIONS,START 	; Optional interrupt generation
         MOVE	A,X:RQINTR		; Request a VMEbus interrupt
+;	JSET	#IRQ_TST,X:PBD,*	; wait for IRQ line to go low
+;	JCLR	#IRQ_TST,X:PBD,*	; wait for IRQ line to go high again
 	JMP	<START
 
 SKP_RPY	REP	X:<NWORDS	; Skip over this command because reply
@@ -347,9 +385,8 @@ END_COM
 	MOVE	X:<TWO,X0
 	SUB	X0,A		; Header and command have been processed
 	JEQ	<ERROR
-	DO	A,INCR_R4
-	MOVE	(R4)+		; Increment over unprocessed part of comamnd
-INCR_R4
+	REP	A
+	MOVE	(R4)+		; Increment over unprocessed part of command
 
 ERROR   MOVE    X:<ERR,X0	; Send the message - there was an error
         JMP     <FINISH1	; This protects against unknown commands
@@ -404,23 +441,25 @@ TDL	MOVE    X:(R4)+,X0	; Get data value
 SRADDR  MOVE	X:(R4)+,X0	; Get 16-bits of high address
         MOVE	X0,X:WRHADR	; Write high word of VMEbus address to latch
         MOVE	X0,X:<HRPLADR	; Store for later use
-        MOVE	X:(R4)+,A 	; Get 16-bits of low address
-	LSR	A  X:<VME_HDR,Y0 ; Convert VMEbus byte address to word address
-        BSET	#15,A		; Put address in top of Y: memory space
-        MOVE	A,X:<LRPLADR	; Write low word of VMEbus address
-	MOVE	A1,R0 		; Get low VME address for write below
+        MOVE	X:(R4)+,A	; Get 16-bits of low address
+	LSR	A X:<VME_HDR,Y0	; Convert VMEbus byte address to word address
+        BSET	#15,A	; Put address in top of Y: memory space
+	MOVE	A,R0	; Get low VME address for write below
         BSET	#SRA_EX,X:<STATUS ; SRA command has been executed
-	MOVE	X:<AM_REG,X0	; Interrupt vector + address modifiers + control
+	MOVE	X:<AM_REG,X1	; Interrupt vector + address modifiers + control
 				; AM = $09 or $0D - Extended supervisory or
-				;   non-priveledged data access.
+				;   non-priveleged data access.
 				; WRITE = LWORD = 0 => write 32-bit data
 				; $0D - for a32d32 (default)
 				; $3D - for a24d32
 				; $F0 = Interrupt service address in VME space
 	JCLR    #DONEVME,X:PBD,* ; Make sure the VMEbus is available
-	MOVE	Y0,Y:(R0)	; Write a dummy header to the VMEbus
-	MOVE	X0,X:WRAM	; Extended data access
-        JMP	<FINISH
+	MOVE	Y0,Y:(R0)+N0	; Write a dummy header to the VMEbus
+	MOVE	X1,X:WRAM	; must come after write so WRITE* is correct
+	MOVE	X:<DON,X0	; Put reply mnemonic in X0 for transmit
+	MOVE	X0,Y:(R0)+N0	; Write 'DON' reply to the VMEbus
+	MOVE	R0,X:<LRPLADR	; Save VMEbus lower address for future use
+	JMP	<START
 
 
 ; *****  Read Memory  *****
@@ -439,7 +478,7 @@ RDY     JCLR    #22,A,RDR	; Test address bit for Y: memory
 	JMP     <FINISH1	; Send out a header with the value
 RDR	JCLR	#23,A,ADDERR	; Test address bit for read from EEPROM memory
 	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
-	MOVE	X:<THREE,X0	; Convert to word address to a byte address
+	MOVE	X:<THREE,X0	; Convert word address to byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X0,Y0,A		; Multiply	
 	ASR	A		; Eliminate zero fill of fractional multiply
@@ -472,7 +511,7 @@ WRY     JCLR    #22,A,WRR	; Test address bit for Y: memory
 	JMP	<FINISH
 WRR	JCLR	#23,A,ADDERR	; Test address bit for write to EEPROM
 	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
-	MOVE	X:<THREE,X1	; Convert to word address to a byte address
+	MOVE	X:<THREE,X1	; Convert word address to byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X1,Y0,A		; Multiply	
 	ASR	A  X0,B1	; Eliminate zero fill of fractional multiply
@@ -603,7 +642,7 @@ SMASK   DC      $FF0000         ; Mask to get source board number out
 DMASK   DC      $00FF00         ; Mask to get destination board number out
 RCV_HDR	DC	$00AC00		; Header on words received from host computer
 AM_REG	DC	$F0000D		; Address modifier contents
-VME_HDR	DC	$010002		; Header to host from VME on startup
+VME_HDR	DC	$010002		; VME header for SRA reply
 ERR     DC      'ERR'           ; Error message (unrecognized command)
 DON     DC      'DON'           ; Done message
 ABR	DC	'ABR'		; Abort readout command to timing board

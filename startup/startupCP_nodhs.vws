@@ -1,4 +1,4 @@
-# $Id: startupCP_nodhs.vws,v 1.3 2001-12-21 02:42:12 cboyer Exp $
+# $Id: startupCP_nodhs.vws,v 1.4 2002-03-28 03:20:22 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -41,11 +41,11 @@ ld < /gemini/epics3.13.4/cfitsio/cfitsio/bin/$(arch)/cfitsiolib
 ld < /gemini/epics3.13.4/timelib/timelib/bin/$(arch)/timeSeq
 
 # Load the Gemini data handling libraries
-ld < /gemini/dhs/external/lib/mv2700/libers.o
-ld < /gemini/dhs/external/lib/mv2700/libimp.o
-ld < /gemini/dhs/external/lib/mv2700/libsds.o
-ld < /gemini/dhs/lib/mv2700/libgen.a
-ld < /gemini/dhs/lib/mv2700/libdhs.a
+ld < /gemini/dhs/dhs/external/lib/mv2700T2/libers.o
+ld < /gemini/dhs/dhs/external/lib/mv2700T2/libimp.o
+ld < /gemini/dhs/dhs/external/lib/mv2700T2/libsds.o
+ld < /gemini/dhs/dhs/lib/mv2700T2/libgen.a
+ld < /gemini/dhs/dhs/lib/mv2700T2/libdhs.a
 
 # Load the Gemini A&G wavefront processing software
 ld < $(version)/bin/$(arch)/wfsHrwfsDb

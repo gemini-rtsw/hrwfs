@@ -38,16 +38,9 @@ w 338 507 100 0 n#128 eapply.apply5.OCLB 0 496 736 496 736 1680 864 1680 ecad8.d
 w 322 539 100 0 n#127 eapply.apply5.OUTB 0 528 704 528 704 1712 864 1712 ecad8.detMode.DIR
 w 34 571 100 0 n#126 eapply.apply5.OCLA 0 560 128 560 128 1680 224 1680 ecad8.detReset.ICID
 w 130 1723 100 0 n#125 eapply.apply5.OUTA 0 592 96 592 96 1712 224 1712 ecad8.detReset.DIR
-s 3872 -304 500 512 hrwfsCommands2.sch
 s 336 2240 500 0 Wavefront Sensing - WFS CAD Records
+s 3872 -304 500 512 hrwfsCommands2.sch
 [cell use]
-use ecad2 864 -569 100 0 detDhsDisplay
-xform 0 1024 -256
-p 928 48 100 0 -1 DESC:Set dhs display
-p 976 -256 100 0 1 FTVA:LONG
-p 928 -608 100 0 1 INAM:epToVxCadInit
-p 928 -640 100 0 1 SNAM:epToVxCadExecute
-p 976 -576 100 1024 0 name:$(top)$(wfs)$(I)
 use ecad2 224 -569 100 0 detDhsReconnect
 xform 0 384 -256
 p 288 48 100 0 -1 DESC:Set dhs connection
@@ -55,58 +48,23 @@ p 336 -192 100 0 1 FTVA:LONG
 p 288 -608 100 0 1 INAM:epToVxCadInit
 p 288 -640 100 0 1 SNAM:epToVxCadExecute
 p 336 -576 100 1024 0 name:$(top)$(wfs)$(I)
-use outhier 192 567 100 0 MESS
-xform 0 208 608
+use ecad2 864 -569 100 0 detDhsDisplay
+xform 0 1024 -256
+p 928 48 100 0 -1 DESC:Set dhs display
+p 976 -256 100 0 1 FTVA:LONG
+p 928 -608 100 0 1 INAM:epToVxCadInit
+p 928 -640 100 0 1 SNAM:epToVxCadExecute
+p 976 -576 100 1024 0 name:$(top)$(wfs)$(I)
 use outhier 192 647 100 0 VAL
 xform 0 208 688
-use inhier -912 615 100 0 ICID
-xform 0 -896 656
+use outhier 192 567 100 0 MESS
+xform 0 208 608
 use inhier -912 743 100 0 DIR
 xform 0 -896 784
+use inhier -912 615 100 0 ICID
+xform 0 -896 656
 use eapply -384 55 100 0 apply5
 xform 0 -192 416
-use ecad8 864 759 100 0 detMode
-xform 0 1024 1264
-p 928 720 100 0 1 DESC:Define detector readout mode
-p 976 1520 100 0 1 FTVA:LONG
-p 976 1456 100 0 1 FTVB:LONG
-p 976 1392 100 0 1 FTVC:LONG
-p 976 1328 100 0 1 FTVD:LONG
-p 976 1264 100 0 0 FTVE:LONG
-p 976 1200 100 0 0 FTVF:LONG
-p 976 1136 100 0 0 FTVG:STRING
-p 976 1072 100 0 0 FTVH:STRING
-p 928 688 100 0 1 INAM:epToVxCadInit
-p 928 624 100 0 1 PV:$(top)$(wfs)
-p 928 656 100 0 1 SNAM:epToVxCadExecute
-use ecad8 2176 759 100 0 detInit
-xform 0 2336 1264
-p 2256 720 100 0 1 DESC:Initialise SDSU controller
-p 2304 1520 100 0 1 FTVA:LONG
-p 2288 1456 100 0 1 FTVB:STRING
-p 2288 1392 100 0 1 FTVC:STRING
-p 2288 1328 100 0 1 FTVD:STRING
-p 2288 1280 100 0 1 FTVE:STRING
-p 2304 1216 100 0 1 FTVF:LONG
-p 2288 1152 100 0 0 FTVG:STRING
-p 2288 1088 100 0 0 FTVH:STRING
-p 2256 688 100 0 1 INAM:epToVxCadInit
-p 2256 624 100 0 1 PV:$(top)$(wfs)
-p 2256 656 100 0 1 SNAM:epToVxCadExecute
-use ecad8 224 759 100 0 detReset
-xform 0 384 1264
-p 288 720 100 0 1 DESC:Reset SDSU controller
-p 336 1520 100 0 1 FTVA:LONG
-p 336 1456 100 0 1 FTVB:LONG
-p 336 1392 100 0 1 FTVC:STRING
-p 336 1328 100 0 1 FTVD:STRING
-p 336 1264 100 0 1 FTVE:STRING
-p 336 1200 100 0 1 FTVF:STRING
-p 336 1136 100 0 0 FTVG:LONG
-p 336 1072 100 0 0 FTVH:LONG
-p 288 688 100 0 1 INAM:epToVxCadInit
-p 288 624 100 0 1 PV:$(top)$(wfs)
-p 288 656 100 0 1 SNAM:epToVxCadExecute
 use ecad8 2880 759 100 0 setObserve
 xform 0 3040 1264
 p 2944 720 100 0 1 DESC:Set observation parameters
@@ -121,6 +79,48 @@ p 2992 1296 100 0 0 FTVH:STRING
 p 2944 688 100 0 1 INAM:epToVxCadInit
 p 2944 624 100 0 1 PV:$(top)$(wfs)
 p 2944 656 100 0 1 SNAM:epToVxCadExecute
+use ecad8 224 759 100 0 detReset
+xform 0 384 1264
+p 288 720 100 0 1 DESC:Reset SDSU controller
+p 336 1520 100 0 1 FTVA:LONG
+p 336 1456 100 0 1 FTVB:LONG
+p 336 1392 100 0 1 FTVC:STRING
+p 336 1328 100 0 1 FTVD:STRING
+p 336 1264 100 0 1 FTVE:STRING
+p 336 1200 100 0 1 FTVF:STRING
+p 336 1136 100 0 0 FTVG:LONG
+p 336 1072 100 0 0 FTVH:LONG
+p 288 688 100 0 1 INAM:epToVxCadInit
+p 288 624 100 0 1 PV:$(top)$(wfs)
+p 288 656 100 0 1 SNAM:epToVxCadExecute
+use ecad8 2176 759 100 0 detInit
+xform 0 2336 1264
+p 2256 720 100 0 1 DESC:Initialise SDSU controller
+p 2304 1520 100 0 1 FTVA:LONG
+p 2288 1456 100 0 1 FTVB:STRING
+p 2288 1392 100 0 1 FTVC:STRING
+p 2288 1328 100 0 1 FTVD:STRING
+p 2288 1280 100 0 1 FTVE:STRING
+p 2304 1216 100 0 1 FTVF:LONG
+p 2288 1152 100 0 1 FTVG:LONG
+p 2288 1088 100 0 1 FTVH:LONG
+p 2256 688 100 0 1 INAM:epToVxCadInit
+p 2256 624 100 0 1 PV:$(top)$(wfs)
+p 2256 656 100 0 1 SNAM:epToVxCadExecute
+use ecad8 864 759 100 0 detMode
+xform 0 1024 1264
+p 928 720 100 0 1 DESC:Define detector readout mode
+p 976 1520 100 0 1 FTVA:LONG
+p 976 1456 100 0 1 FTVB:LONG
+p 976 1392 100 0 1 FTVC:LONG
+p 976 1328 100 0 1 FTVD:LONG
+p 976 1264 100 0 0 FTVE:LONG
+p 976 1200 100 0 0 FTVF:LONG
+p 976 1136 100 0 0 FTVG:STRING
+p 976 1072 100 0 0 FTVH:STRING
+p 928 688 100 0 1 INAM:epToVxCadInit
+p 928 624 100 0 1 PV:$(top)$(wfs)
+p 928 656 100 0 1 SNAM:epToVxCadExecute
 use ecad20 3584 -9 100 0 detGeometry
 xform 0 3744 880
 p 3648 -48 100 0 1 DESC:Define detector geometry parameters
@@ -152,9 +152,9 @@ xform 0 1616 784
 p 2608 -688 200 0 1 author:C.J.Mayer
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:
-p 3120 -784 200 0 -1 date:$Date: 2001-06-24 18:45:38 $
-p 2592 2304 200 0 -1 id:$Id: hrwfsCommands2.sch,v 1.2 2001-06-24 18:45:38 gemvx Exp $
+p 3120 -784 200 0 -1 date:$Date: 2002-03-28 03:20:17 $
+p 2592 2304 200 0 -1 id:$Id: hrwfsCommands2.sch,v 1.3 2002-03-28 03:20:17 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2592 -528 200 0 -1 revision:$Revision: 1.2 $
+p 2592 -528 200 0 -1 revision:$Revision: 1.3 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor CAD Records
 [comments]

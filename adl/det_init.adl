@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="16"
-	nstr="60"
-	ndynamic="20"
+	npc="18"
+	nstr="68"
+	ndynamic="26"
 	nplot="0"
 	nrd="1"
 	nes="0"
@@ -19,27 +19,27 @@ display {
 		x="0"
 		y="0"
 		width="678"
-		height="420"
+		height="532"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2932"
-	nwords_sta="616"
+	nwords_dspy="3722"
+	nwords_sta="872"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1392"
-	osta="776"
-	odynamic="1392"
-	oplot="2760"
-	ord="2760"
-	oes="2920"
-	okd="2920"
-	opd="2932"
-	opo="2932"
+	odyng="1762"
+	osta="890"
+	odynamic="1762"
+	oplot="3550"
+	ord="3550"
+	oes="3710"
+	okd="3710"
+	opd="3722"
+	opo="3722"
 	opc="68"
-	ostr="258"
-	ocmap="776"
-	ocrules="776"
+	ostr="282"
+	ocmap="890"
+	ocrules="890"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -89,7 +89,7 @@ display {
 		x="14"
 		y="38"
 		width="643"
-		height="320"
+		height="441"
 		groupid="0"
 	}
 }
@@ -106,7 +106,7 @@ display {
 }
 "text" {
 	object {
-		x="20"
+		x="18"
 		y="184"
 		width="270"
 		height="16"
@@ -225,7 +225,7 @@ display {
 "text" {
 	object {
 		x="21"
-		y="371"
+		y="492"
 		width="83"
 		height="18"
 		groupid="0"
@@ -236,7 +236,7 @@ display {
 "rectangle" {
 	object {
 		x="14"
-		y="358"
+		y="479"
 		width="643"
 		height="41"
 		groupid="0"
@@ -244,8 +244,8 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="212"
+		x="18"
+		y="255"
 		width="180"
 		height="16"
 		groupid="0"
@@ -255,8 +255,8 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="267"
+		x="47"
+		y="418"
 		width="193"
 		height="14"
 		groupid="0"
@@ -266,8 +266,8 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="239"
+		x="18"
+		y="282"
 		width="180"
 		height="16"
 		groupid="0"
@@ -277,8 +277,8 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="296"
+		x="47"
+		y="447"
 		width="185"
 		height="15"
 		groupid="0"
@@ -288,13 +288,83 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="325"
+		x="18"
+		y="210"
 		width="285"
 		height="16"
 		groupid="0"
 	}
 	textix="F: Maximum number of frames:"
+	align="horiz. left"
+}
+"line" {
+	object {
+		x="14"
+		y="239"
+		width="643"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="14"
+		y="239"
+	}
+	point[1] {
+		x="657"
+		y="239"
+	}
+	orgpoint[0] {
+		x="0"
+		y="-1"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="-1"
+	}
+}
+"text" {
+	object {
+		x="18"
+		y="312"
+		width="456"
+		height="16"
+		groupid="0"
+	}
+	textix="G: Load Timing and Utility code from EEPROMS:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="18"
+		y="336"
+		width="80"
+		height="16"
+		groupid="0"
+	}
+	textix="If yes:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="48"
+		y="363"
+		width="154"
+		height="16"
+		groupid="0"
+	}
+	textix="H: TIMING code:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="20"
+		y="390"
+		width="67"
+		height="16"
+		groupid="0"
+	}
+	textix="If no:"
 	align="horiz. left"
 }
 "message button" {
@@ -719,7 +789,7 @@ display {
 "text update" {
 	object {
 		x="102"
-		y="369"
+		y="490"
 		width="550"
 		height="20"
 		groupid="0"
@@ -813,7 +883,7 @@ display {
 "text entry" {
 	object {
 		x="209"
-		y="210"
+		y="253"
 		width="445"
 		height="20"
 		groupid="0"
@@ -857,10 +927,10 @@ display {
 }
 "text entry" {
 	object {
-		x="294"
-		y="265"
-		width="360"
-		height="20"
+		x="321"
+		y="416"
+		width="333"
+		height="19"
 		groupid="0"
 	}
 	control {
@@ -903,7 +973,7 @@ display {
 "text entry" {
 	object {
 		x="294"
-		y="237"
+		y="280"
 		width="360"
 		height="20"
 		groupid="0"
@@ -947,9 +1017,9 @@ display {
 }
 "text entry" {
 	object {
-		x="294"
-		y="294"
-		width="360"
+		x="321"
+		y="444"
+		width="333"
 		height="20"
 		groupid="0"
 	}
@@ -993,7 +1063,7 @@ display {
 "text entry" {
 	object {
 		x="399"
-		y="323"
+		y="208"
 		width="255"
 		height="20"
 		groupid="0"
@@ -1038,7 +1108,7 @@ display {
 "message button" {
 	object {
 		x="294"
-		y="323"
+		y="208"
 		width="100"
 		height="20"
 		groupid="0"
@@ -1085,8 +1155,8 @@ display {
 }
 "message button" {
 	object {
-		x="209"
-		y="294"
+		x="236"
+		y="445"
 		width="80"
 		height="20"
 		groupid="0"
@@ -1133,8 +1203,8 @@ display {
 }
 "message button" {
 	object {
-		x="209"
-		y="265"
+		x="236"
+		y="416"
 		width="80"
 		height="20"
 		groupid="0"
@@ -1182,7 +1252,7 @@ display {
 "message button" {
 	object {
 		x="209"
-		y="237"
+		y="280"
 		width="80"
 		height="20"
 		groupid="0"
@@ -1226,6 +1296,288 @@ display {
 	pressed_label="NONE"
 	press_msg="NONE"
 	release_msg=""
+}
+"message button" {
+	object {
+		x="471"
+		y="311"
+		width="48"
+		height="21"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).G"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="NO"
+	pressed_label="NO"
+	press_msg="0"
+	release_msg=""
+}
+"message button" {
+	object {
+		x="526"
+		y="311"
+		width="48"
+		height="21"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).G"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="YES"
+	pressed_label="YES"
+	press_msg="1"
+	release_msg=""
+}
+"text entry" {
+	object {
+		x="579"
+		y="311"
+		width="75"
+		height="20"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).G"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+}
+"message button" {
+	object {
+		x="204"
+		y="361"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).H"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="HIGH-SPEED"
+	pressed_label="HIGH-SPEED"
+	press_msg="0"
+	release_msg=""
+}
+"message button" {
+	object {
+		x="292"
+		y="361"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).H"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="FULL-FEATURE"
+	pressed_label="FULL-FEATURE"
+	press_msg="1"
+	release_msg=""
+}
+"text entry" {
+	object {
+		x="379"
+		y="361"
+		width="276"
+		height="20"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).H"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
 }
 "related display" {
 	object {

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.16 2002-01-11 03:50:22 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.17 2002-03-28 03:20:21 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,7 +63,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
- *   09 Jan 2001 - cb add detPowerOn
+ *   21 Mar 2002 - cb modify init 
+ *   09 Jan 2002 - cb add detPowerOn
  *   05 Oct 2001 - cb setDhsInfo: dhsOutOptions = (0,3)
  *   14 Jun 2001 - cb detDhsReconnect modify timeout to be NO_TIMEOUT
  *   01 Jun 2001 - cb add overscan region: detGeometry and detFrameSize are
@@ -342,13 +343,14 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       180.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, ATTRIB (DET_CONTROL_HRWFS_SDSU_ADRS_VME),
-                                                            {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_FILE_PATH,      {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_VME_FILE,      {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING,   DET_CONTROL_HRWFS_OMF_TIM_FILE,   {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_E, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_UTL_FILE,      {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG,      ATTRIB (DET_CONTROL_HRWFS_MAX_FRAMES),   {"0", "100"}
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, ATTRIB (DET_CONTROL_HRWFS_SDSU_ADRS_VME), {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, DET_CONTROL_OMF_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, DET_CONTROL_OMF_VME_FILE, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "tim-47.lod", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_E, EPICS_DATA_TYPE_STRING, "util-47.lod", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG, ATTRIB (DET_CONTROL_HRWFS_MAX_FRAMES), {"0", "100"},
+  CAD_ATTRIB_G, EPICS_DATA_TYPE_LONG,"1" , {"0", "1"},
+  CAD_ATTRIB_H, EPICS_DATA_TYPE_LONG,"0" , {"0", "1"}
    },
    {
       RECORD_NAME ("dc:detReset"),

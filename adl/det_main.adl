@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4528"
+	nwords_dspy="4532"
 	nwords_sta="208"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2306"
-	osta="2098"
-	odynamic="2306"
-	oplot="3236"
-	ord="3236"
-	oes="4516"
-	okd="4516"
-	opd="4528"
-	opo="4528"
+	odyng="2310"
+	osta="2102"
+	odynamic="2310"
+	oplot="3240"
+	ord="3240"
+	oes="4520"
+	okd="4520"
+	opd="4532"
+	opo="4532"
 	opc="68"
 	ostr="286"
-	ocmap="2098"
-	ocrules="2098"
+	ocmap="2102"
+	ocrules="2102"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -1213,14 +1213,14 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detInit,car=det"
 	}
 	display[7] {
-		label="RESET"
-		name="det_reset.dl"
-		args="top=$(top),sensor=$(sensor),cad=detReset,car=det"
-	}
-	display[8] {
 		label="POWER ON"
 		name="detPowerOn.dl"
 		args="top=$(top),sensor=$(sensor),cad=detPowerOn,car=det"
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
 	}
 	display[9] {
 		label=""

@@ -7,7 +7,7 @@ astlib_dir=/gemini/epics3.13.4/astlib/astlib
 slalib_dir=/gemini/epics3.13.4/slalib/slalib
 timelib_dir=/gemini/epics3.13.4/timelib/timelib
 cfitsio_dir=/gemini/epics3.13.4/cfitsio/cfitsio
-dhs_dir=/gemini/dhs
+dhs_dir=/gemini/dhs/dhs
 
 host=`hostname`
 if [ "`egrep $host /etc/hosts | egrep '^10\.'`" -ne "" ]; then
