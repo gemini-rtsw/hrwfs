@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.9 2000-03-13 20:46:39 cboyer Exp $"};
+   "$Id: detControl.c,v 1.10 2000-05-10 19:43:21 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -9,24 +9,19 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   detControl.c
  *
  *   PURPOSE:
- *   Detector controller application code for a wavefront sensor
+ *   Detector controller application code for HRWFS
  *
  *   DESCRIPTION:
- *   This file contains the detector controller application code for a single
- *   wavefront sensor. The code runs in a VxWorks task. A separate copy of the
- *   task needs to be spawned for each wavefront sensor, and can run either on
- *   the MV167 or on a Baja processor.
+ *   This file contains the detector controller application code for HRWFS.
+ *   The code runs in a VxWorks task. 
  *
  *   PRIOR REQUIREMENTS:
- *   The VME network, multi-process pipe driver and EPICS interface should
- *   already have been initialised before the detector control task is spawned.
  *
  *   INCLUDE FILES:
  *   detControl.h
  *   gemTypes.h
  *   wfsLib.h
  *   epToVxLib.h
- *   mpPipeDrv.h
  *   sdsuLib.h
  *   errorLib.h
  *
@@ -35,7 +30,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
- *   11 feb 2000 - cb add some SIR records + remove detWriteFits and detFrameReduce
+ *   11 feb 2000 - cb add some SIR records + remove detWriteFits and 
+ *                 detFrameReduce
  *   10 feb 2000 - cb add some SIR records 
  *   31 Jan 2000 - cb add state SIR record to handle 
  *   21 Jan 2000 - cb add observe command
@@ -152,6 +148,10 @@ uint32  detControlStop = 0x0;      /* This bit mask provides a way of aborting*/
                                    /* the detector control task(s) cleanly.   */
                                    /* Each task will keep running until it    */
                                    /* sees its own bit in this mask set.      */
+
+int     readTempReadyFlag=FALSE;   /* Flag used by detHeadTempGet() to check  */
+                                   /* if we are ready to read temperature from*/
+                                   /* SDSU controller                         */
 
 /* Modif 23 sept to measure time for readout and DHS */
 
@@ -294,7 +294,7 @@ STATUS detReadFitsImageUint16 ( uint16 * pImageBuffer, char * fileName,
 
 STATUS   detControl
    (
-   const char *   pWfsName,        /* Name of wavefront sensor "hr"           */
+   const char *   pWfsName,        /* Name of wavefront sensor "hrwfs"        */
    const char *   pRecordPrefix    /* Record name prefix                      */
    )
 {
@@ -961,7 +961,7 @@ STATUS   detControl
    /*
     * Use the wavefront sensor name provided as a function argument to
     * obtain the VME address of the corresponding SDSU controller, reporting
-    * an error if the wavefront sensor name is not "hr".
+    * an error if the wavefront sensor name is not "hrwfs".
     *
     * Also initialise the default data frame size for the appropriate wavefront
     * sensor.
@@ -1212,7 +1212,9 @@ STATUS   detControl
          ERROR_LOG ("Error setting temperasture control parameters");
          initFailed = TRUE;
       }
+      readTempReadyFlag = TRUE ;
    }
+
 
    /*
     * Complete initialisation of the CCD geometry informations 
@@ -1279,6 +1281,13 @@ STATUS   detControl
       return (ERROR);
    }
    
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xStart) , 
+                        obsId->pXstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xstart sad record");
+      return (ERROR);
+   }
+
    if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yStart) , 
                         obsId->pYstartContext ) == ERROR)
    {
@@ -13849,7 +13858,7 @@ STATUS detHeadTempGet
       return (ERROR);
    }
 
-   if ( detObsIdHr->observing != TRUE )
+   if ( ( detObsIdHr->observing != TRUE ) && ( readTempReadyFlag != FALSE ) )
    {
       meanValue6 = meanValue7 = 0.0;
       for ( sample=0; sample<20; sample++)

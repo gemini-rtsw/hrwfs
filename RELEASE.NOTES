@@ -44,6 +44,7 @@ V0-7 5 Jan 2000 CB:
     Makefile.Vx and startup.vws modified in consequence
 
 V0-8 2 Feb 2000 CB:
+-------------------
   - remove osp.h, ospLib.c, ospInvertFuncs.c and replace in detControl.c 
     ospReadHeaderInt() and ospreadUShortImage() by detReadFitsHeaderInt() and 
     detReadFitsImageUint16()
@@ -70,6 +71,7 @@ V0-8 2 Feb 2000 CB:
   - add sad records
 
 V0-9 13 March 2000 - CB
+-----------------------
   - add 4 new sad records: exposed, exposedRQ, utstart, utend
   - add new sad record: elapsed
   - detControl.c : remove detFrameReduce() and detWriteFits()
@@ -78,5 +80,10 @@ V0-9 13 March 2000 - CB
   - change current history, errorLog records to dc:histor... (db + dm + simpleLogHrwfs.c)
   - add systemHistorySad.sch and sym
 
-dev
+V1-0 9 May 2000 - CB
+--------------------
+  - detControl.c add a flag to check if it is safe to read the temperature,
+    add a missing epToVxPipeWrite (xStart)
+  - systemTcs.sch -> replace ao health record by sir health record
+
   - for the moment startup cd install instead of iocpath
