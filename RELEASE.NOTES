@@ -185,4 +185,10 @@ V3-0 27 March 2002 - CB
     EEPROMs (vme, timing and utility EEPROM upgraded)
   - remove from the user interface the detReset command
 
-dev-eeprom equivalent V3-0
+V3-1 15 April 2002 - CB
+-----------------------
+  - Observe and detObserve commands, check the datalabel for space character
+  - systemAg.sch: updateAg gensub record: I have modified the SCAN to be 0.1 s
+    instead of 5s
+
+dev equivalent to V3-1

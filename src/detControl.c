@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.25 2002-03-28 03:20:20 cboyer Exp $"};
+   "$Id: detControl.c,v 1.26 2002-04-16 01:06:29 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   12 Apr 2002 - cb observeStart and detObserveStart modified to check if
+ *                 data label is only a space character
  *   20 Mar 2002 - cb Major modifications to download the timing and utility
  *                 code from EEPROMS
  *   10 Jan 2001 - cb For observe comment do not init EPOCH, EQUINOX, FRAME if
@@ -3259,6 +3261,7 @@ uint32 observeStart
       if ( obsId->outOptions == 1 )
       {
          if ( (strcmp (pDataLabel,"") != 0) && 
+              (strcmp (pDataLabel," ") != 0) && 
               (strcmp (pDataLabel,"NONE") != 0) )
          {
             MESSAGE_LOG1 (MSG_LOG, 
@@ -4924,6 +4927,7 @@ uint32 detObserveStart
       if ( outOptions == 1 )
       {
          if ( (strcmp (pDataLabel,"") != 0) && 
+              (strcmp (pDataLabel," ") != 0) && 
               (strcmp (pDataLabel,"NONE") != 0) )
          {
             MESSAGE_LOG1 (MSG_LOG, 

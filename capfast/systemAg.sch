@@ -52,7 +52,7 @@ p 224 1472 100 0 1 NOF:1
 p 224 1408 100 0 0 NOG:1
 p -95 421 100 0 0 NOVA:1
 p 192 864 100 0 1 PV:$(top)
-p 192 960 100 0 1 SCAN:5 second
+p 192 960 100 0 1 SCAN:.1 second
 p 192 896 100 0 1 SNAM:wfsUpdateAg
 use bd200tr -1136 -584 -100 0 frame
 xform 0 1504 1120

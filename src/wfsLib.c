@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.7 2001-06-13 00:39:12 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.8 2002-04-16 01:06:29 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -955,7 +955,7 @@ void   wfsGetTelName (char *pTelName)
  *   Update the global AC Component Controller Data
  *
  *   DESCRIPTION:
- *   This routine is called every 5 second and update the data from the CC
+ *   This routine is called every 0.1 second and update the data from the CC
  *
  *   EXTERNAL VARIABLES:
  *
