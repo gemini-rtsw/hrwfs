@@ -105,7 +105,7 @@ STATUS imBufSetup (int nPixels, SDSU_ID id) {
 	}
 	imPackets = (long) ceil ((double) imPixels / (double) packetSize);
 
-	printf ("%d pixels and %d packets of %d pixels each\n", imPixels, imPackets, packetSize);
+	printf ("%ld pixels and %ld packets of %ld pixels each\n", imPixels, imPackets, packetSize);
 
 	if (sysLocalToBusAdrs(SDSU_AM_VME_MASTER_REP, (char *) imBuffer, 
 						  (char **) & dmaAddress) == ERROR)
@@ -271,11 +271,11 @@ STATUS multiTDL ( SDSU_ID id, int nTimes )
 		{
 			if ( output == input )
 			{
-				printf ("Step %d: Sent %d, received %d - OK\n", loop, input, output);
+				printf ("Step %d: Sent %ld, received %ld - OK\n", loop, input, output);
 			}
 			else
 			{
-				printf ("Step %d: Sent %d, received %d - * DATA MISMATCH *\n", loop, input, output);
+				printf ("Step %d: Sent %ld, received %ld - * DATA MISMATCH *\n", loop, input, output);
 				failures++;
 			}
 
@@ -345,7 +345,6 @@ STATUS snapNPoll (int nFrames) {
 	int frame;
 	uint32 dmaAddress;
 
-	int nPackets, packetsExpected;
 	volatile uint32* pPacketCount;
 
 	pPacketCount = (uint32*) imBuffer;
@@ -408,19 +407,19 @@ STATUS setExposure (double seconds) {
 
 	exp = (uint32) (seconds/ (double) 81.92e-6);
 
-	printf ("Exposure time of %f seconds translates to T_EXP_TIM=%d\n", seconds, exp);
+	printf ("Exposure time of %f seconds translates to T_EXP_TIM=%ld\n", seconds, exp);
 
 	return sdsuParamWrite (sdsuId, SDSU_IDENT_TIM, "T_EXP_TIM", exp);
 }
 
 
 void codeVersions(SDSU_ID id) {
-	printf("VME interface board firmware = %x\n",sdsuVersionGet(id,1,1));
-	printf("                    software = %x\n\n",sdsuVersionGet(id,1,0));
-	printf("       Timing board firmware = %x\n",sdsuVersionGet(id,2,1));
-	printf("                    software = %x\n\n",sdsuVersionGet(id,2,0));
-	printf("      Utility board firmware = %x\n",sdsuVersionGet(id,3,1));
-	printf("                    software = %x\n\n",sdsuVersionGet(id,3,0));
+	printf("VME interface board firmware = %lx\n",sdsuVersionGet(id,1,1));
+	printf("                    software = %lx\n\n",sdsuVersionGet(id,1,0));
+	printf("       Timing board firmware = %lx\n",sdsuVersionGet(id,2,1));
+	printf("                    software = %lx\n\n",sdsuVersionGet(id,2,0));
+	printf("      Utility board firmware = %lx\n",sdsuVersionGet(id,3,1));
+	printf("                    software = %lx\n\n",sdsuVersionGet(id,3,0));
 }
 
 
