@@ -1,0 +1,14 @@
+[symbol2]
+bbox 80 416 336 928
+port 96 816 100 0 DIR symbol 1 80 816 0
+port 96 736 100 0 ICID symbol 1 80 736 0
+port 256 816 100 0 VAL symbol 2 304 816 0
+port 240 720 100 0 MESS symbol 2 304 736 0
+uniq 1
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 120 0 0 80 592 hrwfsMechanismCad
+r 0 80 928 304 416
+[comments]
