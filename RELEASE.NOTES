@@ -123,4 +123,8 @@ V1-3 20 Feb 2001 - CB
   - startup_MINIMAL.vws: remove all routeAdd
   - Now startupMK.vws and startupCP.vws
 
-dev equivalent to V1-3
+V1-4 04 Apr 2001 - CB
+---------------------
+  - add adc0, adc1 sir records
+  - add startup_nodhs.vws
+  - modify windowing to do a window around a point

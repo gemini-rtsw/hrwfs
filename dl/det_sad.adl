@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="31"
-	nstr="65"
-	ndynamic="30"
+	npc="33"
+	nstr="64"
+	ndynamic="32"
 	nplot="0"
 	nrd="0"
 	nes="1"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4538"
-	nwords_sta="1068"
+	nwords_dspy="4876"
+	nwords_sta="1300"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2388"
-	osta="1320"
-	odynamic="2388"
-	oplot="4368"
-	ord="4368"
-	oes="4368"
-	okd="4526"
-	opd="4538"
-	opo="4538"
+	odyng="2594"
+	osta="1294"
+	odynamic="2594"
+	oplot="4706"
+	ord="4706"
+	oes="4706"
+	okd="4864"
+	opd="4876"
+	opo="4876"
 	opc="68"
-	ostr="382"
-	ocmap="1320"
-	ocrules="1320"
+	ostr="402"
+	ocmap="1294"
+	ocrules="1294"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -544,6 +544,54 @@ display {
 	}
 	textix="DHS connection status ... ... ... ... :"
 	align="horiz. left"
+}
+"text" {
+	object {
+		x="737"
+		y="401"
+		width="57"
+		height="14"
+		groupid="0"
+	}
+	textix="ADC 0:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="920"
+		y="401"
+		width="66"
+		height="14"
+		groupid="0"
+	}
+	textix="ADC 1:"
+	align="horiz. left"
+}
+"line" {
+	object {
+		x="723"
+		y="361"
+		width="0"
+		height="89"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="723"
+		y="361"
+	}
+	point[1] {
+		x="723"
+		y="450"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="0"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="1000"
+	}
 }
 "text update" {
 	object {
@@ -1889,6 +1937,98 @@ display {
 	}
 	monitor {
 		chan="$(top)dhsCon"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="792"
+		y="398"
+		width="93"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)adc0"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="976"
+		y="398"
+		width="93"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)adc1"
 		clr="0"
 		bclr="7"
 		label="none"

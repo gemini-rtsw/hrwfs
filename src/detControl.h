@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   03 Apr 2001 - cb add sir adc0, adc1
  *   19 feb 2001 - cb add sir dhsCon
  *   16 feb 2001 - cb add DET_CONTROL_CMD_DHS_DISPLAY, dhsQlRate, dhsCounter
  *   06 feb 2001 - cb move all the DATREC_CONTEXT structures into the obsId
@@ -198,6 +199,12 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Name of SIR record containing    */
                                     /* the status of the dhs connection */
 
+#define   DET_CONTROL_ADC0_SIR_NAME           "adc0"
+                                    /* Name of SIR record containing the      */
+                                    /* ADC of the output 0                    */
+#define   DET_CONTROL_ADC1_SIR_NAME           "adc1"
+                                    /* Name of SIR record containing the      */
+                                    /* ADC of the output 1                    */
 
 #define   DET_CONTROL_HRWFS_SDSU_ADRS_VME     0x08000000   
                                     /* VME address of HRWFS SDSU controller   */
@@ -517,6 +524,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                       /* structure                            */
    DATREC_CONTEXT pDhsConContext ;    /* dhs connection status SIR record     */
                                       /* context structure                    */
+   DATREC_CONTEXT pAdc0Context ;      /* ADC 0 SIR record context structure   */
+   DATREC_CONTEXT pAdc1Context ;      /* ADC 1 SIR record context structure   */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.13 2001-02-20 20:41:49 cboyer Exp $"};
+   "$Id: detControl.c,v 1.14 2001-04-04 05:05:15 gemvx Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   03 apr 2001 - cb add adc0, adc1 sir records
+ *                 also modify windowing
  *   19 feb 2001 - cb add detDhsDisplay command and sir record dhsCon
  *   16 feb 2001 - cb add detDhsConnected flag
  *   09 feb 2001 - cb remove error when stop an observation not in progress
@@ -860,7 +862,23 @@ STATUS   detControl
       }
    }
 
+   /*
+    * Update the adc sir records
+    */
 
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[0]) ,
+                        obsId->pAdc0Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc0 sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[1]) ,
+                        obsId->pAdc1Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc1 sad record");
+      return (ERROR);
+   }
 
    /*
     * Complete initialisation of the CCD geometry informations 
@@ -7283,6 +7301,24 @@ uint32 detInit
       "Failed to activate TIMING DSP parameters with LDP command");
    }
 
+   /*
+    * Update the adc sir records
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[0]) ,
+                        obsId->pAdc0Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc0 sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[1]) ,
+                        obsId->pAdc1Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc1 sad record");
+      return (ERROR);
+   }
+
    /* 
     * Set the default temperature for the HRWFS 
     */
@@ -7756,6 +7792,24 @@ uint32 detReset
    {
       ERROR_LOG (
       "Failed to activate TIMING DSP parameters with LDP command");
+   }
+
+   /*
+    * Update the adc sir records
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[0]) ,
+                        obsId->pAdc0Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc0 sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[1]) ,
+                        obsId->pAdc1Context ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init adc1 sad record");
+      return (ERROR);
    }
 
    /* 
@@ -8549,6 +8603,24 @@ uint32 detGeometry
       }
 
       /*
+       * Update the adc sir records
+       */
+
+      if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[0]) ,
+                           obsId->pAdc0Context ) == ERROR)
+      {
+         ERROR_LOG ("Failed to init adc0 sad record");
+         return (ERROR);
+      }
+
+      if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[1]) ,
+                           obsId->pAdc1Context ) == ERROR)
+      {
+         ERROR_LOG ("Failed to init adc1 sad record");
+         return (ERROR);
+      }
+
+      /*
        * Update the number of packets per frame in the SDSU context structure.
        */
 
@@ -8696,6 +8768,10 @@ uint32 detFrameSize
 
    long         binFlag;
    long         winFlag;
+   long         reqX;
+   long         reqY;
+   long         reqXWidth;
+   long         reqYWidth;
    long         reqX1;
    long         reqX2;
    long         reqY1;
@@ -8747,12 +8823,20 @@ uint32 detFrameSize
     */
 
    errorNumber = 0;
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & binFlag);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, (char *) & winFlag);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, (char *) & reqX1);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) & reqX2);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, (char *) & reqY1);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, (char *) & reqY2);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) &binFlag);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, (char *) &winFlag);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, (char *) &reqX);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) &reqY);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, (char *) &reqXWidth);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, (char *) &reqYWidth);
+
+   reqX1 = reqX - (int)(reqXWidth/2);
+   reqX2 = reqX + (int)(reqXWidth/2);
+   reqY1 = reqY - (int)(reqYWidth/2);
+   reqY2 = reqY + (int)(reqYWidth/2);
+
+   printf ( "reqX1=%d, reqX2=%d, reqY1=%d, reqY2=%d\n", 
+	    reqX1, reqX2, reqY1, reqY2);
 
    /*
     * Check there are valid SDSU and observation context structures.
@@ -9295,6 +9379,24 @@ uint32 detFrameSize
             ERROR_LOG ("Error setting ADC offset 1 parameter");
             errorNumber = S_detControl_SDSU_ERROR;
             return (errorNumber);
+         }
+
+         /*
+          * Update the adc sir records
+          */
+
+         if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[0]) ,
+                              obsId->pAdc0Context ) == ERROR)
+         {
+            ERROR_LOG ("Failed to init adc0 sad record");
+            return (ERROR);
+         }
+
+         if (epToVxPipeWrite( NULL, (char *)(int)& (offsetVect[1]) ,
+                              obsId->pAdc1Context ) == ERROR)
+         {
+            ERROR_LOG ("Failed to init adc1 sad record");
+            return (ERROR);
          }
       }
 
@@ -10117,6 +10219,13 @@ uint32 detOffset
          errorNumber = S_detControl_SDSU_ERROR;
          return (errorNumber);
       }
+
+      if (epToVxPipeWrite( NULL, (char *)(int)& (offset0) ,
+                           obsId->pAdc0Context ) == ERROR)
+      {
+         ERROR_LOG ("Failed to init adc0 sad record");
+         return (ERROR);
+      }
    }
 
    if ( offset1 != -1 )
@@ -10127,6 +10236,13 @@ uint32 detOffset
          ERROR_LOG ("Error setting ADC offset 1 parameter");
          errorNumber = S_detControl_SDSU_ERROR;
          return (errorNumber);
+      }
+
+      if (epToVxPipeWrite( NULL, (char *)(int)& (offset1) ,
+                           obsId->pAdc1Context ) == ERROR)
+      {
+         ERROR_LOG ("Failed to init adc1 sad record");
+         return (ERROR);
       }
    }
 
@@ -14973,6 +15089,28 @@ uint32 detGetSirContext
        == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_DHSCON_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "adc0" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_ADC0_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pAdc0Context), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_ADC0_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "adc1" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_ADC1_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pAdc1Context), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_ADC1_SIR_NAME SIR context");
       errorNumber = ERROR;
    }
 
