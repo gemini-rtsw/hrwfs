@@ -26,18 +26,12 @@ applSetup.pl -T ppc604 -I adl -I capfast -I src -I startup\
 editUAE()
 {
 ed UAE.dist << eof >/dev/null
-/^FILES4
-a
-FILES6 = ( \${APPLIC_INSTALL}/bin/asm56000 )
-FILES7 = ( \${APPLIC_INSTALL}/IMP_Startup.hrwfs )
-.
-w
 $
 a
 
-(\${FILES6}) -> (\${HOSTS})
+(\${APPLIC_INSTALL}/bin/asm56000) -> (\${DIST_HOST})
         install -R \${DIST_PATH}/bin/asm56000;
-(\${FILES7}) -> (\${HOSTS})
+(\${APPLIC_INSTALL}/IMP_Startup.hrwfs) -> (\${DIST_HOST})
         install -R \${DIST_PATH}/IMP_Startup.hrwfs;
 .
 w
@@ -50,5 +44,6 @@ editUAE
 cd ..
 
 gmake >> hrwfsBuild.log 2>&1
+
 
 exit 0
