@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: sdsuLib.c,v 1.7 2002-03-28 03:20:21 cboyer Exp $"};
+   "$Id: sdsuLib.c,v 1.8 2003-10-27 19:53:06 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -163,6 +163,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Corinne Boyer
  *
  *INDENT-OFF*
+ *   08 Oct 02 cb: add POF command to the sdsuCmdTable 
  *   20 Mar 02 cb: add sdsuFileSymbolDnload, sdsuMemorySymbolDnload and
  *                 sdsuClear1RepBuf
  *   10 dec 99 cb: tidy up
@@ -390,10 +391,11 @@ LOCAL SDSU_CMD_DEF sdsuCmdTable [] =
 {
    {"ABT", 0, 0, 2000000, BIT_FIELD_REPLY_DON}, /* Abort the previous RDC     */
                                                 /* command.                   */
-   {"IDL", 0, 0, 100000, BIT_FIELD_REPLY_DON }, /* IDL command used for       */
+   {"IDL", 0, 0, 100000, BIT_FIELD_REPLY_DON},  /* IDL command used for       */
                                                 /* debugging.                 */
    {"INI", 0, 0, 10000000, BIT_FIELD_REPLY_DON | BIT_FIELD_REPLY_POE},
                                                 /* Initialise.                */
+   {"POF", 0, 0, 10000, BIT_FIELD_REPLY_DON},   /* Turn OFF voltages          */
    {"LDA", 1, 0, 200000, BIT_FIELD_REPLY_DON},  /* Load application.          */
    {"LDP", 0, 0, 0, BIT_FIELD_REPLY_NONE},      /* Load parameters.           */
    {"RDC", 0, 0, 2000000, BIT_FIELD_REPLY_DON}, /* Readout CCD.               */
@@ -1108,7 +1110,7 @@ uint32 sdsuVersionGet ( SDSU_ID         context,
     */
 
    if (destId == SDSU_IDENT_HST)
-      return (sdsu_getVersion ("$Revision: 1.7 $"));
+      return (sdsu_getVersion ("$Revision: 1.8 $"));
    
    /*
     * The SDSU context must be valid if the code gets this far, as the version 

@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   08 Oct 2002: CB - Add detPowerOff
  *   20 Mar 2002: CB - Major modification to download the code from EEPROMS
  *   09 Jan 2002: CB - Add detPowerOn
  *   07 Jun 2001 - cb add frame in obsId structure
@@ -622,6 +623,7 @@ enum
    DET_CONTROL_CMD_GEOMETRY,   /* Set detector readout geometry.              */
    DET_CONTROL_CMD_PRIMITIVE,  /* Execute SDSU primitive command.             */
    DET_CONTROL_CMD_POWER_ON,   /* Execute POWER ON primitive command.         */
+   DET_CONTROL_CMD_POWER_OFF,  /* Execute POWER OFF primitive command.        */
    DET_CONTROL_CMD_DOWNLOAD,   /* Download DSP code.                          */
    DET_CONTROL_CMD_MODE,       /* Set detector readout mode.                  */
    DET_CONTROL_CMD_OFFSET,     /* Set detector ADC offsets.                   */

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.17 2002-03-28 03:20:21 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.18 2003-10-27 19:53:06 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   08 Oct 2002 - cb add detPowerOff
  *   21 Mar 2002 - cb modify init 
  *   09 Jan 2002 - cb add detPowerOn
  *   05 Oct 2001 - cb setDhsInfo: dhsOutOptions = (0,3)
@@ -282,7 +283,7 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_SUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,   "1", {"0", "1"},
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,   "1", {"0", "2"},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, "hrwfs.fits", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
@@ -449,6 +450,14 @@ CAD_RECORD pWfsDbCadList [] =
       RECORD_NAME ("dc:detPowerOn"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
       DET_CONTROL_CMD_POWER_ON,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0
+   },
+   {
+      RECORD_NAME ("dc:detPowerOff"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_POWER_OFF,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       40.0

@@ -1,4 +1,4 @@
-# $Id: startupCP.vws,v 1.7 2002-03-28 03:20:22 cboyer Exp $
+# $Id: startupCP.vws,v 1.8 2003-10-27 19:53:06 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -21,7 +21,7 @@ pwd
 
 < $(version)/bin/$(arch)/local
 
-hostAdd ("reggie","172.17.4.15")
+hostAdd ("reggie","172.17.2.12")
 
 # Load EPICS core, sequencer and pvload
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore

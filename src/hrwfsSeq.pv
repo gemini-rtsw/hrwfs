@@ -12,4 +12,4 @@ int $(top)initialising = 2;
 #
 # Set up version of the software 
 #
-string $(sadtop)version = "V3-1";
+string $(sadtop)version = "V3-2";

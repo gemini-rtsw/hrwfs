@@ -191,4 +191,12 @@ V3-1 15 April 2002 - CB
   - systemAg.sch: updateAg gensub record: I have modified the SCAN to be 0.1 s
     instead of 5s
 
-dev equivalent to V3-1
+V3-2 24 October 2003 - CB
+-------------------------
+  - remove errors when starting an observation already in progress
+  - colors.adl: replace ERR with ERROR for the color rules
+  - add detPowerOff command
+  - GEM8.4
+  - small bug fix in setObserve command
+  - update defDetContHRCP.dat
+  - startupCP.vws: change IP address of reggie

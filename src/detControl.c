@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.26 2002-04-16 01:06:29 cboyer Exp $"};
+   "$Id: detControl.c,v 1.27 2003-10-27 19:53:05 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   08 Oct 2002 - cb add detPowerOff command
+ *   07 Oct 2002 - cb detObserveStart modified when start directive received 
+ *                 and observation already in progress. 
  *   12 Apr 2002 - cb observeStart and detObserveStart modified to check if
  *                 data label is only a space character
  *   20 Mar 2002 - cb Major modifications to download the timing and utility
@@ -276,11 +279,13 @@ LOCAL uint32   detOffset (const char * pWfsName, const char * pRecordPrefix,
 LOCAL uint32   detTemp (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID sdsuId, OBS_ID obsId);
-LOCAL uint32 detDhsReconnect (CAD_CMD_CONTEXT cadCmdContext,
-                              int commandNumber, SDSU_ID sdsuId, OBS_ID obsId);
+LOCAL uint32   detDhsReconnect (CAD_CMD_CONTEXT cadCmdContext,
+                                int commandNumber, SDSU_ID sdsuId, 
+                                OBS_ID obsId);
 LOCAL uint32   detDhsDisplay (CAD_CMD_CONTEXT cadCmdContext,
                               int commandNumber, SDSU_ID sdsuId, OBS_ID obsId);
-
+LOCAL uint32   detPowerOff (CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
+                            SDSU_ID sdsuId, OBS_ID obsId);
 
 /******************************************* Plus some additional functions ***/
 
@@ -1434,6 +1439,15 @@ STATUS   detControl
 
             errorNumber =
             detPowerOn (cadCmdContext, commandNumber, sdsuId, obsId);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_POWER_OFF)
+         {
+
+            /* Execute SDSU POWER OFF primitive command. */
+
+            errorNumber =
+            detPowerOff (cadCmdContext, commandNumber, sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_MODE)
@@ -2886,9 +2900,13 @@ uint32 observeStart
 
       if ( obsId->observing )
       {
+/*
          ERROR_SET (S_detControl_BUSY, "Observation already in progress", 
                  ERROR_LOG_NOW);
          errorNumber = S_detControl_BUSY;
+*/
+         MESSAGE_LOG (MSG_LOG, "Observation already in progress" );
+         errorNumber = 0;
          return (errorNumber);
       }
 
@@ -4460,9 +4478,13 @@ uint32 detObserveStart
 
       if ( obsId->observing )
       {
+/*
          ERROR_SET (S_detControl_BUSY, "Observation already in progress", 
                  ERROR_LOG_NOW);
          errorNumber = S_detControl_BUSY;
+*/
+         MESSAGE_LOG (MSG_LOG, "Observation already in progress" );
+         errorNumber = 0;
          return (errorNumber);
       }
 
@@ -6474,9 +6496,9 @@ void detObserveEnd
 
          /* Send the data to the dhs */
 
-       MESSAGE_LOG3 (MSG_FULLDEBUG ,
-       "detObserveEnd: dhsBdPut, dhsConnection=%d, pDataLabel=%s, dataset=%d",
-       (int) detDhsConnection, obsId->pDataLabel, (int) obsId->dhsDataset);
+         MESSAGE_LOG3 (MSG_FULLDEBUG ,
+         "detObserveEnd: dhsBdPut, dhsConnection=%d, pDataLabel=%s, dataset=%d",
+         (int) detDhsConnection, obsId->pDataLabel, (int) obsId->dhsDataset);
 
          if ( obsId->dhsOutOptions == 2 ) /* QL only */
          {
@@ -6484,14 +6506,15 @@ void detObserveEnd
             {
                putTag = 
                dhsBdPut (detDhsConnection, obsId->pDataLabel, 
-               DHS_BD_PT_DS_QL, DHS_TRUE, obsId->dhsDataset, NULL, &dhsErrno);
+               DHS_BD_PT_DS_QL, DHS_TRUE, obsId->dhsDataset, NULL, 
+               &dhsErrno);
             }
             else
             {
                putTag = 
                dhsBdPut (detDhsConnection, obsId->pDataLabel, 
-                         DHS_BD_PT_DS_QL, DHS_FALSE, obsId->dhsDataset, NULL, 
-                         &dhsErrno);
+                         DHS_BD_PT_DS_QL, DHS_FALSE, obsId->dhsDataset, 
+                         NULL, &dhsErrno);
             }
          }
          else
@@ -6517,10 +6540,10 @@ void detObserveEnd
             ERROR_SET1 (S_detControl_DHS_ERROR, 
                         "Failed to initiate data transfer (dhsErrno=%d)",
                         ERROR_LOG_NOW, dhsErrno);
-            dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
+            dummyDhsErrno = DHS_S_SUCCESS;/* Fudge around bad DHS feature. */
             dhsTagFree (putTag, &dummyDhsErrno);
             CHECK_DHS (dummyDhsErrno); 
-            dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
+            dummyDhsErrno = DHS_S_SUCCESS;/* Fudge around bad DHS feature. */
             dhsBdDsFree (obsId->dhsDataset, &dummyDhsErrno);
             CHECK_DHS (dummyDhsErrno); 
             if ( obsId->windowingFlag == TRUE )
@@ -6535,21 +6558,23 @@ void detObserveEnd
 
          MESSAGE_LOG1 (MSG_FULLDEBUG, 
                        "detObserveEnd: dhsWait putTag=%d ...", (int) putTag);
+
+         dhsErrno = DHS_S_SUCCESS;
+
          dhsWait (1, &putTag, &dhsErrno);
          CHECK_DHS (dhsErrno);
 
-         if (dhsErrno != DHS_S_SUCCESS)
+         if ( dhsErrno != DHS_S_SUCCESS )
          {
             ERROR_SET1 (S_detControl_DHS_ERROR, 
                         "Error during wait for data transfer (dhsErrno=%d)",
                         ERROR_LOG_NOW, dhsErrno);
-
             dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
             dhsTagFree (putTag, &dummyDhsErrno);
             CHECK_DHS (dummyDhsErrno);
             dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
             dhsBdDsFree (obsId->dhsDataset, &dummyDhsErrno);
-            CHECK_DHS (dummyDhsErrno); 
+            CHECK_DHS (dummyDhsErrno);
             if ( obsId->windowingFlag == TRUE )
             {
                free (obsId->pCurFrame);
@@ -6563,10 +6588,10 @@ void detObserveEnd
             ERROR_SET (S_detControl_DHS_ERROR, "Data transfer failed", 
                  ERROR_LOG_NOW);
 
-            dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
+            dummyDhsErrno = DHS_S_SUCCESS; 
             dhsTagFree (putTag, &dummyDhsErrno);
             CHECK_DHS (dummyDhsErrno);
-            dummyDhsErrno = DHS_S_SUCCESS;   /* Fudge around bad DHS feature. */
+            dummyDhsErrno = DHS_S_SUCCESS;
             dhsBdDsFree (obsId->dhsDataset, &dummyDhsErrno);  
             CHECK_DHS (dummyDhsErrno);
             if ( obsId->windowingFlag == TRUE )
@@ -15717,6 +15742,7 @@ uint32 detContInit
 
    MESSAGE_LOG1 ( MSG_MINDEBUG, "ISS port number = %d", coeff );
 
+   fclose (pFile);
    return (OK);
 }
 
@@ -16553,4 +16579,83 @@ STATUS newDetFrameUnscrambleUint16
 #endif /* DEBUG */
 
    return (OK);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detPowerOff
+ *
+ *   INVOCATION:
+ *   detPowerOff (cadCmdContext, commandNumber, sdsuId, obsId) 
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) cadCmdContext        (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber        (int)             Command number
+ *   (>) sdsuId               (SDSU_ID)         Current SDSU context structure
+ *   (>) obsId                (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Execute detPowerOff command
+ *
+ *   DESCRIPTION:
+ *   This function executes POWER OFF command for the Bob Leach controller
+ *
+ *   EXTERNAL VARIABLES:
+ *   NONE
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+uint32 detPowerOff
+   (
+   CAD_CMD_CONTEXT cadCmdContext,  /* CAD command context structure.          */
+   int             commandNumber,  /* Command number.                         */
+   SDSU_ID         sdsuId,         /* SDSU context structure.                 */
+   OBS_ID          obsId           /* Observation context structure.          */
+   )
+{
+   uint32          errorNumber;     /* Error number reported by task.         */
+
+   /*
+    * Initialise the error number.
+    */
+
+   errorNumber = 0;
+
+   /*
+    * Check there are valid SDSU context structure.
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   /*
+    * Issue the primitive commands to the SDSU controller.
+    */
+
+   if (sdsuPrimitive (sdsuId, "POF", SDSU_IDENT_UTL, NULL, NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to turn off the power of UTILITY with POF command");
+      errorNumber = S_detControl_SDSU_ERROR;
+   }
+
+   return (errorNumber);
 }

@@ -1,6 +1,6 @@
 # Init file for HRWFS detector controller 
 # Default target temperature (between -40.0C and 0C)
--20.0
+-30.0
 # Default temperature coefficient - do not change
 128
 # Default ADC offset for output 0 - no binning 
