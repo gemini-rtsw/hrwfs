@@ -5,6 +5,8 @@ FILES1 = ( ${APPLIC_INSTALL}/bin/${T_A} )
 FILES2 = ( ${APPLIC_INSTALL}/bin/${HOST_ARCH} )
 FILES3 = ( ${APPLIC_INSTALL}/data )
 FILES4 = ( ${APPLIC_INSTALL}/include )
+FILES5 = ( ${APPLIC_INSTALL}/bin/asm56000 )
+FILES6 = ( ${APPLIC_INSTALL}/IMP_Startup.hrwfs )
 
 (${FILES1}) -> (${HOSTS})
 	install -R ${DIST_PATH}/bin/${T_A};
@@ -17,3 +19,8 @@ FILES4 = ( ${APPLIC_INSTALL}/include )
 
 (${FILES4}) -> (${HOSTS})
 	install -R ${DIST_PATH}/include;
+
+(${FILES5}) -> (${HOSTS})
+        install -R ${DIST_PATH}/bin/asm56000;
+(${FILES6}) -> (${HOSTS})
+        install -R ${DIST_PATH}/IMP_Startup.hrwfs;
