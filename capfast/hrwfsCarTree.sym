@@ -1,0 +1,18 @@
+[symbol2]
+bbox -288 -192 64 128
+port -192 -144 100 0 IVAL symbol 1 -288 -160 0
+port -192 96 100 0 ICID symbol 1 -288 96 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -128 0 CAR tree
+r 0 -224 -192 64 128
+v 0 -288 -160
+-224 -160
+_
+v 0 -288 96
+-224 96
+_
+[comments]
