@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.20 2001-06-16 04:06:10 cboyer Exp $"};
+   "$Id: detControl.c,v 1.21 2001-10-06 04:17:16 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,11 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   05 oct 2001 - cb For observe command, comment DHS_BD_CTL_LIFETIME and
+ *                 DHS_BD_VTL_CONTRIB if dhsOutOptions = 3
+ *                 change keywords: OBSERVAT, OBSTYPE, CTYPE1, CTYPE2, EQUINOX,
+ *                 EPOCH, MJD-OBS, UTSTART, UTEND, EXPTIME, DARKTIME, CCDSEC,
+ *                 DETTYPE, DETID, CCDSIZE
  *   14 jun 2001 - cb Fix a bug in detWriteFitsUint16
  *   07 jun 2001 - cb Fix a bug in detFrameSize, add FRAME keyword
  *   05 jun 2001 - cb add fits keywords:
@@ -3819,8 +3824,6 @@ uint32 observeStart
           * (see ICD 3).
           */
 
-         /*if ( obsId->totalFrames == 1 )*/            /* only one exposure */
-         /*{*/
          if ( obsId->dhsOutOptions == 0 )
          {
             dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
@@ -3831,7 +3834,9 @@ uint32 observeStart
             MESSAGE_LOG1 (MSG_MINDEBUG,
                "Total Frames is %d", obsId->totalFrames);
          }
-         else           /* either continuous mode with totalFrames = 0 or > 1 */
+         /* either continuous mode with totalFrames = 0 or > 1 */
+         /* if sequencer (dhsOutOptions = 3), do not initialize LIFETIME */
+         else if ( obsId->dhsOutOptions != 3 ) 
          {
             dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
                      obsId->pDataLabel, DHS_BD_LT_TRANSIENT, &dhsErrno);
@@ -3842,9 +3847,15 @@ uint32 observeStart
                "Total Frames is %d", obsId->totalFrames);
          }
          CHECK_DHS (dhsErrno);
-         dhsBdCtl(detDhsConnection, DHS_BD_CTL_CONTRIB, 
-            obsId->pDataLabel, 1, contrib, &dhsErrno);
-         CHECK_DHS (dhsErrno);
+
+         /* if sequencer (dhsOutOptions = 3), do not initialize CONTRIB */
+         if ( obsId->dhsOutOptions != 3 ) 
+         {
+            dhsBdCtl(detDhsConnection, DHS_BD_CTL_CONTRIB, 
+                     obsId->pDataLabel, 1, contrib, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+         }
+
          dhsBdCtl(detDhsConnection, DHS_BD_CTL_QLSTREAM, 
                   obsId->pDataLabel, 1, qlStreams, &dhsErrno);
          CHECK_DHS (dhsErrno);
@@ -3864,7 +3875,7 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "observatory", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "OBSERVAT", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "FILTER1", DHS_DT_STRING, 
@@ -3891,13 +3902,13 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "INPORT", DHS_DT_INT32, 
                             0, NULL, obsId->inport, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "obstype", DHS_DT_STRING, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "OBSTYPE", DHS_DT_STRING, 0, 
                             NULL, obsId->pObsType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "exptime", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EXPTIME", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->exposed, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "darktime", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DARKTIME", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->exposed, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
@@ -3958,10 +3969,10 @@ uint32 observeStart
 
             if ( wcsStatus == 0 )
             {
-               dhsBdAttribAdd (obsId->dhsDataFrame, "ctype1", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataFrame, "CTYPE1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
-               dhsBdAttribAdd (obsId->dhsDataset, "ctype1", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataset, "CTYPE1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
@@ -3980,10 +3991,10 @@ uint32 observeStart
                                0, NULL, obsId->crval1, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
-               dhsBdAttribAdd (obsId->dhsDataFrame, "ctype2", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataFrame, "CTYPE2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
-               dhsBdAttribAdd (obsId->dhsDataset, "ctype2", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataset, "CTYPE2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
@@ -4038,22 +4049,26 @@ uint32 observeStart
             sprintf ( raString , "%f" , obsId->RA ) ;
             sprintf ( decString , "%f" , obsId->Dec ) ;
 
-            dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_STRING, 0, NULL,
-                            raString, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_STRING, 0, NULL,
-                            decString, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            /* if sequencer (dhsOutOptions = 3), do not initialize RA and DEC */
+            if ( obsId->dhsOutOptions != 3 ) 
+            {
+               dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_DOUBLE, 0, NULL,
+                               obsId->RA, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_DOUBLE, 0, NULL,
+                               obsId->Dec, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+            }
 
-            dhsBdAttribAdd (obsId->dhsDataset, "equinox", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EQUINOX", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->equinox, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "epoch", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EPOCH", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->epoch, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
+            dhsBdAttribAdd (obsId->dhsDataset, "MJD-OBS", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING, 
@@ -4068,10 +4083,10 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "ybin", DHS_DT_INT32, 
                             0, NULL, obsId->yBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "ccdsize", DHS_DT_STRING,
+            dhsBdAttribAdd (obsId->dhsDataset, "CCDSIZE", DHS_DT_STRING,
                             0, NULL, obsId->ccdSize, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec", DHS_DT_STRING,
+            dhsBdAttribAdd (obsId->dhsDataset, "CCDSEC", DHS_DT_STRING,
                             0, NULL, obsId->ccdSec, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "ccdsec1", DHS_DT_STRING,
@@ -4092,7 +4107,7 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "biassec2", DHS_DT_STRING,
                             0, NULL, obsId->biasSec2, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "utstart", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "UTSTART", DHS_DT_STRING, 
                             0, NULL, obsId->utStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "DATE-OBS", DHS_DT_STRING, 
@@ -4101,10 +4116,10 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "TIME-OBS", DHS_DT_STRING, 
                             0, NULL, obsId->utTimeStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "dettype", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DETTYPE", DHS_DT_STRING, 
                             0, NULL, obsId->detType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "detid", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DETID", DHS_DT_STRING, 
                             0, NULL, obsId->detId, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
@@ -5708,7 +5723,7 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "observatory", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "OBSERVAT", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "FILTER1", DHS_DT_STRING, 
@@ -5735,13 +5750,13 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataset, "INPORT", DHS_DT_INT32, 
                             0, NULL, obsId->inport, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "obstype", DHS_DT_STRING, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "OBSTYPE", DHS_DT_STRING, 0, 
                             NULL, obsId->pObsType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "exptime", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EXPTIME", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->expTime, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "darktime", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DARKTIME", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->expTime, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
@@ -5802,10 +5817,10 @@ uint32 detObserveStart
 
             if ( wcsStatus == 0 )
             {
-               dhsBdAttribAdd (obsId->dhsDataset, "ctype1", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataset, "CTYPE1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
-               dhsBdAttribAdd (obsId->dhsDataFrame, "ctype1", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataFrame, "CTYPE1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
@@ -5824,10 +5839,10 @@ uint32 detObserveStart
                                0, NULL, obsId->crval1, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
-               dhsBdAttribAdd (obsId->dhsDataFrame, "ctype2", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataFrame, "CTYPE2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
-               dhsBdAttribAdd (obsId->dhsDataset, "ctype2", DHS_DT_STRING, 
+               dhsBdAttribAdd (obsId->dhsDataset, "CTYPE2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
 
@@ -5882,22 +5897,22 @@ uint32 detObserveStart
             sprintf ( raString , "%f" , obsId->RA ) ;
             sprintf ( decString , "%f" , obsId->Dec ) ;
 
-            dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_STRING, 0, NULL,
-                            raString, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_DOUBLE, 0, NULL,
+                            obsId->RA, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_STRING, 0, NULL,
-                            decString, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_DOUBLE, 0, NULL,
+                            obsId->Dec, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "equinox", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EQUINOX", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->equinox, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "epoch", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "EPOCH", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->epoch, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
+            dhsBdAttribAdd (obsId->dhsDataset, "MJD-OBS", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING,
@@ -5912,10 +5927,10 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataset, "ybin", DHS_DT_INT32, 
                             0, NULL, obsId->yBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "ccdsize", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "CCDSIZE", DHS_DT_STRING, 
                             0, NULL, obsId->ccdSize, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "CCDSEC", DHS_DT_STRING, 
                             0, NULL, obsId->ccdSec, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "ccdsec1", DHS_DT_STRING, 
@@ -5936,7 +5951,7 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataset, "biassec2", DHS_DT_STRING, 
                             0, NULL, obsId->biasSec2, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "utstart", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "UTSTART", DHS_DT_STRING, 
                             0, NULL, obsId->utStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "DATE-OBS", DHS_DT_STRING, 
@@ -5945,10 +5960,10 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataset, "TIME-OBS", DHS_DT_STRING, 
                             0, NULL, obsId->utTimeStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "dettype", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DETTYPE", DHS_DT_STRING, 
                             0, NULL, obsId->detType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "detid", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DETID", DHS_DT_STRING, 
                             0, NULL, obsId->detId, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
@@ -6500,7 +6515,7 @@ void detObserveEnd
 
          if ( obsId->totalFrames == 1 )
          {
-            dhsBdAttribAdd (obsId->dhsDataset, "utend", DHS_DT_STRING,
+            dhsBdAttribAdd (obsId->dhsDataset, "UTEND", DHS_DT_STRING,
                             0, NULL, obsId->utEndString, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }

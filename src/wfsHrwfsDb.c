@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.12 2001-06-15 01:51:33 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.13 2001-10-06 04:17:16 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   05 Oct 2001 - cb setDhsInfo: dhsOutOptions = (0,3)
  *   14 Jun 2001 - cb detDhsReconnect modify timeout to be NO_TIMEOUT
  *   01 Jun 2001 - cb add overscan region: detGeometry and detFrameSize are
  *                    modified, add oscan sir record
@@ -264,7 +265,7 @@ CAD_RECORD pWfsDbCadList [] =
       SIMULATION_MODE_SUPPORTED,
       40.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "hrwfsScience", {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,   "2", {"0", "2"}
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,   "2", {"0", "3"}
    },
    {
       RECORD_NAME ("dc:detSetWcs"),
@@ -308,7 +309,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_B, EPICS_DATA_TYPE_DOUBLE,  "1.0",  {"0.005", "100000.0"},
       CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG,   "1", {"0", "2"},
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,   "2", {"0", "2"},
+      CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,   "2", {"0", "3"},
       CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_G, EPICS_DATA_TYPE_STRING, "hrwfs.fits", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}

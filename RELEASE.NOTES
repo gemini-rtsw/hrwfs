@@ -146,3 +146,8 @@ V1-5 24 Jun 2001 - CB/CJM
     fits headers
   - add apply/cad layer to provide ocs interface to hrwfs DC commands
     and A&G HRWFS mechanism commands
+
+V1-6 05 Oct 2001 - CB
+---------------------
+  - Minor changes for the seqexec (do not init the lifetime and contrib).
+    Also some keywords are no more in low case
