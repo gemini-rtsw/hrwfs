@@ -861,7 +861,7 @@ STATUS   seqControl (void)
           * reset the VME bus.
           */
 
-         if ( (detDhsSem != NULL) && (detDhsInitialised) )
+         /*if ( (detDhsSem != NULL) && (detDhsInitialised) )
          {
             strncpy (messageLog, "Closing down DHS connection.",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -874,7 +874,7 @@ STATUS   seqControl (void)
             dhsExit ( &dhsErrno );
 
             semGive (detDhsSem);
-         }
+         }*/
 
          reboot (BOOT_QUICK_AUTOBOOT);
       }

@@ -9,3 +9,4 @@ Log startup sequence
 Use port 54322
 #Connect at startup to 10.1.5.32
 #Check connections to 10.1.5.32 every 30 seconds
+Pulse connections to 10.2.4.56 every 30 seconds

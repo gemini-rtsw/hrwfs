@@ -86,4 +86,15 @@ V1-0 9 May 2000 - CB
     add a missing epToVxPipeWrite (xStart)
   - systemTcs.sch -> replace ao health record by sir health record
 
-  - for the moment startup cd install instead of iocpath
+V1-1 24 July 2000 - CB
+----------------------
+  - add the command detDhsReconnect
+  - detInit and detReset, add -20 and offset by default
+  - Now two methods for reading the CCD:
+    if exp < readout time : n * RDC(1) -> always this method
+    if exp > readout time : RDC(n)
+  - bug fixed for fits keywords and dhs keywords: exposure time and 
+    darktime were wrong when doing 3 exposures for ex.
+  - new ADC offsets: 2340, 2350
+
+dev equivalent to V1-1

@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   15 may 2000 - cb add detDhsReconnect
  *   11 feb 2000 - cb add some detector geometry sir records
  *   10 feb 2000 - cb add some sir records
  *   31 jan 2000 - cb add detector controller state SIR record
@@ -185,86 +186,59 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Name of SIR record containing    */
                                     /* the Y binning factor             */
 
-   /*
-    * Define the VME addresses of the SDSU controllers installed on the bus.
-    * If a particular controller is not installed its address should be set
-    * to 0x0, and the controller will then be simulated.
-    * NOTE: IT IS VERY IMPORTANT THAT THESE ADDRESSES ARE CORRECT.
-    */
+#define   DET_CONTROL_HRWFS_SDSU_ADRS_VME     0x08000000   
+                                    /* VME address of HRWFS SDSU controller   */
+                                    /* If the controller is not installed its */
+                                    /* address should be set to 0x0, and the  */
+                                    /* controller will then be simulated      */
+                                    /* MVME167 0xc0000020, POWERPC 0x08000000 */
 
-   /*
-    * MVME167 0xc0000000
-    * POWERPC 0x08000000
-    */
+#define   DET_CONTROL_HRWFS_MASK              0x8      
+                                    /* Define the bit masks used to stop the  */
+                                    /* detector control processes individually*/
+                                    /* Bit 3 set                              */
 
-#define   DET_CONTROL_HRWFS_SDSU_ADRS_VME   0x08000000   
-                                    /* VME address of SDSU controller   */
-                                    /* for the HRWFS                    */
-   /*
-    * Define the bit masks used to stop detector control processes individually.
-    */
+#define DET_CONTROL_HRWFS_XSIZE               1024 
+#define DET_CONTROL_HRWFS_YSIZE               1024
+                                    /* Define the maximum data frame sizes    */
+                                    /* for HRWFS                              */
 
-#define   DET_CONTROL_HRWFS_MASK            0x8      /* Bit 3 set */
+#define DET_CONTROL_HRWFS_MAX_FRAMES          1   
+                                    /* Define the default number of SDSU data */
+                                    /* buffers allocated for HRWFS            */
 
-   /*
-    * Define the maximum data frame sizes for each of the wavefront sensors.
-    */
+#define DET_CONTROL_MAX_WCSPOINTS             40 
+                                    /* Max number of WCS calibration points.  */
 
-#define DET_CONTROL_HRWFS_XSIZE            1024 
-#define DET_CONTROL_HRWFS_YSIZE            1024
-
-   /*
-    * Define the default number of SDSU data buffers allocated for PWFS2
-    * sdsuLib expects there to be at least 2 buffers.
-    */
-
-#define DET_CONTROL_HRWFS_MAX_FRAMES      1   
-                                     /* Was 2 - only 1 needed for simple task */
-
-   /*
-    * Define World Coordinate System constants.
-    */
-
-#define DET_CONTROL_MAX_WCSPOINTS 40 /* Max number of WCS calibration points. */
-
-
-   /*
-    * Define the names of the OMF files containing the DSP code. These files are
-    * downloaded automatically on startup. 
-    */
-
-#define   DET_CONTROL_OMF_FILE_PATH         "./bin/asm56000"
+#define   DET_CONTROL_OMF_FILE_PATH           "./bin/asm56000"
                                     /* Directory containing OMF files.        */
 
-#define   DET_CONTROL_OMF_VME_FILE         "vme-47.lod"
+#define   DET_CONTROL_OMF_VME_FILE            "vme-47.lod"
                                     /* OMF file to download to VME DSP.       */
 
 #define   DET_CONTROL_HRWFS_OMF_TIM_FILE      "tim-47.lod"
                                     /* OMF file to download to TIMING DSP.    */
                                     /* for HRWFS and acquisition camera.      */
 
-#define   DET_CONTROL_OMF_UTL_FILE         "util.lod"
+#define   DET_CONTROL_OMF_UTL_FILE            "util.lod"
                                     /* OMF file to download to UTILITY DSP.   */
 
-   /* Define the name of the directory containing parameter files. */
+#define   DET_CONTROL_PAR_FILE_PATH           "./data"
+                                    /* Define the name of the directory       */
+                                    /* containing parameter files.            */
 
-#define   DET_CONTROL_PAR_FILE_PATH         "./data"
+#define   DET_CONTROL_DATA_FILE_PATH          "."
+                                    /* Define the default directory to contain*/
+                                    /* engineering data files.                */
 
-   /* Define the default directory to contain engineering data files. */
+#define   DET_TYPE                            "CCD47+SDSUII"
+                                    /* Define the default detector type       */
 
-#define   DET_CONTROL_DATA_FILE_PATH         "."
-
-   /* Define the default detector type */
-
-#define   DET_TYPE "CCD47+SDSUII"
-
-   /* Define the SN of the CCD Chip */
-
-#define   DET_CCD_SN "8283-4-3"
-
-   /* Define the units of CCD data */
+#define   DET_CCD_SN                          "8283-4-3"
+                                    /* Define the SN of the CCD Chip          */
 
 #define   DET_BUNIT "SDSU ADC units"
+                                    /* Define the units of CCD data           */
 
 typedef   struct      /* Context structure used to describe an observation.   */
 {
@@ -297,7 +271,6 @@ typedef   struct      /* Context structure used to describe an observation.   */
                            /* --------------------------                      */
    int          outOptions;/* Output options (0=none, 1=DHS, 2=file).         */
    int          dhsOutOptions;/* DHS Output options (0=PERM, 1=TEMP, 2=QL).   */
-   DHS_CONNECT  dhsConnection;/* DHS connection ID.                           */
    DHS_BD_DATASET dhsDataset; /* DHS dataset ID.                              */
    DHS_BD_FRAME dhsDataFrame; /* DHS data frame ID.                           */
    uint16*      pCurFrame; /* Pointer to current unscrambled data frame.      */
@@ -395,6 +368,7 @@ typedef   struct      /* Context structure used to describe an observation.   */
                            /* ------------                                    */
    double       rawtStart; /* Raw Gemini time at start of observation.        */
    double       rawtEnd;   /* Raw Gemini time at end of observation.          */
+   double       expTime;   /* Current exposure time.                          */
    double       exposedRQ; /* Requested total exposure time.                  */
    double       exposed;   /* Actual total exposure time.                     */
    double       frameTime; /* Frame time.                                     */
@@ -533,6 +507,8 @@ enum
    DET_CONTROL_CMD_OFFSET,     /* Set detector ADC offsets.                   */
    DET_CONTROL_CMD_TEMP,       /* Define temperature control params.          */
    DET_CONTROL_CMD_FRAME_SIZE, /* Define frame size                           */
+   DET_CONTROL_CMD_DHS_RECONNECT, 
+                               /* Set connection with the DHS                 */
    DET_CONTROL_CMD_DEBUG,      /* Set debugging mode                          */
    DET_CONTROL_CMD_SIMULATE    /* Set simulation mode                         */
    };

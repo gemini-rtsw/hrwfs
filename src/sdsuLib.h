@@ -52,6 +52,8 @@
 #define SDSU_NBYTE_PER_PIXEL 2     /* Number of bytes transferred from the    */
                                    /* VME DSP per digitised pixel             */
 
+#define SDSU_FULL_READOUT 1.8      /* Readout Time in sec of the full CCD     */
+
 #define SDSU_LOW_DNLOAD_ADRS_IN_P 0x20  
                                    /* Lowest address (in "P" space) to which  */
                                    /* OMF file downloading is performed on    */
@@ -154,7 +156,7 @@
 
  /* Readout task constants */
 
-#define SDSU_READTASK_PRIORITY    30     /* Readout task priority-fairly high */
+#define SDSU_READTASK_PRIORITY    10     /* Readout task priority-fairly high */
 #define SDSU_READTASK_STACKSIZE   200000 /* Read task stack size - very large */
 #define SDSU_APPLICATION_PRIORITY 190    /* Application task priority - low   */
 
@@ -325,6 +327,9 @@ typedef struct             /* Context structure used as handle to controller  */
   void            *appPrivate;    /* Application pointer passed to sync       */
                                   /* callbacks                                */
   struct timespec timeoutStart;   /* Start time used for command timeout      */
+  int             readMethod;     /* Flag to indicate how to read the CCD     */
+  double          readoutTime;    /* Readout Time of the CCD - depends of nb  */
+                                  /* of pixels reads                          */
  } SDSU_ID_STRUCT, * SDSU_ID;
 
 typedef struct      /* Defines an SDSU primitive command */

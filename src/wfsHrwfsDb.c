@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.7 2000-03-13 20:46:40 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.8 2000-07-24 20:28:03 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   15 may 2000 - cb add detDhsReconnect cad record
  *   1 mar 2000  - cb work on historyLog of seq and debug and simulate...
  *   11 feb 2000 - cb add dc:exposed, dc:exposedRQ, dc:utstart, dc:utend, 
  *                    dc:elapsed
@@ -450,6 +451,15 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_D, EPICS_DATA_TYPE_LONG,    "1024",         {"1", ATTRIB (DET_CONTROL_HRWFS_XSIZE+1)},
       CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,    "1",         {"1", ATTRIB (DET_CONTROL_HRWFS_YSIZE+1)},
       CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG,    "1024",         {"1", ATTRIB (DET_CONTROL_HRWFS_YSIZE+1)},
+   },
+   {
+      RECORD_NAME ("dc:detDhsReconnect"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_DHS_RECONNECT,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "0", {"0", "1"}
    }
 };
 

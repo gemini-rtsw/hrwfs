@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.7 2000-02-03 01:19:42 cboyer Exp $
+# $Id: startup.vws,v 1.8 2000-07-24 20:28:03 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -89,7 +89,7 @@ logErrorsToPipe = 1
 
 # start the impmaster
 # (Comment this out if the DHS is not being used)
-sp ImpMaster
+taskSpawn ( "ImpMaster", 100, 0x8, 20000, ImpMaster)
 
 # Initialise WFS system (processorNumber, redirectLog)
 wfsSysInit (0, logErrorsToPipe)

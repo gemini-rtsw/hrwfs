@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: sdsuLib.c,v 1.3 2000-01-05 20:09:51 cboyer Exp $"};
+   "$Id: sdsuLib.c,v 1.4 2000-07-24 20:28:03 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -1104,7 +1104,7 @@ uint32 sdsuVersionGet ( SDSU_ID         context,
     */
 
    if (destId == SDSU_IDENT_HST)
-      return (sdsu_getVersion ("$Revision: 1.3 $"));
+      return (sdsu_getVersion ("$Revision: 1.4 $"));
    
    /*
     * The SDSU context must be valid if the code gets this far, as the version 
@@ -6613,11 +6613,7 @@ STATUS   sdsuSimpleReadoutOpen
 #endif /* DEBUG */
 
    context->readStatus = SDSU_READ_OPENING;
-   /*context->readTask = taskSpawn (readName, SDSU_APPLICATION_PRIORITY+nice, 
-      VX_FP_TASK, SDSU_READTASK_STACKSIZE,
-      (FUNCPTR) sdsu_simpleTask, (int) context, (int) packetCall, 
-      (int) frameCall, (int) useInterrupts, 0, 0, 0, 0, 0, 0);*/
-   context->readTask = taskSpawn (readName, 45, 
+   context->readTask = taskSpawn (readName, SDSU_READTASK_PRIORITY, 
       VX_FP_TASK, SDSU_READTASK_STACKSIZE,
       (FUNCPTR) sdsu_simpleTask, (int) context, (int) packetCall, 
       (int) frameCall, (int) useInterrupts, 0, 0, 0, 0, 0, 0);
@@ -7017,99 +7013,329 @@ void   sdsu_simpleTask
          if ( pFrame->totalFrames>0 )
          {
             printf (
-            "sdsu_simpleTask: Received message to process frame %p with %d frames\n",
+            "readTask: Got mess to process frame %p with %d frames\n",
             pFrame, pFrame->totalFrames);
          }
          else
          {
-            printf ("sdsu_simpleTask: Received message to process frame %p with INFINITE frames\n",
+            printf ("readTask: Got mess to process frame %p with INF frames\n",
             pFrame);
          }
 #endif
 
          sdsuReadContext->readStatus = SDSU_READ_BUSY;
 
-         /* 
-          * Set the SDSU Frame Buffer Address to the address of the next 
-          * frame. 
-          */
+         if ( sdsuReadContext->readMethod == 1 )
+         {
+            /* 
+             * Set the SDSU Frame Buffer Address to the address of the next 
+             * frame. 
+             */
 #ifdef DEBUG
-         printf ("sdsu_simpleTask: Set FBA \n");
+            printf ("sdsu_simpleTask: Set FBA \n");
 #endif
 
-         if (sdsuFrameSetFBA (sdsuReadContext, pFrame) == ERROR)
-         {
-            ERROR_SET (0, 
-            "Failed to set up frame buffer address for frame DMA",
-            ERROR_LOG_NOW);
-            sdsuReadContext->readStatus = SDSU_READ_ERROR;
-            sdsuReadContext->fatal = TRUE;     /* Abandon the observation. */
-         };
-
-         if ( !sdsuReadContext->fatal )
-         {
-            if (sysLocalToBusAdrs (SDSU_AM_VME_MASTER_DATA, (char *) & pFrame->header,
-                                   (char **) & dmaAddress) == ERROR)
+            if (sdsuFrameSetFBA (sdsuReadContext, pFrame) == ERROR)
             {
-               ERROR_SET (0, "Failed to map frame buffer address to VME bus",
-                          ERROR_LOG_NOW);
+               ERROR_SET (0, 
+               "Failed to set up frame buffer address for frame DMA",
+               ERROR_LOG_NOW);
                sdsuReadContext->readStatus = SDSU_READ_ERROR;
-               sdsuReadContext->fatal = TRUE;     
-            }
-         };
+               sdsuReadContext->fatal = TRUE;     /* Abandon the observation. */
+            };
 
-         if ( useInterrupts )
-         {
-            if ( semTake (sdsuReadContext->packetSem, NO_WAIT) == OK )
+            if ( !sdsuReadContext->fatal )
             {
+               if (sysLocalToBusAdrs (SDSU_AM_VME_MASTER_DATA, 
+                                      (char *) & pFrame->header,
+                                      (char **) & dmaAddress) == ERROR)
+               {
+                  ERROR_SET (0, "Failed to map frame buffer address to VME bus",
+                             ERROR_LOG_NOW);
+                  sdsuReadContext->readStatus = SDSU_READ_ERROR;
+                  sdsuReadContext->fatal = TRUE;     
+               }
+            };
+
+            if ( useInterrupts )
+            {
+               if ( semTake (sdsuReadContext->packetSem, NO_WAIT) == OK )
+               {
 #ifdef DEBUG
-               printf ( "sdsu_simpleTask: clear IT semaphore, sdsuFrameLost=%d\n" , sdsuFrameLost) ;
+                  printf ( "readTask: clear IT semaphore, sdsuFrameLost=%d\n" , 
+                           sdsuFrameLost) ;
 #endif
+               }
+               else
+               {
+#ifdef DEBUG
+                  printf ( "readTask: No sem IT to clear, sdsuFrameLost=%d\n" , 
+                           sdsuFrameLost) ;
+#endif
+               }
+
+            }
+               
+            sdsuFrameLost = 0; 
+#ifdef DEBUG
+            printf ( "sdsu_simpleTask: sdsuFrameLost=%d\n" , sdsuFrameLost) ;
+#endif
+
+            if ( !sdsuReadContext->fatal )
+            {
+               if (sdsuPrimitive (sdsuReadContext, "RDC", SDSU_IDENT_VME, NULL, 
+                                  NULL) == ERROR)
+               {
+                  ERROR_SET (0, "Readout CCD (RDC) command failed", 
+                             ERROR_LOG_NOW);
+                  sdsuReadContext->readStatus = SDSU_READ_ERROR;
+                  sdsuReadContext->fatal = TRUE;  /* Abandon the observation. */
+               }
+            };
+
+            if ( sdsuReadContext->fatal )
+            {
+               /* Observation abandoned due to fatal error. */
+               if (sdsuPrimitive (sdsuReadContext, "ABT", SDSU_IDENT_VME, 
+                                  NULL, NULL) == ERROR )
+               {
+                  ERROR_SET (0, "Failed to abort observation after fatal error",
+                             ERROR_LOG_NOW);
+               }
             }
             else
             {
+    
+               /*
+                * Process each frame in turn.
+                * Loop forever if the total number of frames is specified as 0 
+                * or negative. Terminate the loop if the frame status becomes 
+                * non-zero (which means the SDSU controller has detected an 
+                * error).
+                */
+
+               sdsuReadContext->aborted = FALSE;
+               sdsuReadContext->fatal = FALSE;
+               lastFrame = FALSE ;
+               failures = 0; 
+               for (frame=0; (((pFrame->totalFrames <= 0) || 
+                    (frame < pFrame->totalFrames)) &&
+                    (!lastFrame) &&
+                    (!sdsuReadContext->aborted) &&
+                    (!sdsuReadContext->fatal));
+                    frame++)
+               {
+                  /* Ensure the packet count in the data buffer begins at zero*/
+                  pFrame->header.packetCount = 0;
+                  pFrame->header.status = 0 ;
+
 #ifdef DEBUG
-               printf ( "sdsu_simpleTask: No sempahore IT to clear, sdsuFrameLost=%d\n" , sdsuFrameLost) ;
+                  sdsuFrameShow ( pFrame );
+#endif 
+
+                  if ( useInterrupts )
+                  {
+#ifdef DEBUG
+                     printf ("readTask: Waiting for frame sync semaphore ...");
+#endif 
+                     if ( semTake (sdsuReadContext->packetSem, 
+                                   sdsuReadContext->frameTimeout) == ERROR)
+                     {
+#ifdef DEBUG
+                        printf (
+                           "WARNING: frame sync sem timed out at frame %d\n",
+                           (frame+1));
+#endif 
+                        failures++;
+                     }
+#ifdef DEBUG
+                     else
+                     {
+                        printf (" ... got frame sync semaphore\n");
+                     }
+#endif 
+                     sdsuFrameLost -- ;
+                     if ( pFrame->header.packetCount < 
+                          context->packetsPerFrame ) 
+                        pFrame->header.status |= SDSU_FSTAT_NOK ;
+                  
+                  }
+                  else
+                  {
+#ifdef DEBUG
+                     printf ( "readTask: Polling for packet count reaching %d",
+                              context->packetsPerFrame);
 #endif
+                     if ( sdsuReadContext->exposureTicks < 2 )
+                        taskDelay (1) ;
+                     else
+                        taskDelay (sdsuReadContext->exposureTicks - 1) ;
+
+                     while ( (pFrame->header.packetCount < 
+                              context->packetsPerFrame) 
+                             && (pFrame->header.status == 0))
+                     { 
+                        for (i=0;i<1000;i++) ;
+                     }
+                  }
+
+                  if (pFrame->header.status != 0)
+                  {
+                     failures++;
+                  }
+
+#ifdef DEBUG
+                  if (pFrame->header.status == 0)
+                     printf (" ... all packets received.\n");
+                  else
+                     printf (" ... FRAME COMPLETE WITH LOSS OF PACKETS.\n");
+
+                  sdsuFrameShow ( pFrame );
+#endif
+
+                  /*
+                   * Fudge the frame number in the header so that detControl 
+                   * behaves correctly.
+                   */
+
+                  if ( pFrame->header.frameCount == 1 )
+                     lastFrame = TRUE ;
+                  else
+                     pFrame->header.frameCount = pFrame->totalFrames - frame;
+#ifdef DEBUG
+                  printf ( "header.frameCount=%d, lastFrame = %d\n",
+                           pFrame->header.frameCount, lastFrame);
+#endif
+                  /*
+                   * Ensure the aborted bit is set in the frame header if the 
+                   * frame has been aborted.
+                   */
+
+                  if ( sdsuReadContext->aborted )
+                  {
+                     pFrame->header.status |= SDSU_FSTAT_ABORTED;
+                  }
+
+                  /*
+                   * Record the number of frame failures.
+                   */
+
+                  sdsuReadContext->frameErrors = failures;
+
+                  /*
+                   * The frame is complete. In debug mode check the header 
+                   * status.
+                   */
+
+#ifdef DEBUG
+                  if ( (pFrame->header.status & SDSU_FSTAT_OVERRUN) != 0 )
+                  {
+                     printf (
+                     "readTask: Overrun error bit set in frame header\n");
+                  }
+                  if ( (pFrame->header.status & SDSU_FSTAT_CHECKSUM) != 0 )
+                  {
+                     printf (
+                     "readTask: Checksum error bit set in frame header\n");
+                  }
+                  if ( (pFrame->header.status & SDSU_FSTAT_FRAMESYNC) != 0 )
+                  {
+                     printf (
+                     "readTask: Framesync error bit set in frame header\n");
+                  }
+                  if ( (pFrame->header.status & SDSU_FSTAT_ABORTED) != 0 )
+                  {
+                     printf (
+                     "readTask: Frame aborted bit set in frame header\n");
+                  }
+                  if ( (pFrame->header.status & SDSU_FSTAT_TIMEOUT) != 0 )
+                  {
+                     printf ("readTask: Timeout bit set in frame header\n");
+                  }
+                  if ( (pFrame->header.status & SDSU_FSTAT_NOK) != 0 )
+                  {
+                     printf ("readTask: Overwritten bit set in frame header\n");
+                  }
+#endif
+
+                  /* 
+                   * If the observation has not been aborted, call the frame 
+                   * callback function. 
+                   */
+
+#ifdef DEBUG
+                  printf ("readTask: Frame callback %p %p %p\n", 
+                          sdsuReadContext, sdsuReadContext->appPrivate, pFrame);
+#endif
+
+                  if ((!sdsuReadContext->aborted) && (frameCall != NULL))
+                  {
+                     (*frameCall) (sdsuReadContext, sdsuReadContext->appPrivate,
+                                   pFrame);
+                  }
+                  else
+                  {
+#ifdef DEBUG
+                     printf (
+                     "readTask: No frame callback since frame aborted\n");
+#endif 
+                  }
+
+               }
             }
 
-         }
-               
-         sdsuFrameLost = 0; 
-#ifdef DEBUG
-         printf ( "sdsu_simpleTask: sdsuFrameLost=%d\n" , sdsuFrameLost) ;
-#endif
-         if ( !sdsuReadContext->fatal )
-         {
-            if (sdsuPrimitive (sdsuReadContext, "RDC", SDSU_IDENT_VME, NULL, 
-                               NULL) == ERROR)
-            {
-               ERROR_SET (0, "Readout CCD (RDC) command failed", 
-                          ERROR_LOG_NOW);
-               sdsuReadContext->readStatus = SDSU_READ_ERROR;
-               sdsuReadContext->fatal = TRUE;  /* Abandon the observation. */
-            }
-         };
+            /*
+             * Observation complete.
+             * Release the frame and go back and wait for the next observation.
+             */
 
-         if ( sdsuReadContext->fatal )
-         {
-            /* Observation abandoned due to fatal error. */
             if (sdsuPrimitive (sdsuReadContext, "ABT", SDSU_IDENT_VME, 
                                NULL, NULL) == ERROR )
             {
-               ERROR_SET (0, "Failed to abort observation after fatal error",
+               ERROR_SET (0, 
+                          "Failed to abort observation when stop observation",
                           ERROR_LOG_NOW);
+            }
+            sdsuFrameRelease (sdsuReadContext, pFrame);
+            sdsuReadContext->readFrame = NULL;
+            if ( sdsuReadContext->readStatus != SDSU_READ_ERROR )
+            {
+               sdsuReadContext->readStatus = SDSU_READ_IDLE;
             }
          }
          else
          {
- 
-         /*
-          * Process each frame in turn.
-          * Loop forever if the total number of frames is specified as 0 
-          * or negative. Terminate the loop if the frame status becomes 
-          * non-zero (which means the SDSU controller has detected an error).
-          */
+            if ( useInterrupts )
+            {
+               if ( semTake (sdsuReadContext->packetSem, NO_WAIT) == OK )
+               {
+#ifdef DEBUG
+                  printf ( "readTask: clear IT semaphore, sdsuFrameLost=%d\n" , 
+                           sdsuFrameLost) ;
+#endif
+               }
+               else
+               {
+#ifdef DEBUG
+                  printf ( "readTask: No sem IT to clear, sdsuFrameLost=%d\n" , 
+                           sdsuFrameLost) ;
+#endif
+               }
+
+            }
+               
+            sdsuFrameLost = 0; 
+#ifdef DEBUG
+            printf ( "sdsu_simpleTask: sdsuFrameLost=%d\n" , sdsuFrameLost) ;
+#endif
+
+            /*
+             * Process each frame in turn.
+             * Loop forever if the total number of frames is specified as 0 
+             * or negative. Terminate the loop if the frame status becomes 
+             * non-zero (which means the SDSU controller has detected an 
+             * error).
+             */
 
             sdsuReadContext->aborted = FALSE;
             sdsuReadContext->fatal = FALSE;
@@ -7122,7 +7348,20 @@ void   sdsu_simpleTask
                  (!sdsuReadContext->fatal));
                  frame++)
             {
-               /* Ensure the packet count in the data buffer begins at zero. */
+#ifdef DEBUG
+               printf ("sdsu_simpleTask: Set FBA \n");
+#endif
+
+               if (sdsuFrameSetFBA (sdsuReadContext, pFrame) == ERROR)
+               {
+                  ERROR_SET (0, 
+                  "Failed to set up frame buffer address for frame DMA",
+                  ERROR_LOG_NOW);
+                  sdsuReadContext->readStatus = SDSU_READ_ERROR;
+                  sdsuReadContext->fatal = TRUE;  /* Abandon the observation. */
+               };
+
+               /* Ensure the packet count in the data buffer begins at zero*/
                pFrame->header.packetCount = 0;
                pFrame->header.status = 0 ;
 
@@ -7130,57 +7369,71 @@ void   sdsu_simpleTask
                sdsuFrameShow ( pFrame );
 #endif 
 
-               /*if ( (sdsuParamWrite (sdsuReadContext, SDSU_IDENT_VME, "V_FBALO", 
-                     dmaAddress & 0xffff) == ERROR) ||
-                    (sdsuParamWrite (sdsuReadContext, SDSU_IDENT_VME, "V_FBAHI",
-                     ((dmaAddress >> 16) | SDSU_NEW_FBA_FLAG)) == ERROR))
+               if ( !sdsuReadContext->fatal )
                {
-                  ERROR_SET (0, 
-                  "Failed to set up frame buffer address for frame DMA",
-                  ERROR_LOG_NOW);
-                  sdsuReadContext->readStatus = SDSU_READ_ERROR;
-                  sdsuReadContext->fatal = TRUE;     
-               };*/
+                  if (sdsuPrimitive (sdsuReadContext, "RDC", SDSU_IDENT_VME, 
+                                     NULL, NULL) == ERROR)
+                  {
+                     ERROR_SET (0, "Readout CCD (RDC) command failed", 
+                                ERROR_LOG_NOW);
+                     sdsuReadContext->readStatus = SDSU_READ_ERROR;
+                     sdsuReadContext->fatal = TRUE;  
+                                                  /* Abandon the observation. */
+                  }
+               };
 
-               if ( useInterrupts )
+               if ( sdsuReadContext->fatal )
+               {
+                  /* Observation abandoned due to fatal error. */
+                  if (sdsuPrimitive (sdsuReadContext, "ABT", SDSU_IDENT_VME, 
+                                     NULL, NULL) == ERROR )
+                  {
+                     ERROR_SET (0, 
+                             "Failed to abort observation after fatal error",
+                             ERROR_LOG_NOW);
+                  }
+               }
+               else if ( useInterrupts )
                {
 #ifdef DEBUG
-                  printf ("sdsu_simpleTask: Waiting for frame sync semaphore ...");
+                  printf ("readTask: Waiting for frame sync semaphore ...");
 #endif 
-                  /*if ( semTake (sdsuReadContext->packetSem, sdsuReadContext->frameTimeout) == ERROR)*/
-                  if ( semTake (sdsuReadContext->packetSem, WAIT_FOREVER) == ERROR)
+                  if ( semTake (sdsuReadContext->packetSem, 
+                                sdsuReadContext->frameTimeout) == ERROR)
                   {
 #ifdef DEBUG
-                     printf ("WARNING: frame sync semaphore timed out at frame %d.\n", (frame+1));
+                     printf (
+                        "WARNING: frame sync sem timed out at frame %d\n",
+                        (frame+1));
 #endif 
                      failures++;
                   }
 #ifdef DEBUG
                   else
                   {
-                  printf (" ... got frame sync semaphore\n");
-                  /*sdsuFrameShow ( pFrame );*/
+                     printf (" ... got frame sync semaphore\n");
                   }
 #endif 
                   sdsuFrameLost -- ;
-                  if ( pFrame->header.packetCount < context->packetsPerFrame ) 
+                  if ( pFrame->header.packetCount < 
+                       context->packetsPerFrame ) 
                      pFrame->header.status |= SDSU_FSTAT_NOK ;
                   
                }
                else
                {
 #ifdef DEBUG
-                  printf (
-                  "sdsu_simpleTask: Polling for packet count reaching %d...",
-                  context->packetsPerFrame);
+                  printf ( "readTask: Polling for packet count reaching %d",
+                           context->packetsPerFrame);
 #endif
                   if ( sdsuReadContext->exposureTicks < 2 )
                      taskDelay (1) ;
                   else
                      taskDelay (sdsuReadContext->exposureTicks - 1) ;
 
-                  while ( (pFrame->header.packetCount < context->packetsPerFrame) 
-                           && (pFrame->header.status == 0))
+                  while ( (pFrame->header.packetCount < 
+                           context->packetsPerFrame) 
+                          && (pFrame->header.status == 0))
                   { 
                      for (i=0;i<1000;i++) ;
                   }
@@ -7204,16 +7457,18 @@ void   sdsu_simpleTask
                 * Fudge the frame number in the header so that detControl 
                 * behaves correctly.
                 */
-               if ( pFrame->header.frameCount == 1 )
+
+               /*if ( pFrame->header.frameCount == 1 )
                   lastFrame = TRUE ;
-               else
+               else*/
                   pFrame->header.frameCount = pFrame->totalFrames - frame;
 #ifdef DEBUG
-               printf ("header.frameCount=%d, lastFrame = %d\n",pFrame->header.frameCount, lastFrame);
+               printf ( "header.frameCount=%d, lastFrame = %d\n",
+                        pFrame->header.frameCount, lastFrame);
 #endif
                /*
-                * Ensure the aborted bit is set in the frame header if the frame
-                * has been aborted.
+                * Ensure the aborted bit is set in the frame header if the 
+                * frame has been aborted.
                 */
 
                if ( sdsuReadContext->aborted )
@@ -7228,37 +7483,38 @@ void   sdsu_simpleTask
                sdsuReadContext->frameErrors = failures;
 
                /*
-                * The frame is complete. In debug mode check the header status.
+                * The frame is complete. In debug mode check the header 
+                * status.
                 */
 
 #ifdef DEBUG
                if ( (pFrame->header.status & SDSU_FSTAT_OVERRUN) != 0 )
                {
                   printf (
-                  "sdsu_simpleTask: Overrun error bit set in frame header\n");
+                  "readTask: Overrun error bit set in frame header\n");
                }
                if ( (pFrame->header.status & SDSU_FSTAT_CHECKSUM) != 0 )
                {
                   printf (
-                  "sdsu_simpleTask: Checksum error bit set in frame header\n");
+                  "readTask: Checksum error bit set in frame header\n");
                }
                if ( (pFrame->header.status & SDSU_FSTAT_FRAMESYNC) != 0 )
                {
                   printf (
-                  "sdsu_simpleTask: Framesync error bit set in frame header\n");
+                  "readTask: Framesync error bit set in frame header\n");
                }
                if ( (pFrame->header.status & SDSU_FSTAT_ABORTED) != 0 )
                {
                   printf (
-                  "sdsu_simpleTask: Frame aborted bit set in frame header\n");
+                  "readTask: Frame aborted bit set in frame header\n");
                }
                if ( (pFrame->header.status & SDSU_FSTAT_TIMEOUT) != 0 )
                {
-                  printf ("sdsu_simpleTask: Timeout bit set in frame header\n");
+                  printf ("readTask: Timeout bit set in frame header\n");
                }
                if ( (pFrame->header.status & SDSU_FSTAT_NOK) != 0 )
                {
-                  printf ("sdsu_simpleTask: Overwritten bit set in frame header\n");
+                  printf ("readTask: Overwritten bit set in frame header\n");
                }
 #endif
 
@@ -7268,44 +7524,45 @@ void   sdsu_simpleTask
                 */
 
 #ifdef DEBUG
-               printf ("sdsu_simpleTask: Frame callback %p %p %p\n", 
+               printf ("readTask: Frame callback %p %p %p\n", 
                        sdsuReadContext, sdsuReadContext->appPrivate, pFrame);
 #endif
 
                if ((!sdsuReadContext->aborted) && (frameCall != NULL))
                {
-                  (*frameCall) (sdsuReadContext, sdsuReadContext->appPrivate, 
+                  (*frameCall) (sdsuReadContext, sdsuReadContext->appPrivate,
                                 pFrame);
                }
                else
                {
 #ifdef DEBUG
                   printf (
-                  "sdsu_simpleTask: No frame callback since frame aborted\n");
+                  "readTask: No frame callback since frame aborted\n");
 #endif 
                }
 
             }
-         }
 
-         /*
-          * Observation complete.
-          * Release the frame and go back and wait for the next observation.
-          */
+            /*
+             * Observation complete.
+             * Release the frame and go back and wait for the next observation.
+             */
 
-         if (sdsuPrimitive (sdsuReadContext, "ABT", SDSU_IDENT_VME, 
-                            NULL, NULL) == ERROR )
-         {
-            ERROR_SET (0, "Failed to abort observation when stop observation",
-                       ERROR_LOG_NOW);
+            if (sdsuPrimitive (sdsuReadContext, "ABT", SDSU_IDENT_VME, 
+                               NULL, NULL) == ERROR )
+            {
+               ERROR_SET (0, 
+                          "Failed to abort observation when stop observation",
+                          ERROR_LOG_NOW);
+            }
+            sdsuFrameRelease (sdsuReadContext, pFrame);
+            sdsuReadContext->readFrame = NULL;
+            if ( sdsuReadContext->readStatus != SDSU_READ_ERROR )
+            {
+               sdsuReadContext->readStatus = SDSU_READ_IDLE;
+            }
          }
-         sdsuFrameRelease (sdsuReadContext, pFrame);
-         sdsuReadContext->readFrame = NULL;
-         if ( sdsuReadContext->readStatus != SDSU_READ_ERROR )
-         {
-            sdsuReadContext->readStatus = SDSU_READ_IDLE;
-         }
-      }
+      }          /* else if pFrame == NULL */
    }
 }
 

@@ -2,10 +2,10 @@
 uniq 70
 [tools]
 [detail]
-w 708 1659 100 0 n#59 hrwfsCar.hrwfsCar#18.FLNK 640 1920 704 1920 704 1408 1056 1408 egenSub.combActive.SLNK
-w 648 747 100 0 n#59 wfsCar.wfsCar#56.FLNK 640 736 704 736 704 1408 junction
-w 648 1515 100 0 n#59 hrwfsCarNext.hrwfsCarNext#62.FLNK 640 1504 704 1504 junction
 w 648 1099 100 0 n#59 hrwfsCarNext1.hrwfsCarNext1#65.FLNK 640 1088 704 1088 junction
+w 648 1515 100 0 n#59 hrwfsCarNext.hrwfsCarNext#62.FLNK 640 1504 704 1504 junction
+w 648 747 100 0 n#59 wfsCar.wfsCar#56.FLNK 640 736 704 736 704 1408 junction
+w 708 1659 100 0 n#59 hrwfsCar.hrwfsCar#18.FLNK 640 1920 704 1920 704 1408 1056 1408 egenSub.combActive.SLNK
 w 776 1195 100 0 n#69 hrwfsCarNext1.hrwfsCarNext1#65.CLID 640 1184 960 1184 960 1632 1056 1632 egenSub.combActive.INPH
 w 760 1259 100 0 n#68 hrwfsCarNext1.hrwfsCarNext1#65.VAL 640 1248 928 1248 928 1696 1056 1696 egenSub.combActive.INPG
 w 920 1899 100 0 n#64 hrwfsCarNext.hrwfsCarNext#62.CLID 640 1600 832 1600 832 1888 1056 1888 egenSub.combActive.INPD
@@ -17,8 +17,8 @@ w 1576 2051 100 0 n#47 egenSub.combActive.OUTB 1344 2016 1504 2016 1504 2048 169
 w 1496 2091 100 0 n#46 egenSub.combActive.OUTA 1344 2080 1696 2080 carID.carID#23.IVAL
 w 824 2083 100 0 n#37 hrwfsCar.hrwfsCar#18.VAL 640 2080 1056 2080 egenSub.combActive.INPA
 w 824 2019 100 0 n#36 hrwfsCar.hrwfsCar#18.CLID 640 2016 1056 2016 egenSub.combActive.INPB
-s -576 2224 500 0 Gemini High Resolution Wavefront Sensor
 s 1488 80 500 512 hrwfs.sch
+s -576 2224 500 0 Gemini High Resolution Wavefront Sensor
 [cell use]
 use hrwfsCarNext1 448 951 100 0 hrwfsCarNext1#65
 xform 0 544 1136
@@ -29,9 +29,9 @@ xform 0 -512 2016
 use wfsCar 448 663 100 0 wfsCar#56
 xform 0 544 784
 p 448 608 100 0 1 set1:wfs dc:
-use wfsCad -576 199 100 0 wfsCad#55
-xform 0 -480 320
-p -576 192 100 0 1 set1:wfs dc:
+use wfsCad -608 1479 100 0 wfsCad#55
+xform 0 -512 1600
+p -608 1472 100 0 1 set1:wfs dc:
 use systemTcs -96 1895 100 0 systemTcs#53
 xform 0 0 2016
 use egenSub 1056 1319 100 0 combActive
@@ -70,9 +70,9 @@ xform 0 656 1200
 p 1552 64 100 0 1 author:S.M.Beard
 p 1776 48 100 0 -1 border:C
 p 1552 32 100 0 1 checked:B.Goodrich
-p 1776 16 100 0 -1 date:$Date: 2000-02-03 01:17:40 $
-p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.2 2000-02-03 01:17:40 cboyer Exp $
+p 1776 16 100 0 -1 date:$Date: 2000-07-24 20:28:01 $
+p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.3 2000-07-24 20:28:01 cboyer Exp $
 p 1792 176 100 0 -1 project:Gemini Wavefront Sensing System
-p 1552 144 100 0 -1 revision:$Revision: 1.2 $
+p 1552 144 100 0 -1 revision:$Revision: 1.3 $
 p 1792 112 100 0 -1 title:Under Top Level Schematic for HRWFS Database
 [comments]

@@ -6,11 +6,11 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="19"
-	nstr="118"
+	npc="18"
+	nstr="124"
 	ndynamic="13"
 	nplot="0"
-	nrd="7"
+	nrd="8"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4084"
+	nwords_dspy="4340"
 	nwords_sta="208"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2094"
-	osta="1886"
-	odynamic="2094"
-	oplot="2952"
-	ord="2952"
-	oes="4072"
-	okd="4072"
-	opd="4084"
-	opo="4084"
+	odyng="2190"
+	osta="1982"
+	odynamic="2190"
+	oplot="3048"
+	ord="3048"
+	oes="4328"
+	okd="4328"
+	opd="4340"
+	opo="4340"
 	opc="68"
-	ostr="286"
-	ocmap="1886"
-	ocrules="1886"
+	ostr="274"
+	ocmap="1982"
+	ocrules="1982"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -1256,7 +1256,7 @@ display {
 }
 "related display" {
 	object {
-		x="345"
+		x="344"
 		y="331"
 		width="300"
 		height="22"
@@ -1390,7 +1390,7 @@ display {
 }
 "related display" {
 	object {
-		x="345"
+		x="344"
 		y="298"
 		width="300"
 		height="22"
@@ -1524,9 +1524,9 @@ display {
 }
 "related display" {
 	object {
-		x="345"
-		y="363"
-		width="300"
+		x="825"
+		y="74"
+		width="178"
 		height="22"
 		groupid="0"
 	}
@@ -1788,6 +1788,140 @@ display {
 	clr="0"
 	bclr="6"
 	menu_title="SET MODES"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="344"
+		y="363"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="CONNECT DHS"
+		name="det_DhsReconnect.dl"
+		args="top=$(top),sensor=$(sensor),cad=detDhsReconnect,car=det"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="DHS CONTROL"
 	decorate="none"
 }
 "kill display" {

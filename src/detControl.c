@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.10 2000-05-10 19:43:21 cboyer Exp $"};
+   "$Id: detControl.c,v 1.11 2000-07-24 20:28:02 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   15 may 2000 - cb add detDhsReconnect
  *   11 feb 2000 - cb add some SIR records + remove detWriteFits and 
  *                 detFrameReduce
  *   10 feb 2000 - cb add some SIR records 
@@ -140,6 +141,9 @@ BOOL    detDhsInitialised = FALSE; /* Flag to determine whether the DHS       */
 
 SEM_ID  detDhsSem = NULL;          /* Semaphore to control access to DHS.     */
 
+DHS_CONNECT detDhsConnection = NULL;
+                                   /* DHS connection ID for this controller   */
+
 SDSU_ID detSdsuIdHr = NULL;        /* SDSU context structure for HRWFS.       */
 
 OBS_ID  detObsIdHr = NULL;         /* Observation context structure for HRWFS.*/
@@ -249,6 +253,8 @@ LOCAL uint32   detOffset (const char * pWfsName, const char * pRecordPrefix,
 LOCAL uint32   detTemp (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID sdsuId, OBS_ID obsId);
+LOCAL uint32 detDhsReconnect (CAD_CMD_CONTEXT cadCmdContext,
+                              int commandNumber, SDSU_ID sdsuId, OBS_ID obsId);
 
 /******************************************* Plus some additional functions ***/
 
@@ -278,7 +284,7 @@ void   detPacketCallback (SDSU_ID sdsuId, void * obsIdIn, SDSU_FRAME * pFrame );
 void   detFrameCallback (SDSU_ID sdsuId, void * obsIdIn, SDSU_FRAME * pFrame );
 void   detObserveEnd (SDSU_ID sdsuId, void * obsIdIn, SDSU_FRAME * pFrame );
 void   detObserveTimeout (timer_t timeId, int obsIdInt);
-STATUS detDhsConnect (const char * pWfsName, DHS_CONNECT * pDhsConnection);
+STATUS detDhsConnect ();
 void   detDhsCheckErrno (const DHS_STATUS dhsErrno, const int line,
                          const char * filename);
 STATUS detDhsCheckCmdStatus (const DHS_TAG dhsTag);
@@ -384,10 +390,6 @@ STATUS   detControl
    /* Variables used to define the buffer to be used for storing data.   */
 
    int          maxFrames;          /* Maximum number of frames in data buffer*/
-
-   /* Variables associated with the Gemini Data Handling System */
-
-   DHS_CONNECT  dhsConnection = NULL; /* DHS connection ID for this controller*/
 
    /* Timer variables. */
 
@@ -668,7 +670,8 @@ STATUS   detControl
     */
 
    sprintf (pRecordName, "%s", DET_CONTROL_OBSERVING_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetObservingContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetObservingContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_OBSERVING_SIR_NAME SIR context");
       return (ERROR);
@@ -680,7 +683,8 @@ STATUS   detControl
     */
 
    sprintf (pRecordName, "%s", SEQ_CONTROL_OBSMODE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pObsModeContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pObsModeContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get SEQ_CONTROL_OBSMODE_SIR_NAME SIR context");
       return (ERROR);
@@ -692,7 +696,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_DATALABEL_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDataLabelContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDataLabelContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_DATALABEL_SIR_NAME SIR context");
       return (ERROR);
@@ -704,7 +709,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_INTTIME_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pIntTimeContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pIntTimeContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_INTTIME_SIR_NAME SIR context");
       return (ERROR);
@@ -716,7 +722,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_NEXPRQ_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpRQContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpRQContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_NEXPRQ_SIR_NAME SIR context");
       return (ERROR);
@@ -728,7 +735,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_NEXP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_NEXP_SIR_NAME SIR context");
       return (ERROR);
@@ -740,7 +748,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_NFRAMES_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNFramesContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNFramesContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
       return (ERROR);
@@ -752,7 +761,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_UTSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pUTstartContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTstartContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_UTSTART_SIR_NAME SIR context");
       return (ERROR);
@@ -764,7 +774,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_UTEND_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pUTendContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTendContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_UTEND_SIR_NAME SIR context");
       return (ERROR);
@@ -776,7 +787,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_EXPOSED_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_EXPOSED_SIR_NAME SIR context");
       return (ERROR);
@@ -784,7 +796,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_EXPOSEDRQ_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedRQContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedRQContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_EXPOSEDRQ_SIR_NAME SIR context");
       return (ERROR);
@@ -796,7 +809,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_ELAPSED_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pElapsedContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pElapsedContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_ELAPSED_SIR_NAME SIR context");
       return (ERROR);
@@ -808,7 +822,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_OUTPUTS_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pOutputsContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pOutputsContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_OUTPUTS_SIR_NAME SIR context");
       return (ERROR);
@@ -820,7 +835,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_DETXSIZE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetXsizeContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetXsizeContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_DETXSIZE_SIR_NAME SIR context");
       return (ERROR);
@@ -832,7 +848,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_DETYSIZE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetYsizeContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetYsizeContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_DETYSIZE_SIR_NAME SIR context");
       return (ERROR);
@@ -844,7 +861,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_XSUBAP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXsubapContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXsubapContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_XSUBAP_SIR_NAME SIR context");
       return (ERROR);
@@ -856,7 +874,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_YSUBAP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYsubapContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYsubapContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_YSUBAP_SIR_NAME SIR context");
       return (ERROR);
@@ -868,7 +887,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_XSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXstartContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXstartContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_XSTART_SIR_NAME SIR context");
       return (ERROR);
@@ -880,7 +900,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_YSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYstartContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYstartContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_YSTART_SIR_NAME SIR context");
       return (ERROR);
@@ -892,7 +913,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_XRASTER_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXrasterContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXrasterContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_XRASTER_SIR_NAME SIR context");
       return (ERROR);
@@ -904,7 +926,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_YRASTER_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYrasterContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYrasterContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_YRASTER_SIR_NAME SIR context");
       return (ERROR);
@@ -916,7 +939,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_XSPACE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXspaceContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXspaceContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_XSPACE_SIR_NAME SIR context");
       return (ERROR);
@@ -928,7 +952,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_YSPACE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYspaceContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYspaceContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_YSPACE_SIR_NAME SIR context");
       return (ERROR);
@@ -940,7 +965,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_XBIN_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXbinContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXbinContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_XBIN_SIR_NAME SIR context");
       return (ERROR);
@@ -952,7 +978,8 @@ STATUS   detControl
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_YBIN_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYbinContext), NULL) == ERROR)
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYbinContext), NULL) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to get DET_CONTROL_YBIN_SIR_NAME SIR context");
       return (ERROR);
@@ -1159,8 +1186,8 @@ STATUS   detControl
    }
    else
    {
-      offset0 = 2400 ;
-      offset1 = 2398 ;
+      offset0 = 2340 ;
+      offset1 = 2350 ;
 
       MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
                     offset0, offset1);
@@ -1357,7 +1384,7 @@ STATUS   detControl
 
    if (detDhsInitialised)
    {
-      if ( detDhsConnect (pWfsName, &dhsConnection) == ERROR )
+      if ( detDhsConnect () == ERROR )
       {
          ERROR_LOG ("Failed to connect to DHS");
          initWarning = TRUE;
@@ -1568,7 +1595,6 @@ STATUS   detControl
 
             obsId->sdsuId = sdsuId;
             obsId->timeId = timeId;
-            obsId->dhsConnection = dhsConnection;
 
             errorNumber = 
             observeStart (pWfsName, pRecordPrefix, cadCmdContext, 
@@ -1585,7 +1611,6 @@ STATUS   detControl
 
             obsId->sdsuId = sdsuId;
             obsId->timeId = timeId;
-            obsId->dhsConnection = dhsConnection;
 
             errorNumber = 
             detObserveStart (pWfsName, pRecordPrefix, cadCmdContext, 
@@ -1736,6 +1761,14 @@ STATUS   detControl
                      sdsuId, obsId);
          }
 
+         else if (commandNumber == DET_CONTROL_CMD_DHS_RECONNECT)
+         {
+            /* Set dhs connection. */
+
+            errorNumber = detDhsReconnect (cadCmdContext, commandNumber,
+                                           sdsuId, obsId);
+         }
+
          else if (commandNumber == DET_CONTROL_CMD_SIMULATE)
          {
 
@@ -1789,7 +1822,8 @@ STATUS   detControl
              * Set the debugging mode.
              */
 
-            EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & debugMode);
+            EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, 
+                                   (char *) & debugMode);
             errorMessageFilterSet( debugMode+1 );
 
             switch (debugMode)
@@ -1809,7 +1843,8 @@ STATUS   detControl
                   break;
 
                default:
-                  strncpy (pDebugMode, "INVALID", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  strncpy (pDebugMode, "INVALID", 
+                           EPICS_MAX_BYTES_STRING_ATTRIB);
             }
 
             MESSAGE_LOG1 (MSG_LOG, "Debug mode set to %s", pDebugMode);
@@ -1883,6 +1918,7 @@ STATUS   detControl
    return (OK);
 }
 
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -2157,10 +2193,37 @@ uint32 detExposure
       return (errorNumber);
    }
 
-   if (epToVxPipeWrite( NULL, (char *)(int)&exposure, obsId->pIntTimeContext ) == ERROR)
+   obsId->expTime = exposure;
+
+   if (epToVxPipeWrite( NULL, (char *)(int)&exposure, obsId->pIntTimeContext ) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to set integration time SIR record");
    }
+
+   /*
+    * Determine how to read the CCD when in continuous mode:
+    * if exposure < readoutTime -> serie of 1 frame
+    * if exposure > readoutTime -> CCD in continuous mode
+    */
+
+   sdsuId->readoutTime = (SDSU_FULL_READOUT * obsId->pixelsNb) /
+                         (DET_CONTROL_HRWFS_XSIZE * DET_CONTROL_HRWFS_YSIZE);
+
+   /*if ( exposure < sdsuId->readoutTime ) 
+   {
+      sdsuId->readMethod = 0;
+      printf ( "exp < readoutTime (%f<%f) - pixels Nb = %d\n" , 
+               exposure, sdsuId->readoutTime, obsId->pixelsNb);
+   }
+   else
+   {
+      sdsuId->readMethod = 0;
+      printf ( "exp > readoutTime (%f>%f) - pixels Nb = %d\n" , 
+               exposure, sdsuId->readoutTime, obsId->pixelsNb);
+   }*/
+
+   sdsuId->readMethod = 0;
 
    if ( nframe == -1 )
    {
@@ -2178,10 +2241,20 @@ uint32 detExposure
        * IS INFINITE.
        */
 
-      nframe = 0;      /* DSP code assumes 0 means infinite number of frames. */
-      obsId->continuous = TRUE;
-      obsId->totalFrames = nframe;
-      sdsuNframe = (uint32) nframe;  /* Modif 23 sept 1999 - cb */
+      if ( sdsuId->readMethod == 1 )
+      {
+         nframe = 0;   /* DSP code assumes 0 means infinite number of frames. */
+         obsId->continuous = TRUE;
+         obsId->totalFrames = nframe;
+         sdsuNframe = (uint32) nframe;  /* Modif 23 sept 1999 - cb */
+      }
+      else
+      {
+         nframe = 1;      
+         obsId->continuous = TRUE;
+         obsId->totalFrames = 0;
+         sdsuNframe = (uint32) nframe;  
+      }
    }
    else if ( nframe == 1 )
    {
@@ -2203,9 +2276,19 @@ uint32 detExposure
       nframePerDataset = 1 ;
       
       /* BUG WORK AROUND */
-      obsId->continuous = FALSE;
-      obsId->totalFrames = nframe;
-      sdsuNframe = (uint32) 0;  /* Modif 25 oct 1999 - cb */
+
+      if ( sdsuId->readMethod == 1)
+      {
+         obsId->continuous = FALSE;
+         obsId->totalFrames = nframe;
+         sdsuNframe = (uint32) 0;  /* Modif 25 oct 1999 - cb */
+      }
+      else
+      {
+         obsId->continuous = FALSE;
+         obsId->totalFrames = nframe;
+         sdsuNframe = (uint32) 1;  
+      }
    }
 
    /* Set the number of frames by writing to the T_NFRAME parameter in the
@@ -2284,7 +2367,8 @@ uint32 detExposure
     * Set up the the total integration time requested 
     */
 
-   if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), obsId->pExposedRQContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), 
+                        obsId->pExposedRQContext ) == ERROR)
    {
       ERROR_LOG ("Failed to init total integration time requested SIR record");
    }
@@ -2293,7 +2377,8 @@ uint32 detExposure
     * Set up the the number of frames per dataset 
     */
 
-   if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, obsId->pNFramesContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, 
+                        obsId->pNFramesContext ) == ERROR)
    {
       ERROR_LOG ("Failed to set number of frames SIR record");
    }
@@ -2519,7 +2604,8 @@ uint32 setDhsInfo
    obsId->dhsOutOptions = (int) dhsOutOptions;
 
    MESSAGE_LOG1 (MSG_LOG, "Quick look stream defined as %s", qlStream);
-   MESSAGE_LOG1 (MSG_LOG, "DHS output option defined as %d", (int)dhsOutOptions);
+   MESSAGE_LOG1 (MSG_LOG, "DHS output option defined as %d", 
+                 (int)dhsOutOptions);
 
    return (errorNumber);
 }
@@ -2988,7 +3074,7 @@ uint32 observeStart
 
    /* Variables associated with the provision of WCS information. */
 
-   int            wcsStatus;       /* WCS status.                             */
+   int            wcsStatus=0;     /* WCS status.                             */
    double         pixis;           /* x to i scale factor.                    */
    double         pixjs;           /* y to j scale factor.                    */
    double         perp;            /* Non-perpendicularity of i and j axes in */
@@ -3100,7 +3186,8 @@ uint32 observeStart
       /* Check if the number of frames fits with the dhs output */
       /* Permanent storage should be used with nframe = 1 */
 
-      if ( (obsId->outOptions == 1) && (obsId->dhsOutOptions == 0) && (obsId->totalFrames != 1) )
+      if ( (obsId->outOptions == 1) && (obsId->dhsOutOptions == 0) && 
+           (obsId->totalFrames != 1) )
       {
          ERROR_SET (S_detControl_BAD_ATTRIBUTE,
                "For permanent DHS storage, the number of frame should be 1",
@@ -3169,8 +3256,8 @@ uint32 observeStart
       if ( obsId->outOptions == 1 )
       {
          if ( ( !detDhsInitialised ) ||
-              ( obsId->dhsConnection == NULL) ||
-              /* ( dhsIsConnected (obsId->dhsConnection, &dhsErrno) 
+              ( detDhsConnection == NULL) ||
+              /* ( dhsIsConnected (detDhsConnection, &dhsErrno) 
               != DHS_TRUE ) */ /* DOESN'T WORK */
               ( FALSE )        /* BUG WORK AROUND */
             )
@@ -3222,7 +3309,7 @@ uint32 observeStart
          }
          else
          {
-            pLabelFromDhs = dhsBdName (obsId->dhsConnection, &dhsErrno);
+            pLabelFromDhs = dhsBdName (detDhsConnection, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             if ( dhsErrno != DHS_S_SUCCESS )
@@ -3319,7 +3406,7 @@ uint32 observeStart
          else if (expTim == 0)
          {
             MESSAGE_LOG (MSG_WARNING,
-            "Zero exposure time obtained from SDSU controller. Assuming minimum");
+            "Zero exposure time obtained from SDSU controller. Assuming min");
             if (obsId->totalFrames > 0)
             {
                obsId->exposed = 
@@ -3363,6 +3450,8 @@ uint32 observeStart
        * Start the readout process. The observation should now start in 
        * a parallel thread.
        */
+
+      sdsuId->frameTimeout = (int) (obsId->expTime + 60) * sysClkRateGet();
 
       MESSAGE_LOG2 (MSG_MINDEBUG, 
          "Starting exposure of %f seconds in %d frames...",
@@ -3448,7 +3537,6 @@ uint32 observeStart
           * Set the frame wait timeout. - SMB 16 Jan 99 
           */
 
-         /* sdsuId->frameTimeout = (int) waitTimeSecs * sysClkRateGet(); */
 
          if ( timeoutAlarmSet (obsId->timeId, waitTimeSecs, 
               detObserveTimeout, (int) obsId) == ERROR )
@@ -3774,7 +3862,7 @@ uint32 observeStart
          /*{*/
          if ( obsId->dhsOutOptions == 0 )
          {
-            dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_LIFETIME, 
+            dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
                      obsId->pDataLabel, DHS_BD_LT_PERMANENT, &dhsErrno);
             MESSAGE_LOG1 (MSG_MINDEBUG,
                "LIFETIME of DHS frame %s set to DHS_BD_LT_PERMANENT", 
@@ -3784,7 +3872,7 @@ uint32 observeStart
          }
          else           /* either continuous mode with totalFrames = 0 or > 1 */
          {
-            dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_LIFETIME, 
+            dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
                      obsId->pDataLabel, DHS_BD_LT_TRANSIENT, &dhsErrno);
             MESSAGE_LOG1 (MSG_MINDEBUG,
                "LIFETIME of DHS frame %s set to DHS_BD_LT_TRANSIENT", 
@@ -3793,10 +3881,10 @@ uint32 observeStart
                "Total Frames is %d", obsId->totalFrames);
          }
          CHECK_DHS (dhsErrno);
-         dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_CONTRIB, 
+         dhsBdCtl(detDhsConnection, DHS_BD_CTL_CONTRIB, 
             obsId->pDataLabel, 1, contrib, &dhsErrno);
          CHECK_DHS (dhsErrno);
-         dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_QLSTREAM, 
+         dhsBdCtl(detDhsConnection, DHS_BD_CTL_QLSTREAM, 
                   obsId->pDataLabel, 1, qlStreams, &dhsErrno);
          CHECK_DHS (dhsErrno);
 
@@ -4172,7 +4260,7 @@ uint32 detObserveStart
 
    /* Variables associated with the provision of WCS information. */
 
-   int            wcsStatus;       /* WCS status.                             */
+   int            wcsStatus = 0;   /* WCS status.                             */
    double         pixis;           /* x to i scale factor.                    */
    double         pixjs;           /* y to j scale factor.                    */
    double         perp;            /* Non-perpendicularity of i and j axes in */
@@ -4337,10 +4425,37 @@ uint32 detObserveStart
          return (errorNumber);
       }
 
-      if (epToVxPipeWrite( NULL, (char *)(int)&exposure, obsId->pIntTimeContext ) == ERROR)
+      obsId->expTime = exposure;
+
+      if (epToVxPipeWrite( NULL, (char *)(int)&exposure, 
+                           obsId->pIntTimeContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set integration time SIR record");
       }
+
+      /*
+       * Determine how to read the CCD when in continuous mode:
+       * if exposure < readoutTime -> serie of 1 frame
+       * if exposure > readoutTime -> CCD in continuous mode
+       */
+
+      sdsuId->readoutTime = (SDSU_FULL_READOUT * obsId->pixelsNb) /
+                            (DET_CONTROL_HRWFS_XSIZE * DET_CONTROL_HRWFS_YSIZE);
+
+      /*if ( exposure < sdsuId->readoutTime )
+      {
+         sdsuId->readMethod = 0;
+         printf ( "exp < readoutTime (%f<%f) - pixelsNb = %d\n" , 
+                  exposure, sdsuId->readoutTime, obsId->pixelsNb);
+      }
+      else
+      {
+         sdsuId->readMethod = 1;
+         printf ( "exp > readoutTime (%f>%f) - pixelsNb = %d\n" , exposure, 
+                  sdsuId->readoutTime, obsId->pixelsNb);
+      }*/
+
+      sdsuId->readMethod = 0;
 
       /* Check if the number of frames fits with the dhs output */
       /* Permanent storage should be used with nframe = 1 */
@@ -4451,8 +4566,8 @@ uint32 detObserveStart
       if ( outOptions == 1 )
       {
          if ( ( !detDhsInitialised ) ||
-              ( obsId->dhsConnection == NULL) ||
-              /* ( dhsIsConnected (obsId->dhsConnection, &dhsErrno) 
+              ( detDhsConnection == NULL) ||
+              /* ( dhsIsConnected (detDhsConnection, &dhsErrno) 
               != DHS_TRUE ) */ /* DOESN'T WORK */
               ( FALSE )        /* BUG WORK AROUND */
             )
@@ -4504,7 +4619,7 @@ uint32 detObserveStart
          }
          else
          {
-            pLabelFromDhs = dhsBdName (obsId->dhsConnection, &dhsErrno);
+            pLabelFromDhs = dhsBdName (detDhsConnection, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             if ( dhsErrno != DHS_S_SUCCESS )
@@ -4582,13 +4697,22 @@ uint32 detObserveStart
              * COUNT IS INFINITE.
              */
 
-            nframe = 0;/* DSP code assumes 0 means infinite number of frames. */
+            if ( sdsuId->readMethod == 1 )
+            {
+               nframe = 0;
+                       /* DSP code assumes 0 means infinite number of frames. */
 
-            obsId->continuous = TRUE;
-
-            obsId->totalFrames = nframe;
-
-            sdsuNframe = (uint32) nframe;  /* Modif 23 sept 1999 - cb */
+               obsId->continuous = TRUE;
+               obsId->totalFrames = nframe;
+               sdsuNframe = (uint32) nframe;  /* Modif 23 sept 1999 - cb */
+            }
+            else
+            {
+               nframe = 1;
+               obsId->continuous = TRUE;
+               obsId->totalFrames = 0;
+               sdsuNframe = (uint32) nframe;  
+            }
          }
          else if ( nframe == 1 )
          {
@@ -4599,9 +4723,7 @@ uint32 detObserveStart
 
             /* BUG WORK AROUND */
             obsId->continuous = FALSE;
-
             obsId->totalFrames = nframe;
-
             sdsuNframe = (uint32) nframe;  /* Modif 23 sept 1999 - cb */
          }
          else
@@ -4613,10 +4735,18 @@ uint32 detObserveStart
             nframePerDataset = 1 ;
 
             /* BUG WORK AROUND */
-            obsId->continuous = FALSE;
-            obsId->totalFrames = nframe;
-
-            sdsuNframe = (uint32) 0;  /* Modif 25 oct 1999 - cb */
+            if ( sdsuId->readMethod == 1)
+            {
+               obsId->continuous = FALSE;
+               obsId->totalFrames = nframe;
+               sdsuNframe = (uint32) 0;  /* Modif 25 oct 1999 - cb */
+            }
+            else
+            {
+               obsId->continuous = FALSE;
+               obsId->totalFrames = nframe;
+               sdsuNframe = (uint32) 1;  
+            }
          }
 
          /* Set the number of frames by writing to the T_NFRAME parameter in the
@@ -4663,9 +4793,10 @@ uint32 detObserveStart
           * Set up the the total integration time requested 
           */
 
-         if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), obsId->pExposedRQContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), 
+                              obsId->pExposedRQContext ) == ERROR)
          {
-            ERROR_LOG ("Failed to init total integration time requested SIR record");
+            ERROR_LOG ("Failed to init total int time requested SIR record");
          }
 
          /*
@@ -4674,14 +4805,16 @@ uint32 detObserveStart
 
          if ( obsId->continuous == TRUE )
          {
-            if (epToVxPipeWrite( NULL, "MOVIE", obsId->pObsModeContext ) == ERROR)
+            if (epToVxPipeWrite( NULL, "MOVIE", obsId->pObsModeContext ) 
+                == ERROR)
             {
                ERROR_LOG ("Failed to set observation mode SIR record");
             }
          }
          else
          {
-            if (epToVxPipeWrite( NULL, "STARE", obsId->pObsModeContext ) == ERROR)
+            if (epToVxPipeWrite( NULL, "STARE", obsId->pObsModeContext ) 
+                == ERROR)
             {
                ERROR_LOG ("Failed to set observation mode SIR record");
             }
@@ -4693,11 +4826,13 @@ uint32 detObserveStart
           */
 
          nexp = 1 ;
-         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpRQContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpRQContext ) 
+             == ERROR)
          {
             ERROR_LOG ("Failed to init Number exp/dataset SIR record");
          }
-         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpContext ) 
+             == ERROR)
          {
             ERROR_LOG ("Failed to init Number exp/dataset SIR record");
          }
@@ -4706,7 +4841,8 @@ uint32 detObserveStart
           * Set up the the number of frames per dataset 
           */
 
-         if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, obsId->pNFramesContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, 
+                              obsId->pNFramesContext ) == ERROR)
          {
             ERROR_LOG ("Failed to set number of frames SIR record");
          }
@@ -4752,7 +4888,7 @@ uint32 detObserveStart
          else if (expTim == 0)
          {
             MESSAGE_LOG (MSG_WARNING,
-            "Zero exposure time obtained from SDSU controller. Assuming minimum");
+            "Zero exposure time obtained from SDSU controller. Assuming min");
             if (obsId->totalFrames > 0)
             {
                obsId->exposed = 
@@ -4783,7 +4919,8 @@ uint32 detObserveStart
        * Set up the the total integration time  
        */
 
-      if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposed), obsId->pExposedContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposed), 
+                           obsId->pExposedContext ) == ERROR)
       {
          ERROR_LOG ("Failed to init total integration time SIR record");
       }
@@ -4805,6 +4942,8 @@ uint32 detObserveStart
        * Start the readout process. The observation should now start in 
        * a parallel thread.
        */
+
+      sdsuId->frameTimeout = (int) (obsId->expTime + 60) * sysClkRateGet();
 
       MESSAGE_LOG2 (MSG_MINDEBUG, 
          "Starting exposure of %f seconds in %d frames...",
@@ -4890,7 +5029,6 @@ uint32 detObserveStart
           * Set the frame wait timeout. - SMB 16 Jan 99 
           */
 
-         /* sdsuId->frameTimeout = (int) waitTimeSecs * sysClkRateGet(); */
 
          if ( timeoutAlarmSet (obsId->timeId, waitTimeSecs, 
               detObserveTimeout, (int) obsId) == ERROR )
@@ -5216,7 +5354,7 @@ uint32 detObserveStart
          /*{*/
          if ( dhsOutOptions == 0 )
          {
-            dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_LIFETIME, 
+            dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
                      obsId->pDataLabel, DHS_BD_LT_PERMANENT, &dhsErrno);
             MESSAGE_LOG1 (MSG_MINDEBUG,
                "LIFETIME of DHS frame %s set to DHS_BD_LT_PERMANENT", 
@@ -5226,7 +5364,7 @@ uint32 detObserveStart
          }
          else           /* either continuous mode with totalFrames = 0 or > 1 */
          {
-            dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_LIFETIME, 
+            dhsBdCtl(detDhsConnection, DHS_BD_CTL_LIFETIME, 
                      obsId->pDataLabel, DHS_BD_LT_TRANSIENT, &dhsErrno);
             MESSAGE_LOG1 (MSG_MINDEBUG,
                "LIFETIME of DHS frame %s set to DHS_BD_LT_TRANSIENT", 
@@ -5235,10 +5373,10 @@ uint32 detObserveStart
                "Total Frames is %d", obsId->totalFrames);
          }
          CHECK_DHS (dhsErrno);
-         dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_CONTRIB, 
+         dhsBdCtl(detDhsConnection, DHS_BD_CTL_CONTRIB, 
             obsId->pDataLabel, 1, contrib, &dhsErrno);
          CHECK_DHS (dhsErrno);
-         dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_QLSTREAM, 
+         dhsBdCtl(detDhsConnection, DHS_BD_CTL_QLSTREAM, 
                   obsId->pDataLabel, 1, qlStreams, &dhsErrno);
          CHECK_DHS (dhsErrno);
 
@@ -5317,10 +5455,10 @@ uint32 detObserveStart
                             NULL, obsId->pObsType, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataFrame, "exptime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->exposed, &dhsErrno);
+                            NULL, obsId->expTime, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataFrame, "darktime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->exposed, &dhsErrno);
+                            NULL, obsId->expTime, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             /* WCS attributes */
@@ -5985,7 +6123,7 @@ void detObserveEnd
 #ifdef DEBUG
        printf (
        "detObserveEnd: dhsBdPut, dhsConnection=%d, pDataLabel=%s, dataset=%d\n",
-       (int) obsId->dhsConnection, obsId->pDataLabel, (int) obsId->dhsDataset);
+       (int) detDhsConnection, obsId->pDataLabel, (int) obsId->dhsDataset);
 #endif /* DEBUG */
 
          if ( obsId->dhsOutOptions == 2 ) /* QL only */
@@ -5993,13 +6131,13 @@ void detObserveEnd
             if ( obsId->totalFrames == 1 )
             {
                putTag = 
-               dhsBdPut (obsId->dhsConnection, obsId->pDataLabel, 
+               dhsBdPut (detDhsConnection, obsId->pDataLabel, 
                DHS_BD_PT_DS_QL, DHS_TRUE, obsId->dhsDataset, NULL, &dhsErrno);
             }
             else
             {
                putTag = 
-               dhsBdPut (obsId->dhsConnection, obsId->pDataLabel, 
+               dhsBdPut (detDhsConnection, obsId->pDataLabel, 
                          DHS_BD_PT_DS_QL, DHS_FALSE, obsId->dhsDataset, NULL, 
                          &dhsErrno);
             }
@@ -6009,13 +6147,13 @@ void detObserveEnd
             if ( obsId->totalFrames == 1 )
             {
                putTag = 
-               dhsBdPut (obsId->dhsConnection, obsId->pDataLabel, 
+               dhsBdPut (detDhsConnection, obsId->pDataLabel, 
                DHS_BD_PT_DS, DHS_TRUE, obsId->dhsDataset, NULL, &dhsErrno);
             }
             else
             {
                putTag = 
-               dhsBdPut (obsId->dhsConnection, obsId->pDataLabel, 
+               dhsBdPut (detDhsConnection, obsId->pDataLabel, 
                          DHS_BD_PT_DS, DHS_FALSE, obsId->dhsDataset, NULL, 
                          &dhsErrno);
             }
@@ -6966,6 +7104,11 @@ uint32 detInit
    int          newMaxFrames;    /* New maximum number of frames.             */
 
    uint32       mode;
+
+   long         offset0;            /* ADC offset for output 0.               */
+   long         offset1;            /* ADC offset for output 1.               */
+   uint32       tempCode;           /* Target temperature code                */
+   uint32       tempCoeff;          /* Coefficient for temperature control    */
    
    /*
     * Initialise the error number.
@@ -6993,6 +7136,10 @@ uint32 detInit
       errorNumber = S_detControl_BUSY;
       return (errorNumber);
    }
+
+   /* Set to FALSE the temperature Flag */
+
+   readTempReadyFlag = FALSE;
 
    /* Set the initialisation state to BUSY. */
 
@@ -7381,13 +7528,57 @@ uint32 detInit
    printf ("detInit: Starting the readout task and frame sync callback.\n");
 #endif /* DEBUG */
 
-   /* MODIF 23 SEPT */
-
    if (sdsuSimpleReadoutOpen (*pSdsuId, NULL, detObserveEnd, 1, TRUE) == ERROR)
    {
       ERROR_LOG ("Failed to start readout task on initialisation");
       errorNumber = S_detControl_SDSU_ERROR;
       epToVxSetHealth( pRecordPrefix, "WARNING" );
+   }
+
+   /* 
+    * Set the default offsets for HRWFS
+    */
+
+   offset0 = 2340 ;
+   offset1 = 2350 ;
+
+   MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
+                 offset0, offset1);
+
+   if ( sdsuParamWRP (*pSdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                      (uint32) offset0 ) == ERROR )
+   {
+      ERROR_LOG ("Error setting ADC offset 0 parameter");
+   }
+
+   if ( sdsuParamWRP (*pSdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                      (uint32) offset1 ) == ERROR )
+   {
+      ERROR_LOG ("Error setting ADC offset 1 parameter");
+   }
+   if (sdsuPrimitive (*pSdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
+   {
+      ERROR_LOG (
+      "Failed to activate TIMING DSP parameters with LDP command");
+   }
+
+   /* 
+    * Set the default temperature for the HRWFS 
+    */
+
+   tempCode = (uint32)1282 ;
+   tempCoeff = (uint32)128 ;
+                      
+   MESSAGE_LOG2 (MSG_LOG, 
+                 "Defining temperature control parameters: %#lx %#lx",
+                 tempCode, tempCoeff);
+
+   if ( (sdsuParamWrite (*pSdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", tempCode )
+         == ERROR) ||
+        (sdsuParamWrite (*pSdsuId, SDSU_IDENT_UTL, "U_TCF", (uint32)tempCoeff )
+         == ERROR) )
+   {
+      ERROR_LOG ("Error setting temperasture control parameters");
    }
 
    /*
@@ -7407,6 +7598,10 @@ uint32 detInit
       {
          ERROR_LOG ("Failed to set initialisation state to IDLE");
       }
+
+      /* Set to TRUE the temperature Flag */
+
+      readTempReadyFlag = TRUE;
 
       if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
       {
@@ -7499,6 +7694,11 @@ uint32 detReset
 
    uint32       mode;
 
+   long         offset0;            /* ADC offset for output 0.               */
+   long         offset1;            /* ADC offset for output 1.               */
+   uint32       tempCode;           /* Target temperature code                */
+   uint32       tempCoeff;          /* Coefficient for temperature control    */
+
    /*
     * Initialise the error number and obtain the attributes provided 
     * with the command.
@@ -7541,6 +7741,10 @@ uint32 detReset
       errorNumber = S_detControl_BUSY;
       return (errorNumber);
    }
+
+   /* Set to FLASE the temperature Flag */
+
+   readTempReadyFlag = FALSE ;
 
    /*
     * Reset the SDSU hardware.
@@ -7735,6 +7939,52 @@ uint32 detReset
    }
 
    /*
+    * Set back the default offsets
+    */
+
+   offset0 = 2340 ;
+   offset1 = 2350 ;
+
+   MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
+                 offset0, offset1);
+
+   if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                      (uint32) offset0 ) == ERROR )
+   {
+      ERROR_LOG ("Error setting ADC offset 0 parameter");
+   }
+
+   if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                     (uint32) offset1 ) == ERROR )
+   {
+      ERROR_LOG ("Error setting ADC offset 1 parameter");
+   }
+   if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
+   {
+      ERROR_LOG (
+      "Failed to activate TIMING DSP parameters with LDP command");
+   }
+
+   /* 
+    * Set the default temperature for the HRWFS 
+    */
+
+   tempCode = (uint32)1282 ;
+   tempCoeff = (uint32)128 ;
+                      
+   MESSAGE_LOG2 (MSG_LOG, 
+                 "Defining temperature control parameters: %#lx %#lx",
+                 tempCode, tempCoeff);
+
+   if ( (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", tempCode )
+         == ERROR) ||
+        (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_TCF", (uint32)tempCoeff )
+         == ERROR) )
+   {
+      ERROR_LOG ("Error setting temperasture control parameters");
+   }
+
+   /*
     * If no errors have occurred during the reset set the controller health to
     * GOOD.
     * If the reset failed the controller may be in an unusable state, so set the
@@ -7744,6 +7994,10 @@ uint32 detReset
    if ( errorNumber == 0 )
    {
       epToVxSetHealth( pRecordPrefix, "GOOD" );
+
+      /* Set to TRUE the temperature Flag */
+
+      readTempReadyFlag = TRUE ;
    }
    else
    {
@@ -10532,8 +10786,6 @@ STATUS detObsShow (
 
    if ( (obsId->outOptions == 1) || (obsId->outOptions == 3) )
    {
-      printf ("  DHS connection ID          : %d\n", 
-              (int) obsId->dhsConnection);
       printf ("  Data label                 : %s\n", 
               obsId->pDataLabel);
    }
@@ -12092,9 +12344,9 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "UTEND   ='%20s'/                                                ", utEndReduceString);
    headerCount++;
-   fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->exposed);
+   fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->expTime);
    headerCount++;
-   fprintf (fp, "DARKTIME=      %15f /                                                ", obsId->exposed);
+   fprintf (fp, "DARKTIME=      %15f /                                                ", obsId->expTime);
    headerCount++;
    fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
    headerCount++;
@@ -12439,17 +12691,15 @@ STATUS detDhsInit
  *   detDhsConnect
  *
  *   INVOCATION:
- *   detDhsConnect (pWfsName, pDhsConnection)
+ *   detDhsConnect ()
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (>) pWfsName       (const char *)  Name of wavefront sensor hr
- *   (<) pDhsConnection (DHS_CONNECT *) Pointer to DHS connection ID
  *
  *   FUNCTION VALUE:
  *   (STATUS)   OK if command successful, ERROR if unsuccessful
  *
  *   PURPOSE:
- *   Initialise connection to DHS for a particular WFS
+ *   Initialise connection to DHS 
  *
  *   DESCRIPTION:
  *   This function initialises the connection to the DHS.
@@ -12458,6 +12708,7 @@ STATUS detDhsInit
  *   (>)   detDhsInitialised   (BOOL)        DHS initialised flag
  *   (>)   pDetDhsHostName     (char *)      DHS server host name
  *   (>)   pDetDhsServerName   (char *)      DHS server name
+ *   (!)   detDhsConnection    (DHS_CONNECT) DHS connection Id
  *
  *   PRIOR REQUIREMENTS:
  *   The DHS library should already have been initialised by calling detDhsInit.
@@ -12473,8 +12724,6 @@ STATUS detDhsInit
 
 STATUS detDhsConnect
    (
-   const char *   pWfsName,           /* Name of wavefront sensor.            */
-   DHS_CONNECT *  pDhsConnection      /* Pointer to DHS connection.           */
    )
 {
    DHS_STATUS     dhsErrno;           /* DHS error number.                    */
@@ -12500,7 +12749,7 @@ STATUS detDhsConnect
     */
 
 #ifdef DEBUG
-   printf ("detDhsConnect: Taking DHS semaphore for WFS %s...\n", pWfsName);
+   printf ("detDhsConnect: Taking DHS semaphore for HRWFS ...\n");
 #endif /* DEBUG */
 
    if ( semTake (detDhsSem, DHS_WAIT_TIMEOUT) == ERROR )
@@ -12518,13 +12767,13 @@ STATUS detDhsConnect
    MESSAGE_LOG2 (MSG_LOG, "Connecting to DHS server %s on host %s",
                  pDetDhsServerName, pDetDhsHostName);
 
-   *pDhsConnection = 
+   detDhsConnection = 
    dhsConnect (pDetDhsHostName, pDetDhsServerName, NULL, &dhsErrno);
    CHECK_DHS (dhsErrno);
 
 #ifdef DEBUG
    printf ("dhsConnect: dhsConnection=%ld dhsErrno=%d\n", 
-           *pDhsConnection, dhsErrno);
+           detDhsConnection, dhsErrno);
 #endif /* DEBUG */
 
    if (dhsErrno != DHS_S_SUCCESS)
@@ -13907,3 +14156,111 @@ STATUS detHeadTempGet
    return (OK) ;
 }
   
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detDhsReconnect
+ *
+ *   INVOCATION:
+ *   detDhsReconnect (cadCmdContext, commandNumber, sdsuId, obsId)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber (int)             Command number
+ *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
+ *   (!) obsId         (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Execute detDhsReconnect command
+ *
+ *   DESCRIPTION:
+ *   This function disconnects or reconnects to the dhs .
+ *
+ *   EXTERNAL VARIABLES:
+ *   None.
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *-
+ */
+
+uint32 detDhsReconnect
+   (
+   CAD_CMD_CONTEXT cadCmdContext, /* CAD command context structure.           */
+   int             commandNumber, /* Command number.                          */
+   SDSU_ID         sdsuId,        /* SDSU context structure.                  */
+   OBS_ID          obsId          /* Observation context structure.           */
+   )
+{
+   uint32          errorNumber;   /* Error number reported by task.           */
+
+   DHS_STATUS      dhsErrno;      /* DHS error number.                        */
+
+   long            connect;
+
+
+   /*
+    * Initialise the error number and obtain the attributes provided with the
+    * command.
+    */
+
+   errorNumber = 0;
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) &connect);
+
+   /*
+    * Check there are valid SDSU and observation context structures.
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   /*
+    * The command can be used when an observation is not in progress
+    */
+
+   if ( obsId->observing )
+   {
+      ERROR_SET (S_detControl_BUSY,
+         "Observation in progress - abort observation and try again",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_BUSY;
+      return (errorNumber);
+   }
+
+   /*
+    * Check wether it is connect or disconnect command
+    */
+
+   if ( connect == 0 ) /* disconnect requested */
+   {
+      semTake (detDhsSem, WAIT_FOREVER);
+
+      dhsErrno = 0;
+      dhsDisconnect (detDhsConnection, &dhsErrno);
+      CHECK_DHS (dhsErrno);
+   }
+   else                /* connect requested */
+   {
+      if ( detDhsConnect () == ERROR )
+      {
+         ERROR_SET (0, "Can't reconnect to the dhs", ERROR_LOG_NOW);
+         return (ERROR);
+      }
+   }
+
+   return (OK);
+}
