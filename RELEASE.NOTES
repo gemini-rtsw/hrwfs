@@ -1,0 +1,9 @@
+V0-4 4 Nov 1999 CB: 
+-------------------
+Modifications toward V0-3
+  - version for PPC
+  - simplified version for hrwfs only
+  - binning windowing implemented
+  - WCS + Ra and Dec implemeneted
+  - Fits header improved
+  - new observe command
