@@ -7,3 +7,9 @@ Modifications toward V0-3
   - WCS + Ra and Dec implemeneted
   - Fits header improved
   - new observe command
+
+V0-5 8 Nov 1999 CB:
+-------------------
+Modifications toward V0-4
+  - WCS bug fix
+  - TELESCOP and OBSERVAT are now updated from the tcs:name

@@ -1,6 +1,6 @@
 #!/bin/csh
 #
-# Tidies up a WFS appication directory prior to release by giving the
+# Tidies up HRWFS directory prior to release by giving the
 # user the option of removing certain files.
 #
 /usr/bin/rm -i XtermLog*
