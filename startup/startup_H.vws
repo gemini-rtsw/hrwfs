@@ -1,4 +1,4 @@
-# $Id: startup_H.vws,v 1.1.1.1 1999-03-17 03:14:28 cboyer Exp $
+# $Id: startup_H.vws,v 1.2 1999-03-17 03:21:07 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -11,7 +11,7 @@ shellPromptSet "hrwfs > "
 tyBackspaceSet 0177
 
 # cd to application install directory (beware automounter problems)
-cd "$(install)"
+cd "$(iocpath)"
 pwd
 
 # The local file contains site-specific information
@@ -35,8 +35,8 @@ ld < $(epics)/base/bin/$(arch)/seq
 ld < $(epics)/extensions/bin/$(arch)/libsla.a
 ld < $(epics)/extensions/bin/$(arch)/libtime.a
 #ld < $(epics)/extensions/bin/$(arch)/libast.a
-ld < /home/smb/gemini_lib/astlib/bin/$(arch)/astlib
-ld < /home/smb/gemini_lib/cfitsio/bin/$(arch)/cFitsIo
+ld < /gemini/astlib/bin/$(arch)/astlib
+ld < /gemini/cfitsio/bin/$(arch)/cFitsIo
 
 ld < $(epics)/extensions/bin/$(arch)/timeSeq
 
