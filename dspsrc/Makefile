@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.1.1.1 1999-03-17 03:14:20 cboyer Exp $
+# $Id: Makefile,v 1.2 1999-03-17 03:20:48 cboyer Exp $
 #
 
 APPLIC_DIR_TYPE = src
@@ -8,9 +8,7 @@ INSTALL_DSP = .applTop/bin/asm56000
 
 # The following gives the location of the asm56000 utilities
 # (Edit for your current location)
-#ASM56000_DIR = /opt/asm56000
-ASM56000_DIR = /net/alba/sw2/epics/asm56000
-#ASM56000_DIR = /home/ajf/ajfSummit/asm56000
+ASM56000_DIR = /usr/local/asm56000
 ASM56K = $(ASM56000_DIR)/asm56000
 DSPLNK = $(ASM56000_DIR)/dsplnk
 CLDLOD = $(ASM56000_DIR)/cldlod
