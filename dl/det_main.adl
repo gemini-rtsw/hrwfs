@@ -7,7 +7,7 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="12"
-	nstr="104"
+	nstr="101"
 	ndynamic="7"
 	nplot="0"
 	nrd="5"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="3052"
+	nwords_dspy="2990"
 	nwords_sta="128"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1778"
-	osta="1650"
-	odynamic="1778"
-	oplot="2240"
-	ord="2240"
-	oes="3040"
-	okd="3040"
-	opd="3052"
-	opo="3052"
+	odyng="1716"
+	osta="1588"
+	odynamic="1716"
+	oplot="2178"
+	ord="2178"
+	oes="2978"
+	okd="2978"
+	opd="2990"
+	opo="2990"
 	opc="68"
 	ostr="206"
-	ocmap="1650"
-	ocrules="1650"
+	ocmap="1588"
+	ocrules="1588"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -804,9 +804,9 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detSave,car=det"
 	}
 	display[5] {
-		label=""
-		name=""
-		args=""
+		label="PRIMITIVE COMMAND"
+		name="det_primitive.dl"
+		args="top=$(top),sensor=$(sensor),cad=detPrim,car=det"
 	}
 	display[6] {
 		label=""
@@ -923,14 +923,14 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detReset,car=det"
 	}
 	display[2] {
-		label="PRIMITIVE COMMAND"
-		name="det_primitive.dl"
-		args="top=$(top),sensor=$(sensor),cad=detPrim,car=det"
-	}
-	display[3] {
 		label="TEST"
 		name="det_test.dl"
 		args="top=$(top),sensor=$(sensor),cad=detTest,car=det"
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
 	}
 	display[4] {
 		label=""
