@@ -7,7 +7,7 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="16"
-	nstr="68"
+	nstr="93"
 	ndynamic="19"
 	nplot="0"
 	nrd="1"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4888"
-	nwords_sta="2584"
+	nwords_dspy="5350"
+	nwords_sta="2648"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="3420"
-	osta="836"
-	odynamic="3420"
-	oplot="4716"
-	ord="4716"
-	oes="4876"
-	okd="4876"
-	opd="4888"
-	opo="4888"
+	odyng="3882"
+	osta="1234"
+	odynamic="3882"
+	oplot="5178"
+	ord="5178"
+	oes="5338"
+	okd="5338"
+	opd="5350"
+	opo="5350"
 	opc="68"
 	ostr="256"
-	ocmap="836"
-	ocrules="836"
+	ocmap="1234"
+	ocrules="1234"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -497,8 +497,8 @@ display {
 }
 "text" {
 	object {
-		x="431"
-		y="315"
+		x="430"
+		y="280"
 		width="20"
 		height="14"
 		groupid="0"
@@ -508,8 +508,8 @@ display {
 }
 "text" {
 	object {
-		x="431"
-		y="342"
+		x="430"
+		y="307"
 		width="20"
 		height="14"
 		groupid="0"
@@ -519,8 +519,8 @@ display {
 }
 "text" {
 	object {
-		x="378"
-		y="396"
+		x="377"
+		y="361"
 		width="67"
 		height="14"
 		groupid="0"
@@ -530,8 +530,8 @@ display {
 }
 "text" {
 	object {
-		x="378"
-		y="370"
+		x="377"
+		y="335"
 		width="66"
 		height="14"
 		groupid="0"
@@ -869,6 +869,69 @@ display {
 		groupid="0"
 	}
 	textix="output 2"
+	align="horiz. left"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="21"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="377"
+		y="393"
+		width="279"
+		height="13"
+		groupid="0"
+	}
+	textix="[If binning is set to yes, x,"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="377"
+		y="412"
+		width="262"
+		height="13"
+		groupid="0"
+	}
+	textix="y, x width, y width refer to"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="377"
+		y="431"
+		width="263"
+		height="13"
+		groupid="0"
+	}
+	textix="binned pixels and MAX=512"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="377"
+		y="450"
+		width="263"
+		height="13"
+		groupid="0"
+	}
+	textix="otherwise they refer to"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="377"
+		y="469"
+		width="263"
+		height="13"
+		groupid="0"
+	}
+	textix="unbinned pixels and MAX=1024]"
 	align="horiz. left"
 }
 "message button" {
@@ -1529,8 +1592,8 @@ display {
 }
 "text entry" {
 	object {
-		x="449"
-		y="309"
+		x="448"
+		y="274"
 		width="117"
 		height="19"
 		groupid="0"
@@ -1574,8 +1637,8 @@ display {
 }
 "text entry" {
 	object {
-		x="449"
-		y="336"
+		x="448"
+		y="301"
 		width="117"
 		height="20"
 		groupid="0"
@@ -1619,8 +1682,8 @@ display {
 }
 "text entry" {
 	object {
-		x="449"
-		y="393"
+		x="448"
+		y="358"
 		width="117"
 		height="20"
 		groupid="0"
@@ -1664,8 +1727,8 @@ display {
 }
 "text entry" {
 	object {
-		x="449"
-		y="365"
+		x="448"
+		y="330"
 		width="117"
 		height="19"
 		groupid="0"

@@ -10,6 +10,9 @@
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:28  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.3  1998/12/11 09:21:41  cics
  * Extra error checking
  *
@@ -39,9 +42,11 @@
 
 /* function declarations */
 
-IMPORT void	wfsSetTrackFrame (FRAMETYPE frame, char type, double year, double wavelength,
-								double RA, double Dec, char epochType, double epochYear);
-IMPORT void	wfsGetTrackFrame (FRAMETYPE * pFrame, char * pType, double * pYear, double * pWavelength,
-								double * pRA, double * pDec, char * pEpochType, double * pEpochYear);
+IMPORT void wfsSetTrackFrame (FRAMETYPE frame, char type, double year, 
+                              double wavelength, double RA, double Dec, 
+                              char epochType, double epochYear);
+IMPORT void wfsGetTrackFrame (FRAMETYPE * pFrame, char * pType, double * pYear, 
+                              double * pWavelength, double * pRA, double * pDec,
+                              char * pEpochType, double * pEpochYear);
 
 #endif /* __INCwfsWcsh */

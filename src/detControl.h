@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   07 Jun 2001 - cb add frame in obsId structure
  *   05 Jun 2001 - cb add detTemp, instName, inport in obsId structure
  *                 modify the ccdsec,...
  *   01 Jun 2001 - cb add oscan SIR record 
@@ -489,8 +490,10 @@ typedef   struct      /* Context structure used to describe an observation.   */
    double       epoch;     /* Epoch of observation as a year.                 */
 
    double       mjdobs;    /* Epoch of observation as a modified Julian date. */
+   char         frame[10]; /* Target coordinate system.                       */
 
                            /* SAD information.                                */
+                           /* ----------------                                */
 
    DATREC_CONTEXT pStateContext;      /* Context structure for state SIR      */
                                       /* record.                              */

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.16 2001-06-07 04:47:12 cboyer Exp $"};
+   "$Id: detControl.c,v 1.17 2001-06-08 04:26:13 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   07 jun 2001 - cb Fix a bug in detFrameSize, add FRAME keyword
  *   05 jun 2001 - cb add fits keywords:
  *                 FILTER1, FILTER2, ACLENS, FLDSTOP, CALSRC, ACFOCUS, DETTEMP
  *                 INPORT. Move some keywords to dataset, duplicate wcs keywords
@@ -2969,10 +2970,26 @@ uint32 observeStart
             {
                if ( obsId->x2 <= maxOutput )
                {
-                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  if ( obsId->binningFlag == TRUE )
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                  }
+                  else
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  }
                   strcpy (obsId->ccdSec2 , "" );
                   
                   sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
@@ -2996,12 +3013,33 @@ uint32 observeStart
                }
                else
                {
-                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
-                            obsId->x1, maxOutput, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
-                            maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  if ( obsId->binningFlag == TRUE )
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * maxOutput),
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                               ((maxOutput + 1) * obsId->xBin) - 1,
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                  }
+                  else
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 );
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               obsId->x1, maxOutput, obsId->y1, obsId->y2 );
+                     sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                               maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 );
+                  }
 
                   sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
                             maxOutput - obsId->x1 + 1, 
@@ -3031,11 +3069,27 @@ uint32 observeStart
             }
             else
             {
-               sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               if ( obsId->binningFlag == TRUE )
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            (obsId->xBin * obsId->x1) - 1, 
+                            (obsId->xBin * obsId->x2), 
+                            (obsId->yBin * obsId->y1) - 1, 
+                            (obsId->yBin * obsId->y2) ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            (obsId->xBin * obsId->x1) - 1, 
+                            (obsId->xBin * obsId->x2), 
+                            (obsId->yBin * obsId->y1) - 1, 
+                            (obsId->yBin * obsId->y2) ) ;
+               }
+               else
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               }
                strcpy ( obsId->ccdSec1 , "" );
-               sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
-                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
 
                strcpy ( obsId->dataSec1 , "" );
                sprintf ( obsId->dataSec2 , "[1:%d,1:%d]" ,
@@ -3062,17 +3116,37 @@ uint32 observeStart
             obsId->xPixelsDhs = obsId->xPixels;
             obsId->yPixelsDhs = obsId->yPixels;
 
-            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
-                      obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
-            sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
-                      (int)((obsId->xPixels - 2*(obsId->oscanNb))
-                            /obsId->outputsNb),
-                      obsId->yPixels ) ;
-            sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
-                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))
-                      /obsId->outputsNb) + 1),
-                      obsId->xPixels - 2*(obsId->oscanNb),
-                      obsId->yPixels ) ;
+            if ( obsId->binningFlag == TRUE )
+            {
+               sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                         (obsId->xPixels - 2*(obsId->oscanNb)) * obsId->xBin, 
+                         (obsId->yBin * obsId->yPixels) ) ;
+               sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                         (int)(obsId->xBin *  
+                              ((obsId->xPixels - 2*(obsId->oscanNb))
+                               /obsId->outputsNb)),
+                         (obsId->yBin * obsId->yPixels) ) ;
+               sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                         (int)(obsId->xBin * 
+                         (((obsId->xPixels - 2*(obsId->oscanNb))
+                         /obsId->outputsNb) + 1)) - 1,
+                         obsId->xBin * (obsId->xPixels - 2*(obsId->oscanNb)),
+                         (obsId->yBin * obsId->yPixels) ) ;
+            }
+            else
+            {
+               sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                         obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+               sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                         (int)((obsId->xPixels - 2*(obsId->oscanNb))
+                               /obsId->outputsNb),
+                         obsId->yPixels ) ;
+               sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                         (int)(((obsId->xPixels - 2*(obsId->oscanNb))
+                         /obsId->outputsNb) + 1),
+                         obsId->xPixels - 2*(obsId->oscanNb),
+                         obsId->yPixels ) ;
+            }
 
             sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
                       (int)((obsId->xPixels - 2*(obsId->oscanNb))/
@@ -3102,7 +3176,7 @@ uint32 observeStart
       }
          
 /*#ifdef DEBUG*/
-      printf ( "detObserveStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
+      printf ( "observeStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
                obsId->xPixelsDhs , obsId->yPixelsDhs) ;
 /*#endif*/
 
@@ -3448,6 +3522,19 @@ uint32 observeStart
       obsId->epoch   = trackEpoch.year;
       obsId->RA      = trackRA;
       obsId->Dec     = trackDec;
+ 
+      if ( trackFrame == FK5 )
+         strcpy ( obsId->frame, "FK5" );
+      else if ( trackFrame == FK4 )
+         strcpy ( obsId->frame, "FK4" );
+      else if ( trackFrame == APPT )
+         strcpy ( obsId->frame, "APPT" );
+      else if ( trackFrame == AZEL_TOPO )
+         strcpy ( obsId->frame, "AZEL_TOPO" );
+      else if ( trackFrame == AZEL_MNT )
+         strcpy ( obsId->frame, "AZEL_MNT" );
+      else
+         strcpy ( obsId->frame, "" );
 
       /*
        * If sufficient WCS calibration points are available, define the WCS
@@ -3636,6 +3723,7 @@ uint32 observeStart
          printf ("equinox  = %f\n", obsId->equinox);
          printf ("epoch    = %f\n", obsId->epoch);
          printf ("mjd-obs  = %f\n", obsId->mjdobs);
+         printf ("frame    = %s\n", obsId->frame);
 #endif
       }
       else
@@ -3965,6 +4053,9 @@ uint32 observeStart
 
             dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING, 
+                            0, NULL, obsId->frame, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             /* ADD MORE DATA FRAME HEADER ITEMS HERE. */
@@ -4487,17 +4578,17 @@ uint32 detObserveStart
                    obsId->outputsNb), obsId->yPixels ) ;
          sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
                    (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
-                   obsId->outputsNb) + 1),
+                         obsId->outputsNb) + 1),
                    obsId->xPixels - 2*(obsId->oscanNb),
                    obsId->yPixels ) ;
 
          sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
-                   (int)((obsId->xPixels - 2*(obsId->oscanNb))
-                   /obsId->outputsNb),
+                   (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                         obsId->outputsNb),
                    obsId->yPixels ) ;
          sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
-                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))
-                   /obsId->outputsNb) + 1),
+                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                         obsId->outputsNb) + 1),
                    obsId->xPixels - 2*(obsId->oscanNb),
                    obsId->yPixels ) ;
 
@@ -4535,16 +4626,32 @@ uint32 detObserveStart
             obsId->yPixelsDhs = obsId->y2 - obsId->y1 + 1;
 
             maxOutput = 
-            (int)(DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb)) ;
+            (int)(DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb));
 
             if ( obsId->x1 <= maxOutput )
             {
                if ( obsId->x2 <= maxOutput )
                {
-                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  if ( obsId->binningFlag == TRUE )
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                  }
+                  else
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  }
                   strcpy (obsId->ccdSec2 , "" );
                   
                   sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
@@ -4568,12 +4675,33 @@ uint32 detObserveStart
                }
                else
                {
-                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
-                            obsId->x1, maxOutput, obsId->y1, obsId->y2 ) ;
-                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
-                            maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  if ( obsId->binningFlag == TRUE )
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               (obsId->xBin * obsId->x1) - 1, 
+                               (obsId->xBin * maxOutput),
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                     sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                               ((maxOutput + 1) * obsId->xBin) - 1,
+                               (obsId->xBin * obsId->x2), 
+                               (obsId->yBin * obsId->y1) - 1, 
+                               (obsId->yBin * obsId->y2) ) ;
+                  }
+                  else
+                  {
+                     sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                               obsId->x1, obsId->x2, obsId->y1, obsId->y2 );
+                     sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                               obsId->x1, maxOutput, obsId->y1, obsId->y2 );
+                     sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                               maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 );
+                  }
 
                   sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
                             maxOutput - obsId->x1 + 1, 
@@ -4603,11 +4731,27 @@ uint32 detObserveStart
             }
             else
             {
-               sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
-                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               if ( obsId->binningFlag == TRUE )
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            (obsId->xBin * obsId->x1) - 1, 
+                            (obsId->xBin * obsId->x2), 
+                            (obsId->yBin * obsId->y1) - 1, 
+                            (obsId->yBin * obsId->y2) ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            (obsId->xBin * obsId->x1) - 1, 
+                            (obsId->xBin * obsId->x2), 
+                            (obsId->yBin * obsId->y1) - 1, 
+                            (obsId->yBin * obsId->y2) ) ;
+               }
+               else
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               }
                strcpy ( obsId->ccdSec1 , "" );
-               sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
-                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
 
                strcpy ( obsId->dataSec1 , "" );
                sprintf ( obsId->dataSec2 , "[1:%d,1:%d]" ,
@@ -4634,17 +4778,37 @@ uint32 detObserveStart
             obsId->xPixelsDhs = obsId->xPixels;
             obsId->yPixelsDhs = obsId->yPixels;
 
-            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
-                      obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
-            sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
-                      (int)((obsId->xPixels - 2*(obsId->oscanNb))
-                      /obsId->outputsNb),
-                      obsId->yPixels ) ;
-            sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
-                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))
-                      /obsId->outputsNb) + 1),
-                      obsId->xPixels - 2*(obsId->oscanNb),
-                      obsId->yPixels ) ;
+            if ( obsId->binningFlag == TRUE )
+            {
+               sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                         (obsId->xPixels - 2*(obsId->oscanNb)) * obsId->xBin, 
+                         (obsId->yBin * obsId->yPixels) ) ;
+               sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                         (int)(obsId->xBin *  
+                              ((obsId->xPixels - 2*(obsId->oscanNb))
+                               /obsId->outputsNb)),
+                         (obsId->yBin * obsId->yPixels) ) ;
+               sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                         (int)(obsId->xBin * 
+                         (((obsId->xPixels - 2*(obsId->oscanNb))
+                         /obsId->outputsNb) + 1)) - 1,
+                         obsId->xBin * (obsId->xPixels - 2*(obsId->oscanNb)),
+                         (obsId->yBin * obsId->yPixels) ) ;
+            }
+            else
+            {
+               sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                         obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+               sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                         (int)((obsId->xPixels - 2*(obsId->oscanNb))
+                               /obsId->outputsNb),
+                         obsId->yPixels ) ;
+               sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                         (int)(((obsId->xPixels - 2*(obsId->oscanNb))
+                         /obsId->outputsNb) + 1),
+                         obsId->xPixels - 2*(obsId->oscanNb),
+                         obsId->yPixels ) ;
+            }
 
             sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
                       (int)((obsId->xPixels - 2*(obsId->oscanNb))/
@@ -4677,7 +4841,6 @@ uint32 detObserveStart
       printf ( "detObserveStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
                obsId->xPixelsDhs , obsId->yPixelsDhs) ;
 /*#endif*/
-
       /*
        * If a request has been made to send data to the DHS, check that the 
        * DHS is available, otherwise reject the command.
@@ -5203,6 +5366,19 @@ uint32 detObserveStart
       obsId->RA      = trackRA;
       obsId->Dec     = trackDec;
 
+      if ( trackFrame == FK5 )
+         strcpy ( obsId->frame, "FK5" );
+      else if ( trackFrame == FK4 )
+         strcpy ( obsId->frame, "FK4" );
+      else if ( trackFrame == APPT )
+         strcpy ( obsId->frame, "APPT" );
+      else if ( trackFrame == AZEL_TOPO )
+         strcpy ( obsId->frame, "AZEL_TOPO" );
+      else if ( trackFrame == AZEL_MNT )
+         strcpy ( obsId->frame, "AZEL_MNT" );
+      else
+         strcpy ( obsId->frame, "" );
+
       /*
        * If sufficient WCS calibration points are available, define the WCS
        * information for this observation.
@@ -5390,6 +5566,7 @@ uint32 detObserveStart
          printf ("equinox  = %f\n", obsId->equinox);
          printf ("epoch    = %f\n", obsId->epoch);
          printf ("mjd-obs  = %f\n", obsId->mjdobs);
+         printf ("frame    = %s\n", obsId->frame);
 #endif
       }
       else
@@ -5719,6 +5896,9 @@ uint32 detObserveStart
 
             dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING,
+                            0, NULL, obsId->frame, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             /* ADD MORE DATA FRAME HEADER ITEMS HERE. */
@@ -9345,6 +9525,8 @@ uint32 detFrameSize
    long         reqY;
    long         reqXWidth;
    long         reqYWidth;
+   long         adjustX;
+   long         adjustY;
    long         reqX1;
    long         reqX2;
    long         reqY1;
@@ -9406,10 +9588,20 @@ uint32 detFrameSize
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6, 
                           (char *) &reqOscanNb);
 
+   if ( (reqXWidth % 2) == 0 )
+      adjustX = 1;
+   else
+      adjustX = 0;
+
+   if ( (reqYWidth % 2) == 0 )
+      adjustY = 1;
+   else
+      adjustY = 0;
+
    reqX1 = reqX - (int)(reqXWidth/2);
-   reqX2 = reqX + (int)(reqXWidth/2);
+   reqX2 = reqX + (int)(reqXWidth/2) - adjustX;
    reqY1 = reqY - (int)(reqYWidth/2);
-   reqY2 = reqY + (int)(reqYWidth/2);
+   reqY2 = reqY + (int)(reqYWidth/2) - adjustY;
 
    printf ( "reqX1=%d, reqX2=%d, reqY1=%d, reqY2=%d\n", 
 	    (int)reqX1, (int)reqX2, (int)reqY1, (int)reqY2);
@@ -13129,6 +13321,9 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "MJDOBS  =      %15f /                                                ", obsId->mjdobs);
    headerCount++;
+   fprintf (fp, "FRAME   ='%20s'/                                                ", obsId->frame);
+   headerCount++;
+   fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
    fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
    headerCount++;
    fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
