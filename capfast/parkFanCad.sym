@@ -1,0 +1,12 @@
+[symbol2]
+bbox -416 96 -224 352
+port -400 224 100 1536 STLK symbol 1 -416 224 0
+uniq 9
+[tools]
+[attributes]
+p -416 64 100 0 1 set1:cccad hrwfs:cc:park
+[layers]
+<symbol>
+l 100 6 0 -416 112 parkFanCad
+r 0 -416 96 -224 352
+[comments]

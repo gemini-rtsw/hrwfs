@@ -90,6 +90,7 @@ p 608 1664 100 0 1 DESC:On-chip integration time
 p 608 1568 100 0 1 EGU:seconds
 p 480 1440 100 0 0 FDSC:SDSU parameter T_EXP
 p 608 1632 100 0 1 FTVL:DOUBLE
+p 736 1632 100 0 0 PREC:4
 p 608 1600 100 0 1 PV:$(sadtop)$(wfs)
 use esirs 544 1223 100 0 nreads
 xform 0 752 1376
@@ -159,9 +160,9 @@ xform 0 1616 784
 p 2608 -688 200 0 1 author:S.M.Beard
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:B.Goodrich
-p 3120 -784 200 0 -1 date:$Date: 1999-03-17 03:14:13 $
-p 2576 2320 200 0 -1 id:$Id: wfsDetSad.sch,v 1.1.1.1 1999-03-17 03:14:13 cboyer Exp $
+p 3120 -784 200 0 -1 date:$Date: 2000-02-03 01:18:01 $
+p 2576 2320 200 0 -1 id:$Id: wfsDetSad.sch,v 1.2 2000-02-03 01:18:01 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2608 -496 200 0 -1 revision:$Revision: 1.1.1.1 $
+p 2608 -496 200 0 -1 revision:$Revision: 1.2 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor Detector Status Records
 [comments]

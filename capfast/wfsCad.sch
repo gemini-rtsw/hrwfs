@@ -1,66 +1,34 @@
 [schematic2]
-uniq 109
+uniq 121
 [tools]
 [detail]
-s 336 2240 500 0 Wavefront Sensing - WFS CAD Records
 s 2464 -704 500 512 wfsCad.sch
+s 336 2240 500 0 Wavefront Sensing - WFS CAD Records
 [cell use]
-use ecad2 224 1607 100 0 detExposure
-xform 0 384 1920
-p 288 1568 100 0 1 DESC:Set exposure parameters
-p 336 1984 100 0 1 FTVA:LONG
-p 336 1920 100 0 1 FTVB:DOUBLE
-p 288 1536 100 0 1 INAM:epToVxCadInit
-p 288 1472 100 0 1 PV:$(top)$(wfs)
-p 288 1504 100 0 1 SNAM:epToVxCadExecute
-use ecad2 736 1607 100 0 detObstype
-xform 0 896 1920
-p 800 1568 100 0 1 DESC:Set observation type
-p 848 1984 100 0 1 FTVA:STRING
-p 848 1920 100 0 0 FTVB:STRING
-p 800 1536 100 0 1 INAM:epToVxCadInit
-p 800 1472 100 0 1 PV:$(top)$(wfs)
-p 800 1504 100 0 1 SNAM:epToVxCadExecute
-use ecad2 -288 679 100 0 pause
-xform 0 -128 992
-p -224 640 100 0 1 DESC:Pause observation
-p -176 1056 100 0 0 FTVA:STRING
-p -176 992 100 0 0 FTVB:STRING
-p -224 608 100 0 1 INAM:
-p -224 544 100 0 1 PV:$(top)$(wfs)
-p -224 576 100 0 1 SNAM:epToVxCadReject
-use ecad2 224 679 100 0 continue
-xform 0 384 992
-p 288 640 100 0 1 DESC:Continue observation
-p 336 1056 100 0 0 FTVA:STRING
-p 336 992 100 0 0 FTVB:STRING
-p 288 608 100 0 1 INAM:
-p 288 544 100 0 1 PV:$(top)$(wfs)
-p 288 576 100 0 1 SNAM:epToVxCadReject
-use ecad2 736 679 100 0 stop
-xform 0 896 992
-p 800 640 100 0 1 DESC:Stop observation - keep data
-p 848 1056 100 0 0 FTVA:STRING
-p 848 992 100 0 0 FTVB:STRING
-p 800 608 100 0 1 INAM:epToVxCadInit
-p 800 544 100 0 1 PV:$(top)$(wfs)
-p 800 576 100 0 1 SNAM:epToVxCadExecute
-use ecad2 1248 679 100 0 abort
-xform 0 1408 992
-p 1312 640 100 0 1 DESC:Abort observation - discard data
-p 1360 1056 100 0 0 FTVA:STRING
-p 1360 992 100 0 0 FTVB:STRING
-p 1312 608 100 0 1 INAM:epToVxCadInit
-p 1312 544 100 0 1 PV:$(top)$(wfs)
-p 1312 576 100 0 1 SNAM:epToVxCadExecute
-use ecad2 1760 -249 100 0 detTemp
-xform 0 1920 64
-p 1824 -288 100 0 1 DESC:Define temperature parameters
-p 1872 128 100 0 1 FTVA:DOUBLE
-p 1872 64 100 0 1 FTVB:LONG
-p 1824 -320 100 0 1 INAM:epToVxCadInit
-p 1824 -384 100 0 1 PV:$(top)$(wfs)
-p 1824 -352 100 0 1 SNAM:epToVxCadExecute
+use ecad2 3552 263 100 0 detTest
+xform 0 3712 576
+p 3616 224 100 0 1 DESC:Execute test for Component Controller
+p 3664 640 100 0 1 FTVA:STRING
+p 3664 576 100 0 1 FTVB:STRING
+p 3616 192 100 0 1 INAM:epToVxCadInit
+p 3616 128 100 0 1 PV:$(top)$(wfs)
+p 3616 160 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1760 1607 100 0 observe
+xform 0 1920 1920
+p 1824 1568 100 0 1 DESC:OCS observe command
+p 1872 1984 100 0 1 FTVA:STRING
+p 1872 1920 100 0 0 FTVB:STRING
+p 1824 1536 100 0 1 INAM:epToVxCadInit
+p 1824 1472 100 0 1 PV:$(top)
+p 1824 1504 100 0 1 SNAM:epToVxCadExecute
+use ecad2 -816 -569 100 0 setDhsInfo
+xform 0 -656 -256
+p -752 -608 100 0 1 DESC:Set DHS info
+p -704 -192 100 0 1 FTVA:STRING
+p -704 -256 100 0 1 FTVB:LONG
+p -752 -640 100 0 1 INAM:epToVxCadInit
+p -752 -704 100 0 1 PV:$(top)$(wfs)
+p -752 -672 100 0 1 SNAM:epToVxCadExecute
 use ecad2 1248 1607 100 0 detSetWcs
 xform 0 1408 1920
 p 1312 1568 100 0 1 DESC:Download WCS calibration
@@ -69,84 +37,62 @@ p 1360 1920 100 0 1 FTVB:STRING
 p 1312 1536 100 0 1 INAM:epToVxCadInit
 p 1312 1472 100 0 1 PV:$(top)$(wfs)
 p 1312 1504 100 0 1 SNAM:epToVxCadExecute
-use ecad2 -816 -569 100 0 setDhsInfo
-xform 0 -656 -256
-p -752 -608 100 0 1 DESC:Set quick look stream
-p -704 -192 100 0 1 FTVA:STRING
-p -704 -256 100 0 0 FTVB:STRING
-p -752 -640 100 0 1 INAM:epToVxCadInit
-p -752 -704 100 0 1 PV:$(top)$(wfs)
-p -752 -672 100 0 1 SNAM:epToVxCadExecute
-use ecad8 736 -633 100 0 detReset
-xform 0 896 -128
-p 800 -672 100 0 1 DESC:Reset SDSU controller
-p 848 128 100 0 1 FTVA:LONG
-p 848 64 100 0 1 FTVB:LONG
-p 848 0 100 0 1 FTVC:STRING
-p 848 -64 100 0 1 FTVD:STRING
-p 848 -128 100 0 1 FTVE:STRING
-p 848 -192 100 0 1 FTVF:STRING
-p 848 -256 100 0 0 FTVG:LONG
-p 848 -320 100 0 0 FTVH:LONG
-p 800 -704 100 0 1 INAM:epToVxCadInit
-p 800 -768 100 0 1 PV:$(top)$(wfs)
-p 800 -736 100 0 1 SNAM:epToVxCadExecute
-use ecad8 -800 295 100 0 observe
-xform 0 -640 800
-p -736 256 100 0 1 DESC:Make observation
-p -688 1056 100 0 1 FTVA:LONG
-p -688 1024 100 0 1 FTVB:DOUBLE
-p -688 992 100 0 1 FTVC:LONG
-p -688 960 100 0 1 FTVD:STRING
-p -688 928 100 0 1 FTVE:LONG
-p -688 896 100 0 1 FTVF:STRING
-p -688 864 100 0 1 FTVG:STRING
-p -688 832 100 0 1 FTVH:STRING
-p -736 224 100 0 1 INAM:epToVxCadInit
-p -736 160 100 0 1 PV:$(top)$(wfs)
-p -736 192 100 0 1 SNAM:epToVxCadExecute
-use ecad8 2272 1223 100 0 detInit
-xform 0 2432 1728
-p 2352 1184 100 0 1 DESC:Initialise SDSU controller
-p 2400 1984 100 0 1 FTVA:LONG
-p 2384 1920 100 0 1 FTVB:STRING
-p 2384 1856 100 0 1 FTVC:STRING
-p 2384 1792 100 0 1 FTVD:STRING
-p 2384 1744 100 0 1 FTVE:STRING
-p 2400 1680 100 0 1 FTVF:LONG
-p 2384 1616 100 0 0 FTVG:STRING
-p 2384 1552 100 0 0 FTVH:STRING
-p 2352 1152 100 0 1 INAM:epToVxCadInit
-p 2352 1088 100 0 1 PV:$(top)$(wfs)
-p 2352 1120 100 0 1 SNAM:epToVxCadExecute
-use ecad8 224 -633 100 0 detPrim
-xform 0 384 -128
-p 288 -672 100 0 1 DESC:Execute SDSU primitive command
-p 336 128 100 0 1 FTVA:STRING
-p 336 64 100 0 1 FTVB:LONG
-p 336 0 100 0 1 FTVC:LONG
-p 336 -64 100 0 1 FTVD:LONG
-p 336 -128 100 0 1 FTVE:LONG
-p 336 -192 100 0 1 FTVF:LONG
-p 336 -256 100 0 1 FTVG:LONG
-p 336 -320 100 0 1 FTVH:LONG
-p 288 -704 100 0 1 INAM:epToVxCadInit
-p 288 -768 100 0 1 PV:$(top)$(wfs)
-p 288 -736 100 0 1 SNAM:epToVxCadExecute
-use ecad8 1248 -633 100 0 detMode
-xform 0 1408 -128
-p 1312 -672 100 0 1 DESC:Define detector readout mode
-p 1360 128 100 0 1 FTVA:LONG
-p 1360 64 100 0 1 FTVB:LONG
-p 1360 0 100 0 1 FTVC:LONG
-p 1360 -64 100 0 1 FTVD:LONG
-p 1360 -128 100 0 0 FTVE:LONG
-p 1360 -192 100 0 0 FTVF:LONG
-p 1360 -256 100 0 0 FTVG:STRING
-p 1360 -320 100 0 0 FTVH:STRING
-p 1312 -704 100 0 1 INAM:epToVxCadInit
-p 1312 -768 100 0 1 PV:$(top)$(wfs)
-p 1312 -736 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1760 -249 100 0 detTemp
+xform 0 1920 64
+p 1824 -288 100 0 1 DESC:Define temperature parameters
+p 1872 128 100 0 1 FTVA:DOUBLE
+p 1872 64 100 0 1 FTVB:LONG
+p 1824 -320 100 0 1 INAM:epToVxCadInit
+p 1824 -384 100 0 1 PV:$(top)$(wfs)
+p 1824 -352 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1248 679 100 0 abort
+xform 0 1408 992
+p 1312 640 100 0 1 DESC:Abort observation
+p 1360 1056 100 0 0 FTVA:STRING
+p 1360 992 100 0 0 FTVB:STRING
+p 1312 608 100 0 1 INAM:epToVxCadInit
+p 1312 544 100 0 1 PV:$(top)
+p 1312 576 100 0 1 SNAM:epToVxCadExecute
+use ecad2 736 679 100 0 stop
+xform 0 896 992
+p 800 640 100 0 1 DESC:Stop observation
+p 848 1056 100 0 0 FTVA:STRING
+p 848 992 100 0 0 FTVB:STRING
+p 800 608 100 0 1 INAM:epToVxCadInit
+p 800 544 100 0 1 PV:$(top)
+p 800 576 100 0 1 SNAM:epToVxCadExecute
+use ecad2 224 679 100 0 continue
+xform 0 384 992
+p 288 640 100 0 1 DESC:Continue observation
+p 336 1056 100 0 0 FTVA:STRING
+p 336 992 100 0 0 FTVB:STRING
+p 288 608 100 0 1 INAM:
+p 288 544 100 0 1 PV:$(top)
+p 288 576 100 0 1 SNAM:epToVxCadReject
+use ecad2 -288 679 100 0 pause
+xform 0 -128 992
+p -224 640 100 0 1 DESC:Pause observation
+p -176 1056 100 0 0 FTVA:STRING
+p -176 992 100 0 0 FTVB:STRING
+p -224 608 100 0 1 INAM:
+p -224 544 100 0 1 PV:$(top)
+p -224 576 100 0 1 SNAM:epToVxCadReject
+use ecad2 736 1607 100 0 detObstype
+xform 0 896 1920
+p 800 1568 100 0 1 DESC:Set observation type
+p 848 1984 100 0 1 FTVA:STRING
+p 848 1920 100 0 0 FTVB:STRING
+p 800 1536 100 0 1 INAM:epToVxCadInit
+p 800 1472 100 0 1 PV:$(top)$(wfs)
+p 800 1504 100 0 1 SNAM:epToVxCadExecute
+use ecad2 224 1607 100 0 detExposure
+xform 0 384 1920
+p 288 1568 100 0 1 DESC:Set exposure parameters
+p 336 1984 100 0 1 FTVA:LONG
+p 336 1920 100 0 1 FTVB:DOUBLE
+p 288 1536 100 0 1 INAM:epToVxCadInit
+p 288 1472 100 0 1 PV:$(top)$(wfs)
+p 288 1504 100 0 1 SNAM:epToVxCadExecute
 use ecad8 3552 1063 100 0 detFrameSize
 xform 0 3712 1568
 p 3616 1024 100 0 1 DESC:Define frame size
@@ -161,46 +107,90 @@ p 3664 1376 100 0 0 FTVH:STRING
 p 3616 992 100 0 1 INAM:epToVxCadInit
 p 3616 928 100 0 1 PV:$(top)$(wfs)
 p 3616 960 100 0 1 SNAM:epToVxCadExecute
-use ecad4 1792 1479 100 0 detTest
-xform 0 1952 1856
-p 1856 1440 100 0 1 DESC:Test SDSU controller
-p 1904 1984 100 0 1 FTVA:LONG
-p 1904 1920 100 0 1 FTVB:LONG
-p 1904 1856 100 0 0 FTVC:STRING
-p 1904 1792 100 0 0 FTVD:STRING
-p 1856 1408 100 0 1 INAM:epToVxCadInit
-p 1856 1344 100 0 1 PV:$(top)$(wfs)
-p 1856 1376 100 0 1 SNAM:epToVxCadExecute
-use ecad4 -800 1479 100 0 detSetup
-xform 0 -640 1856
-p -736 1440 100 0 1 DESC:Download detector control parameters
-p -688 1984 100 0 1 FTVA:STRING
-p -688 1920 100 0 1 FTVB:STRING
-p -688 1856 100 0 1 FTVC:LONG
-p -688 1792 100 0 0 FTVD:STRING
-p -736 1408 100 0 1 INAM:epToVxCadInit
-p -736 1344 100 0 1 PV:$(top)$(wfs)
-p -736 1376 100 0 1 SNAM:epToVxCadExecute
-use ecad4 -288 1479 100 0 detChop
-xform 0 -128 1856
-p -224 1440 100 0 1 DESC:Specify chop states
-p -176 1984 100 0 1 FTVA:LONG
-p -176 1920 100 0 0 FTVB:STRING
-p -176 1856 100 0 0 FTVC:STRING
-p -176 1792 100 0 0 FTVD:STRING
-p -224 1408 100 0 1 INAM:epToVxCadInit
-p -224 1344 100 0 1 PV:$(top)$(wfs)
-p -224 1376 100 0 1 SNAM:epToVxCadExecute
-use ecad4 -288 -377 100 0 detSave
-xform 0 -128 0
-p -224 -416 100 0 1 DESC:Save detector controller parameters
-p -176 128 100 0 1 FTVA:STRING
-p -176 64 100 0 1 FTVB:STRING
-p -176 0 100 0 1 FTVC:LONG
-p -176 -64 100 0 0 FTVD:STRING
-p -224 -448 100 0 1 INAM:epToVxCadInit
-p -224 -512 100 0 1 PV:$(top)$(wfs)
-p -224 -480 100 0 1 SNAM:epToVxCadExecute
+use ecad8 1248 -633 100 0 detMode
+xform 0 1408 -128
+p 1312 -672 100 0 1 DESC:Define detector readout mode
+p 1360 128 100 0 1 FTVA:LONG
+p 1360 64 100 0 1 FTVB:LONG
+p 1360 0 100 0 1 FTVC:LONG
+p 1360 -64 100 0 1 FTVD:LONG
+p 1360 -128 100 0 0 FTVE:LONG
+p 1360 -192 100 0 0 FTVF:LONG
+p 1360 -256 100 0 0 FTVG:STRING
+p 1360 -320 100 0 0 FTVH:STRING
+p 1312 -704 100 0 1 INAM:epToVxCadInit
+p 1312 -768 100 0 1 PV:$(top)$(wfs)
+p 1312 -736 100 0 1 SNAM:epToVxCadExecute
+use ecad8 224 -633 100 0 detPrim
+xform 0 384 -128
+p 288 -672 100 0 1 DESC:Execute SDSU primitive command
+p 336 128 100 0 1 FTVA:STRING
+p 336 64 100 0 1 FTVB:LONG
+p 336 0 100 0 1 FTVC:LONG
+p 336 -64 100 0 1 FTVD:LONG
+p 336 -128 100 0 1 FTVE:LONG
+p 336 -192 100 0 1 FTVF:LONG
+p 336 -256 100 0 1 FTVG:LONG
+p 336 -320 100 0 1 FTVH:LONG
+p 288 -704 100 0 1 INAM:epToVxCadInit
+p 288 -768 100 0 1 PV:$(top)$(wfs)
+p 288 -736 100 0 1 SNAM:epToVxCadExecute
+use ecad8 2272 1223 100 0 detInit
+xform 0 2432 1728
+p 2352 1184 100 0 1 DESC:Initialise SDSU controller
+p 2400 1984 100 0 1 FTVA:LONG
+p 2384 1920 100 0 1 FTVB:STRING
+p 2384 1856 100 0 1 FTVC:STRING
+p 2384 1792 100 0 1 FTVD:STRING
+p 2384 1744 100 0 1 FTVE:STRING
+p 2400 1680 100 0 1 FTVF:LONG
+p 2384 1616 100 0 0 FTVG:STRING
+p 2384 1552 100 0 0 FTVH:STRING
+p 2352 1152 100 0 1 INAM:epToVxCadInit
+p 2352 1088 100 0 1 PV:$(top)$(wfs)
+p 2352 1120 100 0 1 SNAM:epToVxCadExecute
+use ecad8 -800 295 100 0 detObserve
+xform 0 -640 800
+p -736 256 100 0 1 DESC:Make observation
+p -688 1056 100 0 1 FTVA:LONG
+p -688 1024 100 0 1 FTVB:DOUBLE
+p -688 992 100 0 1 FTVC:LONG
+p -688 960 100 0 1 FTVD:STRING
+p -688 928 100 0 1 FTVE:LONG
+p -688 896 100 0 1 FTVF:STRING
+p -688 864 100 0 1 FTVG:STRING
+p -688 832 100 0 1 FTVH:STRING
+p -736 224 100 0 1 INAM:epToVxCadInit
+p -736 160 100 0 1 PV:$(top)$(wfs)
+p -736 192 100 0 1 SNAM:epToVxCadExecute
+use ecad8 736 -633 100 0 detReset
+xform 0 896 -128
+p 800 -672 100 0 1 DESC:Reset SDSU controller
+p 848 128 100 0 1 FTVA:LONG
+p 848 64 100 0 1 FTVB:LONG
+p 848 0 100 0 1 FTVC:STRING
+p 848 -64 100 0 1 FTVD:STRING
+p 848 -128 100 0 1 FTVE:STRING
+p 848 -192 100 0 1 FTVF:STRING
+p 848 -256 100 0 0 FTVG:LONG
+p 848 -320 100 0 0 FTVH:LONG
+p 800 -704 100 0 1 INAM:epToVxCadInit
+p 800 -768 100 0 1 PV:$(top)$(wfs)
+p 800 -736 100 0 1 SNAM:epToVxCadExecute
+use ecad8 2304 39 100 0 setObserve
+xform 0 2464 544
+p 2368 0 100 0 1 DESC:Set observation parameters
+p 2416 800 100 0 1 FTVA:LONG
+p 2416 768 100 0 1 FTVB:STRING
+p 2416 736 100 0 1 FTVC:STRING
+p 2416 704 100 0 1 FTVD:STRING
+p 2416 672 100 0 0 FTVE:STRING
+p 2416 640 100 0 0 FTVF:STRING
+p 2416 608 100 0 0 FTVG:STRING
+p 2416 576 100 0 0 FTVH:STRING
+p 2368 -32 100 0 1 INAM:epToVxCadInit
+p 2368 -96 100 0 1 PV:$(top)$(wfs)
+p 2368 -64 100 0 1 SNAM:epToVxCadExecute
 use ecad4 1792 551 100 0 detOffset
 xform 0 1952 928
 p 1856 512 100 0 1 DESC:Set SDSU ADC offsets
@@ -211,6 +201,36 @@ p 1904 864 100 0 0 FTVD:STRING
 p 1856 480 100 0 1 INAM:epToVxCadInit
 p 1856 416 100 0 1 PV:$(top)$(wfs)
 p 1856 448 100 0 1 SNAM:epToVxCadExecute
+use ecad4 -288 -377 100 0 detSave
+xform 0 -128 0
+p -224 -416 100 0 1 DESC:Save detector controller parameters
+p -176 128 100 0 1 FTVA:STRING
+p -176 64 100 0 1 FTVB:STRING
+p -176 0 100 0 1 FTVC:LONG
+p -176 -64 100 0 0 FTVD:STRING
+p -224 -448 100 0 1 INAM:epToVxCadInit
+p -224 -512 100 0 1 PV:$(top)$(wfs)
+p -224 -480 100 0 1 SNAM:epToVxCadExecute
+use ecad4 -288 1479 100 0 detChop
+xform 0 -128 1856
+p -224 1440 100 0 1 DESC:Specify chop states
+p -176 1984 100 0 1 FTVA:LONG
+p -176 1920 100 0 0 FTVB:STRING
+p -176 1856 100 0 0 FTVC:STRING
+p -176 1792 100 0 0 FTVD:STRING
+p -224 1408 100 0 1 INAM:epToVxCadInit
+p -224 1344 100 0 1 PV:$(top)$(wfs)
+p -224 1376 100 0 1 SNAM:epToVxCadExecute
+use ecad4 -800 1479 100 0 detSetup
+xform 0 -640 1856
+p -736 1440 100 0 1 DESC:Download detector control parameters
+p -688 1984 100 0 1 FTVA:STRING
+p -688 1920 100 0 1 FTVB:STRING
+p -688 1856 100 0 1 FTVC:LONG
+p -688 1792 100 0 0 FTVD:STRING
+p -736 1408 100 0 1 INAM:epToVxCadInit
+p -736 1344 100 0 1 PV:$(top)$(wfs)
+p -736 1376 100 0 1 SNAM:epToVxCadExecute
 use ecad20 2912 423 100 0 detGeometry
 xform 0 3072 1312
 p 2976 384 100 0 1 DESC:Define detector geometry parameters
@@ -242,19 +262,19 @@ xform 0 1616 784
 p 2608 -688 200 0 1 author:S.M.Beard
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:B.Goodrich
-p 3120 -784 200 0 -1 date:$Date: 1999-11-23 03:34:49 $
-p 2592 2304 200 0 -1 id:$Id: wfsCad.sch,v 1.3 1999-11-23 03:34:49 cboyer Exp $
+p 3120 -784 200 0 -1 date:$Date: 2000-02-03 01:18:00 $
+p 2592 2304 200 0 -1 id:$Id: wfsCad.sch,v 1.4 2000-02-03 01:18:00 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2592 -528 200 0 -1 revision:$Revision: 1.3 $
+p 2592 -528 200 0 -1 revision:$Revision: 1.4 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor CAD Records
-use notes 2560 -345 100 0 notes#13
-xform 0 2816 -160
-p 3088 -194 100 0 0 AUTHOR:S.M.Beard and N.Dillon
-p 2588 -34 100 0 -1 COMMENT1:This schematic contains the CAD records
-p 2588 -66 100 0 -1 COMMENT2:for the commands connected with one
-p 2588 -96 100 0 -1 COMMENT3:wavefront sensor. It may be duplicated
-p 2588 -128 100 0 -1 COMMENT4:for each wavefront sensor, using the
-p 2588 -160 100 0 -1 COMMENT5:wfs macro to distinguish each one.
-p 2588 -224 100 0 -1 COMMENT7:See ICD 1.6.2/1.6.3 for a detailed
-p 2588 -256 100 0 -1 COMMENT8:description of these commands.
+use notes 3328 -281 100 0 notes#13
+xform 0 3584 -96
+p 3856 -130 100 0 0 AUTHOR:S.M.Beard and N.Dillon
+p 3356 30 100 0 -1 COMMENT1:This schematic contains the CAD records
+p 3356 -2 100 0 -1 COMMENT2:for the commands connected with one
+p 3356 -32 100 0 -1 COMMENT3:wavefront sensor. It may be duplicated
+p 3356 -64 100 0 -1 COMMENT4:for each wavefront sensor, using the
+p 3356 -96 100 0 -1 COMMENT5:wfs macro to distinguish each one.
+p 3356 -160 100 0 -1 COMMENT7:See ICD 1.6.2/1.6.3 for a detailed
+p 3356 -192 100 0 -1 COMMENT8:description of these commands.
 [comments]

@@ -1,10 +1,42 @@
 [schematic2]
-uniq 97
+uniq 110
 [tools]
 [detail]
+w -510 875 100 0 n#107 ecalcs.counter.INPA -672 800 -768 800 -768 864 -192 864 -192 800 junction
+w -318 619 100 0 n#107 ecalcs.counter.VAL -384 608 -192 608 -192 800 0 800 esirs.heartBeat.INP
+w -222 651 100 0 n#106 ecalcs.counter.FLNK -384 640 0 640 esirs.heartBeat.SLNK
 s 2512 -704 500 512 systemSad.sch
 s -160 2208 500 0 Wavefront Sensing - System Status Records
 [cell use]
+use esirs 3680 1159 100 0 obsType
+xform 0 3888 1312
+p 3744 1120 100 0 1 DESC:Observation type
+p 3776 1120 100 0 0 FDSC:(DARK/FLAT/ZERO/OBJECT/UNDEFINED)
+p 3744 1088 100 0 1 FTVL:STRING
+p 3744 1024 100 0 1 PV:$(sadtop)
+p 3744 1056 100 0 1 SNAM:
+use esirs 3072 1159 100 0 obsMode
+xform 0 3280 1312
+p 3136 1120 100 0 1 DESC:Observing mode
+p 3168 1120 100 0 0 FDSC:Observing mode (STARE/MOVIE)
+p 3136 1088 100 0 1 FTVL:STRING
+p 3136 1024 100 0 1 PV:$(sadtop)
+p 3136 1056 100 0 1 SNAM:
+use esirs 0 551 100 0 heartBeat
+xform 0 208 704
+p 64 512 100 0 1 DESC:Heartbeat
+p -64 320 100 0 0 EVNT:0
+p -64 288 100 0 0 FDSC:
+p 64 480 100 0 1 FTVL:LONG
+p 64 416 100 0 1 PV:$(sadtop)
+p 64 448 100 0 1 SNAM:
+use esirs 2464 1159 100 0 testResults
+xform 0 2672 1312
+p 2528 1120 100 0 1 DESC:Test results
+p 2560 1120 100 0 0 FDSC:Test results
+p 2528 1088 100 0 1 FTVL:STRING
+p 2528 1024 100 0 1 PV:$(sadtop)
+p 2528 1056 100 0 1 SNAM:
 use esirs 1856 1159 100 0 seeing
 xform 0 2064 1312
 p 1920 1120 100 0 1 DESC:Current seeing estimate
@@ -72,7 +104,13 @@ p -608 1728 100 0 1 DESC:System name
 p -736 1504 100 0 0 FDSC:System name
 p -608 1696 100 0 1 FTVL:STRING
 p -608 1632 100 0 1 PV:$(sadtop)
-p -608 1664 100 0 1 SNAM:wfsWriteName
+p -608 1600 100 0 1 SCAN:Passive
+p -608 1664 100 0 1 SNAM:
+use ecalcs -672 327 100 0 counter
+xform 0 -528 592
+p -608 288 100 0 1 CALC:A+1
+p -608 224 100 0 1 PV:$(sadtop)
+p -608 256 100 0 1 SCAN:1 second
 use errorLogSad 1920 -377 100 0 errorLogSad#79
 xform 0 2016 -256
 use resourceSad 1600 -377 100 0 resourceSad#78
@@ -94,9 +132,9 @@ xform 0 1616 800
 p 2608 -672 200 0 1 author:S.M.Beard
 p 3120 -704 100 0 0 border:D
 p 2608 -752 200 0 1 checked:B.Goodrich
-p 3184 -688 200 0 -1 date:$Date: 1999-03-17 03:14:14 $
-p 2592 2336 200 0 -1 id:$Id: systemSad.sch,v 1.1.1.1 1999-03-17 03:14:14 cboyer Exp $
+p 3184 -688 200 0 -1 date:$Date: 2000-02-03 01:17:55 $
+p 2592 2336 200 0 -1 id:$Id: systemSad.sch,v 1.2 2000-02-03 01:17:55 cboyer Exp $
 p 3120 -416 200 0 -1 project:Gemini Wavefront Sensing System
-p 2592 -480 200 0 -1 revision:$Revision: 1.1.1.1 $
+p 2592 -480 200 0 -1 revision:$Revision: 1.2 $
 p 3120 -544 200 0 -1 title:System Status Records
 [comments]

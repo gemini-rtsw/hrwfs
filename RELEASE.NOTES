@@ -43,5 +43,31 @@ V0-7 5 Jan 2000 CB:
   - continue tidy up the src directory: tesHarness.c, .h and testKit.c removed
     Makefile.Vx and startup.vws modified in consequence
 
+V0-8 2 Feb 2000 CB:
+  - remove osp.h, ospLib.c, ospInvertFuncs.c and replace in detControl.c 
+    ospReadHeaderInt() and ospreadUShortImage() by detReadFitsHeaderInt() and 
+    detReadFitsImageUint16()
+  - remove writeZernikes.c + remove osp.h from wfsHrwfsDb.c
+  - remove strcasecomp.c unused
+  - dl: remove cad2.adl cad20.adl cad4.adl cad8.adl cad_details2.adl 
+               cad_details4.adl cad_details8.adl console.csh det_chop.adl 
+               det_main.adl.25oct helpfile.txt pixel_router.adl
+               rlogin.csh showDiag.adl showFg.adl sig_init.adl sig_main.adl 
+               sig_mode.adl simulateTcs.adl test.csh testHarness.adl wfsStart
+               wfs_calibrate.adl wfs_errorLog.adl wfs_gbdObserve.adl 
+               wfs_main_srp.adl wfs_reboot.adl wfs_rebootConf.adl 
+               wfs_startMeasure.adl wfs_test.adl 
+  - src: remove synchroMap.h
+  - src/capfast/dl add reboot, test commands
+  - dl remove det_test.adl
+  - create the sequencer IF between HRWFS and OCS
+  - src/capfast/dl add commands for OCS: init, datum, park, verify, endVerify, guide, endGuide
+  - add new files: hrwfsCarNext.sch and sym + hrwfsCarNext1.sch and sym
+  - src/capfast/dl add commands for OCS: endObserve
+  - src/capfast/dl modify to handle observe command for OCS and new detObserve command
+  - capfast new files: datumFanCad.sch and sym + initFanCad.sch and sym
+  - src : replace wfsControl per seqControl module.
+  - add sad records
+
 dev
   - for the moment startup cd install instead of iocpath

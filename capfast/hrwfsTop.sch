@@ -2,13 +2,14 @@
 uniq 16
 [tools]
 [detail]
-s 1488 80 500 512 hrwfsTop.sch
 s -368 2160 500 0 Gemini A&G Wavefront Sensing System
+s 1488 80 500 512 hrwfsTop.sch
 [cell use]
 use hrwfs 32 935 100 0 hrwfs#15
 xform 0 480 1232
 p 256 912 100 0 1 set1:top hrwfs:
 p 256 880 100 0 1 set2:sadtop hrwfs:
+p 256 848 100 0 1 set3:agtop hrwfs:
 use notes 1536 279 100 0 notes#13
 xform 0 1792 464
 p 2064 430 100 0 0 AUTHOR:S.M.Beard and N.Dillon
@@ -21,9 +22,9 @@ xform 0 656 1200
 p 1552 64 100 0 1 author:S.M.Beard
 p 1776 48 100 0 -1 border:C
 p 1552 32 100 0 1 checked:B.Goodrich
-p 1776 16 100 0 -1 date:$Date: 1999-03-17 03:14:12 $
-p 1552 2368 100 0 -1 id:$Id: hrwfsTop.sch,v 1.1.1.1 1999-03-17 03:14:12 cboyer Exp $
+p 1776 16 100 0 -1 date:$Date: 2000-02-03 01:17:45 $
+p 1552 2368 100 0 -1 id:$Id: hrwfsTop.sch,v 1.2 2000-02-03 01:17:45 cboyer Exp $
 p 1792 176 100 0 -1 project:Gemini Wavefront Sensing System
-p 1552 128 100 0 -1 revision:$Revision: 1.1.1.1 $
+p 1552 128 100 0 -1 revision:$Revision: 1.2 $
 p 1792 112 100 0 -1 title:Top Level Schematic for HRWFS/AC Database
 [comments]
