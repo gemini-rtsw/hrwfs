@@ -212,3 +212,14 @@ V3-4 07 Jan 20034 - CB
 -----------------------
   - detFrameSize: default parameters of the command into a pv load file 
     (one per site)
+
+V3-5 07 Jan 2005 - AAG
+-----------------------
+  - DHS Server moved from reggie to jughead
+    IMP_StartupCP.hrwfs
+    startup/startupCP.vws
+  - IMPStartup files separated from MK & CP
+    IMP_StartupMK.hrwfs
+    IMP_StartupCP.hrwfs
+    hrwfsInstall
+

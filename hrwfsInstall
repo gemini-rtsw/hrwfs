@@ -16,6 +16,7 @@ else
     site=CP;
 fi
 
+cp IMP_Startup$site.hrwfs IMP_Startup.hrwfs
 
 applSetup.pl -T ppc604 -I adl -I capfast -I src -I startup\
              -I docs -I dspsrc -I par -I db\
