@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="19"
-	nstr="57"
-	ndynamic="18"
+	npc="20"
+	nstr="61"
+	ndynamic="19"
 	nplot="0"
 	nrd="0"
 	nes="0"
@@ -19,27 +19,27 @@ display {
 		x="0"
 		y="0"
 		width="731"
-		height="434"
+		height="444"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2894"
-	nwords_sta="668"
+	nwords_dspy="3124"
+	nwords_sta="680"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1676"
-	osta="1008"
-	odynamic="1676"
-	oplot="2882"
-	ord="2882"
-	oes="2882"
-	okd="2882"
-	opd="2894"
-	opo="2894"
+	odyng="1840"
+	osta="1160"
+	odynamic="1840"
+	oplot="3112"
+	ord="3112"
+	oes="3112"
+	okd="3112"
+	opd="3124"
+	opo="3124"
 	opc="68"
-	ostr="292"
-	ocmap="1008"
-	ocrules="1008"
+	ostr="304"
+	ocmap="1160"
+	ocrules="1160"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -65,9 +65,9 @@ display {
 "rectangle" {
 	object {
 		x="5"
-		y="37"
+		y="38"
 		width="710"
-		height="384"
+		height="398"
 		groupid="0"
 	}
 }
@@ -341,6 +341,17 @@ display {
 		groupid="0"
 	}
 	textix="full frame)"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="12"
+		y="410"
+		width="524"
+		height="14"
+		groupid="0"
+	}
+	textix="K: Overscan column/output ... ... ... ... ... ... ... ...:"
 	align="horiz. left"
 }
 "message button" {
@@ -810,7 +821,7 @@ display {
 "text entry" {
 	object {
 		x="537"
-		y="318"
+		y="317"
 		width="170"
 		height="19"
 		groupid="0"
@@ -990,7 +1001,7 @@ display {
 "text entry" {
 	object {
 		x="537"
-		y="363"
+		y="362"
 		width="170"
 		height="19"
 		groupid="0"
@@ -1035,7 +1046,7 @@ display {
 "text entry" {
 	object {
 		x="537"
-		y="386"
+		y="385"
 		width="170"
 		height="19"
 		groupid="0"
@@ -1125,13 +1136,58 @@ display {
 "text entry" {
 	object {
 		x="537"
-		y="250"
+		y="249"
 		width="170"
 		height="19"
 		groupid="0"
 	}
 	control {
 		chan="$(top)$(cad).D"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+}
+"text entry" {
+	object {
+		x="537"
+		y="408"
+		width="170"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).K"
 		clr="0"
 		bclr="6"
 		label="none"

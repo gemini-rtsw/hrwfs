@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="15"
-	nstr="65"
-	ndynamic="18"
+	npc="16"
+	nstr="68"
+	ndynamic="19"
 	nplot="0"
 	nrd="1"
 	nes="0"
@@ -19,27 +19,27 @@ display {
 		x="0"
 		y="0"
 		width="677"
-		height="508"
+		height="684"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4150"
-	nwords_sta="2012"
+	nwords_dspy="4860"
+	nwords_sta="2560"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2748"
-	osta="736"
-	odynamic="2748"
-	oplot="3978"
-	ord="3978"
-	oes="4138"
-	okd="4138"
-	opd="4150"
-	opo="4150"
+	odyng="3392"
+	osta="832"
+	odynamic="3392"
+	oplot="4688"
+	ord="4688"
+	oes="4848"
+	okd="4848"
+	opd="4860"
+	opo="4860"
 	opc="68"
-	ostr="244"
-	ocmap="736"
-	ocrules="736"
+	ostr="256"
+	ocmap="832"
+	ocrules="832"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -53,6 +53,23 @@ display {
 	pixht="1024"
 	mmwid="361"
 	mmht="289"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="solid"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="442"
+		y="509"
+		width="170"
+		height="118"
+		groupid="2"
+	}
 }
 "<<basic attribute>>" {
 	attr {
@@ -89,7 +106,7 @@ display {
 		x="14"
 		y="37"
 		width="642"
-		height="448"
+		height="635"
 		groupid="0"
 	}
 }
@@ -622,6 +639,201 @@ display {
 	}
 	orgpoint[1] {
 		x="0"
+		y="-1"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="23"
+		y="520"
+		width="203"
+		height="18"
+		groupid="0"
+	}
+	textix="Overscan (0 to 8):"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="391"
+		y="654"
+		width="121"
+		height="12"
+		groupid="2"
+	}
+	textix="overscan region"
+	align="horiz. left"
+}
+"line" {
+	object {
+		x="499"
+		y="630"
+		width="29"
+		height="30"
+		groupid="2"
+	}
+	npoints="3"
+	point[0] {
+		x="499"
+		y="660"
+	}
+	point[1] {
+		x="528"
+		y="646"
+	}
+	point[2] {
+		x="528"
+		y="630"
+	}
+	orgpoint[0] {
+		x="0"
+		y="1000"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="566"
+	}
+	orgpoint[2] {
+		x="1000"
+		y="0"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="24"
+		style="solid"
+		fill="solid"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="442"
+		y="509"
+		width="79"
+		height="118"
+		groupid="2"
+	}
+}
+"rectangle" {
+	object {
+		x="533"
+		y="509"
+		width="79"
+		height="118"
+		groupid="2"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="454"
+		y="519"
+		width="62"
+		height="12"
+		groupid="2"
+	}
+	textix="output 1"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="546"
+		y="519"
+		width="62"
+		height="12"
+		groupid="2"
+	}
+	textix="output 2"
+	align="horiz. left"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="21"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="22"
+		y="561"
+		width="226"
+		height="13"
+		groupid="0"
+	}
+	textix="[0 means no overscan,"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="22"
+		y="580"
+		width="357"
+		height="13"
+		groupid="0"
+	}
+	textix="1 to 8 represents the number of columns"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="22"
+		y="600"
+		width="357"
+		height="13"
+		groupid="0"
+	}
+	textix="of the ovsercan region/output]"
+	align="horiz. left"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"line" {
+	object {
+		x="14"
+		y="488"
+		width="641"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="14"
+		y="488"
+	}
+	point[1] {
+		x="655"
+		y="488"
+	}
+	orgpoint[0] {
+		x="0"
+		y="-1"
+	}
+	orgpoint[1] {
+		x="1000"
 		y="-1"
 	}
 }
@@ -1426,6 +1638,51 @@ display {
 	}
 	control {
 		chan="$(top)$(cad).E"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+}
+"text entry" {
+	object {
+		x="223"
+		y="516"
+		width="117"
+		height="25"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).G"
 		clr="0"
 		bclr="6"
 		label="none"

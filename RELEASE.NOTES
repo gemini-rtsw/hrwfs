@@ -128,3 +128,9 @@ V1-4 04 Apr 2001 - CB
   - add adc0, adc1 sir records
   - add startup_nodhs.vws
   - modify windowing to do a window around a point
+
+dev
+  - Install timboot.asm.V3.3
+  - add ovsercan region (max allowed 8, min 1, 0 means no overscan):
+        . modify detGeometry and detFrameSize to allow overscan region
+        . modify detFrameUnsrambleUint16() as well as detFrameReduceUint16()

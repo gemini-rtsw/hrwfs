@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.10 2001-04-04 05:05:15 gemvx Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.11 2001-06-05 02:58:05 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   01 Jun 2001 - cb add overscan region: detGeometry and detFrameSize are
+ *                    modified, add oscan sir record
  *   03 Apr 2001 - cb add adc0, adc1
  *   19 feb 2001 - cb add sir dhsCon
  *   16 feb 2001 - cb add cad detDhsDisplay
@@ -390,7 +392,8 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_G, EPICS_DATA_TYPE_LONG,    "16",         {"0", ATTRIB (DET_CONTROL_HRWFS_XSIZE)},
       CAD_ATTRIB_H, EPICS_DATA_TYPE_LONG,    "1",         {"0", ATTRIB (DET_CONTROL_HRWFS_YSIZE)},
       CAD_ATTRIB_I, EPICS_DATA_TYPE_LONG,    "0",         {"0", ATTRIB (DET_CONTROL_HRWFS_XSIZE)},
-      CAD_ATTRIB_J, EPICS_DATA_TYPE_LONG,    "0",         {"0", ATTRIB (DET_CONTROL_HRWFS_YSIZE)}
+      CAD_ATTRIB_J, EPICS_DATA_TYPE_LONG,    "0",         {"0", ATTRIB (DET_CONTROL_HRWFS_YSIZE)},
+      CAD_ATTRIB_K, EPICS_DATA_TYPE_LONG,    "0",         {"0", "8"}
    },
    {
       RECORD_NAME ("dc:detPrim"),
@@ -454,6 +457,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_D, EPICS_DATA_TYPE_LONG,    "512",         {"1", ATTRIB (DET_CONTROL_HRWFS_XSIZE+1)},
       CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,    "100",         {"1", ATTRIB (DET_CONTROL_HRWFS_YSIZE+1)},
       CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG,    "100",         {"1", ATTRIB (DET_CONTROL_HRWFS_YSIZE+1)},
+      CAD_ATTRIB_G, EPICS_DATA_TYPE_LONG,    "0",         {"0", "8"},
    },
    {
       RECORD_NAME ("dc:detDhsReconnect"),
@@ -794,8 +798,12 @@ SIR_RECORD   pWfsDbSirList [] =
       EPICS_DATA_TYPE_LONG
    },
    {
-   RECORD_NAME ("dc:adc1"),
-   EPICS_DATA_TYPE_LONG
+      RECORD_NAME ("dc:adc1"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:oscan"),
+      EPICS_DATA_TYPE_LONG
    }
 };
 

@@ -2,7 +2,7 @@
 
 Gemini WFS Timing Board Boot Code
 Controller: SDSU2 
-Revision: 3.02  (must agree with status word T_FW_VER in P: memory)
+Revision: 3.03  (must agree with status word T_FW_VER in P: memory)
 (This code is adapted from timboot.asm, Rev. 3.00, written by Dr. Bob Leach 
 at SDSU for use with the TIMII board.)
 
@@ -15,6 +15,10 @@ at SDSU for use with the TIMII board.)
              -changed wait states for P: memory to 1, except during
               EEPROM access.
              -changed allotment of EEPROM application space in LDA
+
+00/07/18 TDH -added clear of analog switches to initialisation to reduce
+              power disspation (switches draw a lot of current from the +5V
+              supply when +/-15V supplies are off).
 
 
 	*
@@ -58,7 +62,7 @@ at SDSU for use with the TIMII board.)
 	ORG     P:ROM_ID,P:ROM_ID+ROM_OFF
 
 T_FW_ID		DC	$000000	; board serial number
-T_FW_VER	DC	$030202	; Version 3.02, board #2 = timing
+T_FW_VER	DC	$030302	; Version 3.02, board #2 = timing
 
 
 
@@ -95,7 +99,7 @@ INIT	MOVEC   #$0002,OMR	; Operating Mode Register = Normal
 				;   no prescale; 4.17 MHz serial clock rate
 
 	MOVEP   #$3D30,X:CRB    ; SSI programming - OF0, OF1 don't apply; 
-				;   SC0, SC1, SC2 are inputs; SCK is output;
+				;   SC0, SC1 are inputs; SC2, SCK are outputs;
 				;   shift MSB first; rcv and xmt asynchronous
 				;   wrt each other; gated clock; bit frame 
                                 ;   sync; network mode to get on-demand; 
@@ -115,6 +119,33 @@ INIT	MOVEC   #$0002,OMR	; Operating Mode Register = Normal
 
 	MOVEP   #$0000,X:IPR	; Write to interrupt priority register
 
+
+; Clear all video processor analog switches to lower their power dissipation
+	BSET	#0,X:PBD	; Set H0 for analog boards SSI
+	MOVEP	#$0000,X:PCC	; Software reset of SSI
+	BCLR	#10,X:CRB	; Change SSI to continuous clock for analog 
+	MOVEP   #$0160,X:PCC	; Re-enable the SSI
+	DO	#500,*+3	; Wait 8 usec for serial data transmission
+	NOP
+
+	MOVE	#$0C3000,A
+	CLR	B
+	MOVE	#$100000,X0
+	MOVE	#$001000,X1
+	DO	#15,L_VIDEO	; Fifteen video processor boards maximum
+	MOVEP	A,X:SSITX 	; Gain, integrate speed
+	ADD	X0,A
+	MOVE	B,X:WRSS
+	ADD	X1,B
+	DO	#500,*+3	; Wait 8 usec for serial data transmission
+	NOP
+	
+	NOP
+L_VIDEO	
+	MOVEP	#$0000,X:PCC	; Software reset of SSI
+	BSET	#10,X:CRB	; Change SSI to gated clock for utility board 
+	MOVEP   #$0160,X:PCC	; Enable the SSI
+	BCLR	#0,X:PBD	; Clear H0 for utility board SSI
 
 ; Initialize X: data memory
 	MOVE    #RD_X,R0 	; Starting X: address in EEPROM
@@ -486,7 +517,7 @@ LD_LA6
 ; ******************************   X Data   *******************************
 
 ; Status and header processing words
-        ORG     X:0,P:LD_X
+        ORG     X:0,X:LD_X
 STAT	DC      0       ; Status word 
 LATCH	DC      $E0	; Value in latch chip U25  --> $E2 for parallel mode
 HDR	DC	0	; Header for all commands
@@ -518,7 +549,7 @@ TIM_ACK	DC	$AAAAAA		; Word for timing acknowledging SSI service
 ; The command table is resident in X: data memory; 32 entries maximum
 ; The first part of the command table will be loaded with application commands
 
-	ORG     X:COM_TBL,P:COM_TBL+LD_X
+	ORG     X:COM_TBL,X:COM_TBL+LD_X
 
 	DC	0,START,0,START,0,START,0,START
 	DC	0,START,0,START,0,START,0,START

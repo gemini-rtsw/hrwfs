@@ -13,6 +13,9 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   01 Jun 2001 - cb add oscan SIR record 
+ *   30 May 2001 - cb add DET_CONTROL_HRWFS_MAX_XSIZE and 
+ *                 DET_CONTROL_HRWFS_MAX_Y_SIZE and oscanNb
  *   03 Apr 2001 - cb add sir adc0, adc1
  *   19 feb 2001 - cb add sir dhsCon
  *   16 feb 2001 - cb add DET_CONTROL_CMD_DHS_DISPLAY, dhsQlRate, dhsCounter
@@ -57,7 +60,10 @@ typedef   unsigned long   DHS_CONNECT;
 
 /****************************************************************** defines ***/
 
-#define STRING_SIZE       160       /* Size of a string                 */
+#define   STRING_SIZE       160     /* Size of a string                 */
+
+#define   HALF              2       /* HALF flag for overscan region    */
+#define   FULL              4       /* FULL flag for overscan region    */
 
 #define   DET_CONTROL_TASK_NAME               "detControl"
                                     /* Detector Controller task name.   */
@@ -200,11 +206,15 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* the status of the dhs connection */
 
 #define   DET_CONTROL_ADC0_SIR_NAME           "adc0"
-                                    /* Name of SIR record containing the      */
-                                    /* ADC of the output 0                    */
+                                    /* Name of SIR record containing the*/
+                                    /* ADC of the output 0              */
 #define   DET_CONTROL_ADC1_SIR_NAME           "adc1"
-                                    /* Name of SIR record containing the      */
-                                    /* ADC of the output 1                    */
+                                    /* Name of SIR record containing the*/
+                                    /* ADC of the output 1              */
+
+#define   DET_CONTROL_OSCAN_SIR_NAME          "oscan"
+                                    /* Name of SIR record containing    */
+                                    /* the overscan number              */
 
 #define   DET_CONTROL_HRWFS_SDSU_ADRS_VME     0x08000000   
                                     /* VME address of HRWFS SDSU controller   */
@@ -222,6 +232,16 @@ typedef   unsigned long   DHS_CONNECT;
 #define DET_CONTROL_HRWFS_YSIZE               1024
                                     /* Define the maximum data frame sizes    */
                                     /* for HRWFS                              */
+
+#define DET_CONTROL_HRWFS_MAX_XSIZE           1072 
+#define DET_CONTROL_HRWFS_MAX_YSIZE           1032
+                                    /* Define the maximum storage frame sizes */
+                                    /* for HRWFS                              */
+
+#define DET_CONTROL_HRWFS_OSCAN_SIZE          0
+
+                                    /* Define the column number for the       */
+                                    /* overscan region for HRWFS              */
 
 #define DET_CONTROL_HRWFS_MAX_FRAMES          1   
                                     /* Define the default number of SDSU data */
@@ -393,6 +413,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                        /* T_NPIXEL                            */
    int         uscanNb ;               /* Number of underscan pixels, (default*/
                                        /* is 8), T_USCAN                      */
+   int         oscanNb ;               /* Number of ovsercan columns per      */
+                                       /* output (0 to 8), (default is 0)     */
    int         xTail ;                 /* Remaining pixels to discard by row  */
                                        /* T_XTAIL                             */
    int         packetSize ;            /* Packet Size in pixels, V_PSIZE      */
@@ -402,6 +424,10 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                        /* windowing                           */
    int         binningFlag ;           /* TRUE or FALSE, if binning or not    */
    int         windowingFlag ;         /* TRUE or FALSE, if windowing or not  */
+   int         oscanFlag ;             /* FALSE, FULL or HALF, if no overscan */
+                                       /* region, full ovsercan region or half*/
+                                       /* overscan region                     */
+   int         oscanHalfFlag ;         /* TRUE or FALSE, if windowing or not  */
    int         x1, x2 ;                /* In case of windowing x coordinates  */
                                        /* of the window                       */
    int         y1, y2 ;                /* In case of windowing y coordinates  */
@@ -526,6 +552,7 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                       /* context structure                    */
    DATREC_CONTEXT pAdc0Context ;      /* ADC 0 SIR record context structure   */
    DATREC_CONTEXT pAdc1Context ;      /* ADC 1 SIR record context structure   */
+   DATREC_CONTEXT pOscanContext ;     /* oscan SIR record context structure   */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*

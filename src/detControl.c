@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.14 2001-04-04 05:05:15 gemvx Exp $"};
+   "$Id: detControl.c,v 1.15 2001-06-05 02:58:04 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   01 jun 2001 - cb add overscan region
+ *   30 may 2001 - cb fix bug in detGeometry, and in detCheckGeometry, 
+ *                 add DET_CONTROL_HRWFS_MAX_XSIZE, DET_CONTROL_HRWFS_MAX_YSIZE
  *   03 apr 2001 - cb add adc0, adc1 sir records
  *                 also modify windowing
  *   19 feb 2001 - cb add detDhsDisplay command and sir record dhsCon
@@ -282,6 +285,9 @@ STATUS detFrameScramble (const int xPixels, const int yPixels,
 STATUS detFrameUnscrambleUint16 (const int xPixels, const int yPixels, 
                                  const int outputs, SDSU_FRAME * inFrame, 
                                  uint16 * outBuffer );
+STATUS newDetFrameUnscrambleUint16 (const int xPixels, const int yPixels, 
+                                    const int oscanNb, SDSU_FRAME * inFrame, 
+                                    uint16 * outBuffer );
 STATUS detFrameScrambleUint16 (const int xPixels, const int yPixels, 
                                const int outputs, uint16 * inBuffer, 
                                uint16 * outBuffer );
@@ -554,10 +560,10 @@ STATUS   detControl
    {
       vmeAddress = DET_CONTROL_HRWFS_SDSU_ADRS_VME;
       detControlStopMask = DET_CONTROL_HRWFS_MASK;
-      obsId->xMax = DET_CONTROL_HRWFS_XSIZE;
-      obsId->yMax = DET_CONTROL_HRWFS_YSIZE;
-      obsId->xPixels = obsId->xMax;
-      obsId->yPixels = obsId->yMax;
+      obsId->xMax = DET_CONTROL_HRWFS_MAX_XSIZE;
+      obsId->yMax = DET_CONTROL_HRWFS_MAX_YSIZE;
+      obsId->xPixels = DET_CONTROL_HRWFS_XSIZE;
+      obsId->yPixels = DET_CONTROL_HRWFS_YSIZE;
       maxFrames = DET_CONTROL_HRWFS_MAX_FRAMES;
    }
    else
@@ -1012,6 +1018,13 @@ STATUS   detControl
                         obsId->pYbinContext ) == ERROR)
    {
       ERROR_LOG ("Failed to init ybin sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->oscanNb) , 
+                        obsId->pOscanContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init oscan sad record");
       return (ERROR);
    }
 
@@ -2999,7 +3012,8 @@ uint32 observeStart
             }
             else
             {
-               sprintf (pDataLabel, "%s.0.0", pLabelFromDhs);
+               /*sprintf (pDataLabel, "%s.0.0", pLabelFromDhs);*/
+               sprintf (pDataLabel, "%s", pLabelFromDhs);
 
                MESSAGE_LOG1 (MSG_LOG, 
                   "Successfully obtained data label from DHS (%s)",
@@ -4209,7 +4223,18 @@ uint32 detObserveStart
       {
          if ( obsId->windowingFlag == TRUE )
          {
-            obsId->xPixelsDhs = obsId->x2 - obsId->x1 + 1;
+            if ( obsId->oscanNb != 0 )
+            {
+               if ( obsId->oscanFlag == FULL )
+                  obsId->xPixelsDhs = 
+                  obsId->x2 - obsId->x1 + 1 + 2*obsId->oscanNb;
+               else
+                  obsId->xPixelsDhs = 
+                  obsId->x2 - obsId->x1 + 1 + obsId->oscanNb;
+            }
+            else
+               obsId->xPixelsDhs = obsId->x2 - obsId->x1 + 1;
+
             obsId->yPixelsDhs = obsId->y2 - obsId->y1 + 1;
             sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
                       obsId->xPixelsDhs , obsId->yPixelsDhs ) ; 
@@ -4237,10 +4262,10 @@ uint32 detObserveStart
          }
       }
          
-#ifdef DEBUG
+/*#ifdef DEBUG*/
       printf ( "detObserveStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
                obsId->xPixelsDhs , obsId->yPixelsDhs) ;
-#endif
+/*#endif*/
 
       /*
        * If a request has been made to send data to the DHS, check that the 
@@ -4315,7 +4340,8 @@ uint32 detObserveStart
             }
             else
             {
-               sprintf (pDataLabel, "%s.0.0", pLabelFromDhs);
+               /*sprintf (pDataLabel, "%s.0.0", pLabelFromDhs);*/
+               sprintf (pDataLabel, "%s", pLabelFromDhs);
 
                MESSAGE_LOG1 (MSG_LOG, 
                   "Successfully obtained data label from DHS (%s)",
@@ -5665,9 +5691,14 @@ void detObserveEnd
       }
 #endif
 
+/*
       if ( detFrameUnscrambleUint16( obsId->xPixels, obsId->yPixels, 
                                      (int) obsId->outputsNb,
                                      pRawFrame, obsId->pCurFrame ) == ERROR )
+*/
+      if ( newDetFrameUnscrambleUint16( obsId->xPixels, obsId->yPixels, 
+                                        (int) obsId->oscanNb,
+                                        pRawFrame, obsId->pCurFrame ) == ERROR )
       {
          ERROR_LOG ("Failed to unscramble data");
          if ( obsId->outOptions == 1 )
@@ -8289,6 +8320,7 @@ uint32 detGeometry
    long         reqPixelsNb;/* Total number of digitised pixels.              */
    long         defPixelsNb;/* Total number of digitised pixels.              */
    int          nPackets;   /* Number of packets expected per frame.          */
+   long         reqOscanNb; /* Number of column of the overscan region/output */
    long         i;          /* index                                          */
    long         offsetVect[2];
                             /* ADC offset vector                              */
@@ -8299,16 +8331,18 @@ uint32 detGeometry
     */
 
    errorNumber = 0;
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & xReqSubap);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, (char *) & yReqSubap);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, (char *) & xReqRas);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) & yReqRas);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, (char *) & xReqBin);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, (char *) & yReqBin);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6, (char *) & xReqStart);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 7, (char *) & yReqStart);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 8, (char *) & xReqSpace);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 9, (char *) & yReqSpace);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) &xReqSubap);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, (char *) &yReqSubap);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, (char *) &xReqRas);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) &yReqRas);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, (char *) &xReqBin);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, (char *) &yReqBin);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6, (char *) &xReqStart);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 7, (char *) &yReqStart);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 8, (char *) &xReqSpace);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 9, (char *) &yReqSpace);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 10, 
+                          (char *) &reqOscanNb);
 
    /*
     * Check there are valid SDSU and observation context structures.
@@ -8359,7 +8393,8 @@ uint32 detGeometry
     * The binning factors must be 1 or 2
     */
 
-   if ( (xReqBin != 1) || (yReqBin != 1) || (xReqBin != 2) || (yReqBin != 2) )
+   if ( ((xReqBin != 1) && (xReqBin != 2)) || 
+        ((yReqBin != 1) && (yReqBin != 2)) )
    {
       ERROR_SET2 (S_detControl_BAD_ATTRIBUTE, 
          "Invalid binning factors: %ld, %ld",
@@ -8375,14 +8410,13 @@ uint32 detGeometry
     * number of packets is always rounded up to the nearest integer).
     */
 
-   /*xReqPixels = (xReqSubap * xReqRas * obsId->outputsNb) / xReqBin ;
-   yReqPixels = (yReqSubap * yReqRas) / yReqBin;*/
-   xReqPixels = xReqSubap * xReqRas * obsId->outputsNb; /* xReqRas contains already the xReqBin division */
+   xReqPixels = xReqSubap * xReqRas * obsId->outputsNb; 
+                             /* xReqRas contains already the xReqBin division */
    yReqPixels = yReqSubap * yReqRas;
 
    reqPixelsNb = xReqPixels * yReqPixels;
 
-   defPixelsNb = (DET_CONTROL_HRWFS_XSIZE)*(DET_CONTROL_HRWFS_YSIZE); 
+   defPixelsNb = (DET_CONTROL_HRWFS_MAX_XSIZE)*(DET_CONTROL_HRWFS_MAX_YSIZE); 
 
    if ( reqPixelsNb > defPixelsNb )
    {
@@ -8406,18 +8440,25 @@ uint32 detGeometry
     */
 
    xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap) 
-              + xReqSpace - xReqStart - obsId->uscanNb;
+              + xReqSpace - xReqStart - obsId->uscanNb + xReqBin*reqOscanNb;
+
    if ( xReqTail < 0 )
    {
       ERROR_SET1 (S_detControl_BAD_ATTRIBUTE, 
       "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
       errorNumber = S_detControl_BAD_ATTRIBUTE;
       return (errorNumber);
+      /*
+      MESSAGE_LOG1 (MSG_LOG,
+      "Xtail is %ld. Should not be less than zero", xReqTail);
+      xReqTail = 0;
+      */
    }
 
    if ( (!sdsuId->simulate) && (obsId->packetSize > 0) )
    {
-      nPackets = (int) ceil ( (double) (reqPixelsNb) / (double) obsId->packetSize );
+      nPackets = (int) ceil ( (double) (reqPixelsNb) / 
+                 (double) obsId->packetSize );
    }
    else
    {
@@ -8445,6 +8486,7 @@ uint32 detGeometry
    obsId->yPixels = yReqPixels;
    obsId->pixelsNb = reqPixelsNb;
    obsId->xTail = xReqTail;
+   obsId->oscanNb = reqOscanNb;
 
    if ( (xReqSubap == 1) && (yReqSubap == 1) && (xReqStart == 16) && (yReqStart == 1) &&
         (xReqSpace == 0) && (yReqSpace == 0)
@@ -8482,6 +8524,11 @@ uint32 detGeometry
    else
       obsId->fullImageFlag = TRUE ;
 
+   if (  obsId->oscanNb != 0 )
+      obsId->oscanFlag = FULL;
+   else
+      obsId->oscanFlag = FALSE;
+
 #ifdef DEBUG
    /*
     * Show CCD Geometry information
@@ -8506,6 +8553,16 @@ uint32 detGeometry
    printf ( "xPixels : %d\n" , obsId->xPixels ) ;
    printf ( "pixels number : %d\n" , obsId->pixelsNb ) ;
    printf ( "uscan number : %d\n" , obsId->uscanNb ) ;
+   printf ( "oscan number : %d\n" , obsId->oscanNb ) ;
+   if ( obsId->oscanFlag == FALSE )
+      printf ( "oscanFlag : FALSE\n" ) ;
+   else
+   {
+      if ( obsId->oscanFlag == FULL )
+         printf ( "oscanFlag : FULL\n" ) ;
+      else
+         printf ( "oscanFlag : HALF\n" ) ;
+   }
    printf ( "xTail : %d\n" , obsId->xTail ) ;
    printf ( "packet size : %d\n" , obsId->packetSize ) ;
    if ( obsId->fullImageFlag == TRUE )
@@ -8701,6 +8758,13 @@ uint32 detGeometry
       return (ERROR);
    }
 
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->oscanNb) , 
+                        obsId->pOscanContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init oscan sad record");
+      return (ERROR);
+   }
+
    return (errorNumber);
 }
 
@@ -8776,6 +8840,7 @@ uint32 detFrameSize
    long         reqX2;
    long         reqY1;
    long         reqY2;
+   long         reqOscanNb;
    long         max;
    long         maxOutput;
    long         size;
@@ -8829,6 +8894,8 @@ uint32 detFrameSize
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) &reqY);
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 4, (char *) &reqXWidth);
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, (char *) &reqYWidth);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6, 
+                          (char *) &reqOscanNb);
 
    reqX1 = reqX - (int)(reqXWidth/2);
    reqX2 = reqX + (int)(reqXWidth/2);
@@ -8836,7 +8903,7 @@ uint32 detFrameSize
    reqY2 = reqY + (int)(reqYWidth/2);
 
    printf ( "reqX1=%d, reqX2=%d, reqY1=%d, reqY2=%d\n", 
-	    reqX1, reqX2, reqY1, reqY2);
+	    (int)reqX1, (int)reqX2, (int)reqY1, (int)reqY2);
 
    /*
     * Check there are valid SDSU and observation context structures.
@@ -8923,6 +8990,15 @@ uint32 detFrameSize
    }
 
    /*
+    * Init oscanFlag 
+    */
+
+   if ( reqOscanNb != 0 )
+      obsId->oscanFlag = FULL;
+   else
+      obsId->oscanFlag = FALSE;
+      
+   /*
     * Init the different parameters
     */
 
@@ -8950,7 +9026,14 @@ uint32 detFrameSize
                xReqStart = reqX1 + 15;
             else
                xReqStart = (reqX1*xReqBin) - 1 + 15;
-            xReqRas = size;
+
+            if ( reqOscanNb == 0 )
+               xReqRas = size;
+            else
+            {
+               xReqRas = maxOutput - reqX1 + 1 + reqOscanNb;
+               obsId->oscanFlag = HALF;
+            }
          }
          else
          {
@@ -8963,7 +9046,7 @@ uint32 detFrameSize
                   xReqStart = reqX1 + 15;
                else
                   xReqStart = (reqX1*xReqBin) - 1 + 15;
-               xReqRas = size1;
+               xReqRas = size1 + reqOscanNb;
             }
             else
             {
@@ -8971,7 +9054,7 @@ uint32 detFrameSize
                   xReqStart = (DET_CONTROL_HRWFS_XSIZE/xReqBin) - reqX2 + 1 + 15;
                else
                   xReqStart = ((DET_CONTROL_HRWFS_XSIZE/xReqBin) - reqX2 + 1)*xReqBin -1 + 15;
-               xReqRas = size2;
+               xReqRas = size2 + reqOscanNb;
             }
          }
       }
@@ -8980,14 +9063,18 @@ uint32 detFrameSize
          if ( xReqBin == 1 )
             xReqStart = (DET_CONTROL_HRWFS_XSIZE/xReqBin) - reqX2 + 1 + 15;
          else
-            xReqStart = ((DET_CONTROL_HRWFS_XSIZE/xReqBin) - reqX2 + 1)*xReqBin -1 + 15;
-         xReqRas = size;
+            xReqStart = ((DET_CONTROL_HRWFS_XSIZE/xReqBin) - reqX2 + 1)*xReqBin 
+                        -1 + 15;
+         xReqRas = reqX2 - maxOutput + reqOscanNb;
+
+         if ( reqOscanNb != 0 )
+            obsId->oscanFlag = HALF;
       }
             
       xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
       reqPixelsNb = xReqPixels * yReqPixels ;
       xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                 + xReqSpace - xReqStart - obsId->uscanNb;
+                 + xReqSpace - xReqStart - obsId->uscanNb + xReqBin*reqOscanNb;
 
       if ( xReqTail < 0 )
       {
@@ -9001,11 +9088,12 @@ uint32 detFrameSize
    {
       if ( obsId->windowingFlag == FALSE )
       {
-         if ( (binFlag == TRUE) && (obsId->binningFlag == FALSE) ) /* first time binning */ 
+         /* first time binning */ 
+         if ( (binFlag == TRUE) && (obsId->binningFlag == FALSE) ) 
          {
             xReqStart = obsId->xStart ;
             yReqStart = obsId->yStart ;
-            xReqRas = obsId->xRaster / xReqBin ;
+            xReqRas = (obsId->xRaster - obsId->oscanNb) / xReqBin + reqOscanNb;
             yReqRas = obsId->yRaster / yReqBin ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
@@ -9014,13 +9102,16 @@ uint32 detFrameSize
             xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
             yReqPixels = yReqRas * yReqSubap ;
             reqPixelsNb = xReqPixels * yReqPixels ;
-            xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                       + xReqSpace - xReqStart - obsId->uscanNb;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap) + 
+                       xReqSpace - xReqStart - obsId->uscanNb + 
+                       xReqBin*reqOscanNb;
 
             if ( xReqTail < 0 )
             {
                ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
-               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
+               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, 
+               xReqTail);
                errorNumber = S_detControl_BAD_ATTRIBUTE;
                return (errorNumber);
             }
@@ -9038,22 +9129,26 @@ uint32 detFrameSize
             updateOffset = TRUE;
          }
          else if ( ( (binFlag == TRUE) && (obsId->binningFlag == TRUE) ) ||
-                   ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) /* do not change anything */
+                   ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) 
+         /* do not change anything */
          {
             xReqStart = obsId->xStart ;
             yReqStart = obsId->yStart ;
             xReqBin = obsId->xBin ;
             yReqBin = obsId->yBin ;
-            xReqRas = obsId->xRaster ;
+            xReqRas = obsId->xRaster - obsId->oscanNb + reqOscanNb;
             yReqRas = obsId->yRaster ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
             xReqSubap = obsId->xSubapNb ;
             yReqSubap = obsId->ySubapNb ;
-            xReqPixels = obsId->xPixels ;
-            yReqPixels = obsId->yPixels ;
-            reqPixelsNb = obsId->pixelsNb ;
-            xReqTail = obsId->xTail ;
+            xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
+            yReqPixels = obsId->yPixels;
+            reqPixelsNb = xReqPixels * yReqPixels ;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap) + 
+                       xReqSpace - xReqStart - obsId->uscanNb + 
+                       xReqBin*reqOscanNb;
 
             reqX1 = xReqStart - 15 ; /* -16 + 1 */
             reqX2 = xReqPixels ;
@@ -9064,7 +9159,8 @@ uint32 detFrameSize
          {
             xReqStart = obsId->xStart ;
             yReqStart = obsId->yStart ;
-            xReqRas = obsId->xRaster * obsId->xBin ;
+            xReqRas = (obsId->xRaster - obsId->oscanNb) * obsId->xBin + 
+                      reqOscanNb;
             yReqRas = obsId->yRaster * obsId->yBin ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
@@ -9073,13 +9169,16 @@ uint32 detFrameSize
             xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
             yReqPixels = yReqRas * yReqSubap ;
             reqPixelsNb = xReqPixels * yReqPixels ;
-            xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                       + xReqSpace - xReqStart - obsId->uscanNb;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
+                       + xReqSpace - xReqStart - obsId->uscanNb +
+                       xReqBin*reqOscanNb;
 
             if ( xReqTail < 0 )
             {
                ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
-               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
+               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, 
+               xReqTail);
                errorNumber = S_detControl_BAD_ATTRIBUTE;
                return (errorNumber);
             }
@@ -9099,11 +9198,13 @@ uint32 detFrameSize
       }
       else /* suppress windowing */
       {
-         if ( (binFlag == TRUE) && (obsId->binningFlag == FALSE) ) /* first time binning */ 
+         if ( (binFlag == TRUE) && (obsId->binningFlag == FALSE) ) 
+         /* first time binning */ 
          {
             xReqStart = 16 ;
             yReqStart = 1 ;
-            xReqRas = DET_CONTROL_HRWFS_XSIZE / ( obsId->outputsNb * xReqBin ) ;
+            xReqRas = DET_CONTROL_HRWFS_XSIZE / ( obsId->outputsNb * xReqBin ) 
+                      + reqOscanNb;
             yReqRas = DET_CONTROL_HRWFS_YSIZE / yReqBin ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
@@ -9112,13 +9213,16 @@ uint32 detFrameSize
             xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
             yReqPixels = yReqRas * yReqSubap ;
             reqPixelsNb = xReqPixels * yReqPixels ;
-            xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                       + xReqSpace - xReqStart - obsId->uscanNb;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
+                       + xReqSpace - xReqStart - obsId->uscanNb
+                       + xReqBin*reqOscanNb;
 
             if ( xReqTail < 0 )
             {
                ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
-               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
+               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, 
+               xReqTail);
                errorNumber = S_detControl_BAD_ATTRIBUTE;
                return (errorNumber);
             }
@@ -9136,13 +9240,15 @@ uint32 detFrameSize
             updateOffset = TRUE;
          }
          else if ( ( (binFlag == TRUE) && (obsId->binningFlag == TRUE) ) ||
-                   ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) /* do not change anything */
+                   ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) 
+         /* do not change anything */
          {
             xReqStart = 16 ;
             yReqStart = 1 ;
             xReqBin = obsId->xBin ;
             yReqBin = obsId->yBin ;
-            xReqRas = DET_CONTROL_HRWFS_XSIZE / ( obsId->outputsNb * xReqBin ) ;
+            xReqRas = DET_CONTROL_HRWFS_XSIZE / ( obsId->outputsNb * xReqBin ) 
+                      + reqOscanNb;
             yReqRas = DET_CONTROL_HRWFS_YSIZE / yReqBin ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
@@ -9151,13 +9257,16 @@ uint32 detFrameSize
             xReqPixels = xReqRas * xReqSubap * obsId->outputsNb ;
             yReqPixels = yReqRas * yReqSubap ;
             reqPixelsNb = xReqPixels * yReqPixels ;
-            xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                       + xReqSpace - xReqStart - obsId->uscanNb;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
+                       + xReqSpace - xReqStart - obsId->uscanNb 
+                       + xReqBin * reqOscanNb;
 
             if ( xReqTail < 0 )
             {
                ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
-               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
+               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, 
+               xReqTail);
                errorNumber = S_detControl_BAD_ATTRIBUTE;
                return (errorNumber);
             }
@@ -9171,7 +9280,8 @@ uint32 detFrameSize
          {
             xReqStart = 16 ;
             yReqStart = 1 ;
-            xReqRas = DET_CONTROL_HRWFS_XSIZE / obsId->outputsNb ;
+            xReqRas = (DET_CONTROL_HRWFS_XSIZE / obsId->outputsNb) 
+                      + reqOscanNb ;
             yReqRas = DET_CONTROL_HRWFS_YSIZE ;
             xReqSpace = obsId->xSpace ;
             yReqSpace = obsId->ySpace ;
@@ -9180,13 +9290,16 @@ uint32 detFrameSize
             xReqPixels = obsId->outputsNb * xReqRas * xReqSubap ;
             yReqPixels = yReqRas * yReqSubap ;
             reqPixelsNb = xReqPixels * yReqPixels ;
-            xReqTail = obsId->xSize - (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
-                       + xReqSpace - xReqStart - obsId->uscanNb;
+            xReqTail = obsId->xSize - 
+                       (((xReqRas * xReqBin) + xReqSpace) * xReqSubap)
+                       + xReqSpace - xReqStart - obsId->uscanNb
+                       + xReqBin * reqOscanNb;
 
             if ( xReqTail < 0 )
             {
                ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
-               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, xReqTail);
+               "Xtail is %ld. Should not be less than zero", ERROR_LOG_NOW, 
+               xReqTail);
                errorNumber = S_detControl_BAD_ATTRIBUTE;
                return (errorNumber);
             }
@@ -9208,7 +9321,8 @@ uint32 detFrameSize
 
    if ( (!sdsuId->simulate) && (obsId->packetSize > 0) )
    {
-      nPackets = (int) ceil ( (double) (reqPixelsNb) / (double) obsId->packetSize );
+      nPackets = (int) ceil ( (double) (reqPixelsNb) / 
+                 (double) obsId->packetSize );
    }
    else
    {
@@ -9236,10 +9350,8 @@ uint32 detFrameSize
    obsId->yPixels = yReqPixels;
    obsId->pixelsNb = reqPixelsNb;
    obsId->xTail = xReqTail;
+   obsId->oscanNb = reqOscanNb;
 
-  /*if ( (xReqSubap == 1) && (yReqSubap == 1) && (xReqStart == 16) && (yReqStart == 1) &&
-        (xReqSpace == 0) && (yReqSpace == 0)
-      )*/
    if ( winFlag == FALSE )
    {
       obsId->windowingFlag = FALSE;
@@ -9264,7 +9376,7 @@ uint32 detFrameSize
    obsId->y1 = reqY1 ;
    obsId->y2 = reqY2 ;
 
-#ifdef DEBUG
+/*#ifdef DEBUG*/
    /*
     * Show CCD Geometry information
     */
@@ -9289,6 +9401,16 @@ uint32 detFrameSize
    printf ( "yPixels : %d\n" , obsId->yPixels ) ;
    printf ( "pixels number : %d\n" , obsId->pixelsNb ) ;
    printf ( "uscan number : %d\n" , obsId->uscanNb ) ;
+   printf ( "oscan number : %d\n" , obsId->oscanNb ) ;
+   if ( obsId->oscanFlag == FALSE )
+      printf ( "oscanFlag : FALSE\n" ) ;
+   else
+   {
+      if ( obsId->oscanFlag == FULL )
+         printf ( "oscanFlag : FULL\n" ) ;
+      else
+         printf ( "oscanFlag : HALF\n" ) ;
+   }
    printf ( "Xtail : %d\n" , obsId->xTail ) ;
    printf ( "packet size : %d\n" , obsId->packetSize ) ;
    if ( obsId->fullImageFlag == TRUE )
@@ -9305,7 +9427,9 @@ uint32 detFrameSize
       printf ( "windowingFlag : FALSE\n" ) ;
    printf ( "x1=%d, x2=%d\n" , obsId->x1, obsId->x2 ) ;
    printf ( "y1=%d, y2=%d\n" , obsId->y1, obsId->y2 ) ;
+/*
 #endif
+*/
 
    MESSAGE_LOG1 (MSG_LOG, "Setting new detector geometry (%s frame mode)",
       (obsId->fullImageFlag ? "full":"reduced"));
@@ -9485,6 +9609,13 @@ uint32 detFrameSize
                         obsId->pYbinContext ) == ERROR)
    {
       ERROR_LOG ("Failed to init ybin sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->oscanNb) , 
+                        obsId->pOscanContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init oscan sad record");
       return (ERROR);
    }
 
@@ -10821,6 +10952,8 @@ STATUS detObsShow (
    printf ("yPixels                          : %d\n", obsId->yPixels);
    printf ("pixelsNb                         : %d\n", obsId->pixelsNb);
    printf ("uscanNb                          : %d\n", obsId->uscanNb);
+   printf ("oscanNb                          : %d\n", obsId->oscanNb);
+   printf ("oscanFlag                        : %d\n", obsId->oscanFlag);
    printf ("xTail                            : %d\n", obsId->xTail);
    printf ("PacketSize                       : %d\n", obsId->packetSize);
    printf ("PacketNb                         : %d\n", obsId->packetNb);
@@ -12133,6 +12266,7 @@ uint32 detFrameReduceUint16
    int            row;
    int            col;
    int            xWindowSize;
+   int            xWindowDataSize;
    int            yWindowSize;
    int            maxOutput;
    int            size1;
@@ -12171,7 +12305,17 @@ uint32 detFrameReduceUint16
     * Reduce the frame
     */
 
-   xWindowSize = obsId->x2 - obsId->x1 + 1;
+   xWindowDataSize = obsId->x2 - obsId->x1 + 1;
+   if ( obsId->oscanNb == 0 )
+      xWindowSize = xWindowDataSize;
+   else
+   {
+      if ( obsId->oscanFlag == FULL )
+         xWindowSize = xWindowDataSize + 2*obsId->oscanNb;
+      else
+         xWindowSize = xWindowDataSize + obsId->oscanNb;
+   }
+
    yWindowSize = obsId->y2 - obsId->y1 + 1;
 
    maxOutput = DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb);
@@ -12188,8 +12332,12 @@ uint32 detFrameReduceUint16
              pd = pDisp + row*obsId->xPixelsDhs;
              pc = pCur + row*obsId->xPixels;
 
-             for ( col = 0 ; col < xWindowSize ; col ++)
+             for ( col = 0 ; col < xWindowDataSize ; col ++)
                  *(pd + col) = *(pc + col);
+
+             for ( col = xWindowDataSize ; col < xWindowSize ; col ++)
+                 *(pd + col) = 
+                 *(pc + col + 2*maxOutput - obsId->x1 - obsId->x2 + 1);
          }
       }
       else
@@ -12204,8 +12352,12 @@ uint32 detFrameReduceUint16
                 pd = pDisp + row*obsId->xPixelsDhs;
                 pc = pCur + row*obsId->xPixels;
 
-                for ( col = 0 ; col < xWindowSize ; col ++)
+                for ( col = 0 ; col < xWindowDataSize ; col ++)
                     *(pd + col) = *(pc + col);
+
+                for ( col = xWindowDataSize ; col < xWindowSize ; col ++)
+                    *(pd + col) = *(pc + col + 2*maxOutput - obsId->x2 
+                                    - obsId->x1 + 1);
             }
          }
          else
@@ -12230,10 +12382,14 @@ uint32 detFrameReduceUint16
       for ( row = 0 ; row < yWindowSize ; row ++)
       {
           pd = pDisp + row*obsId->xPixelsDhs;
-          pc = pCur + row*obsId->xPixels + obsId->xRaster;
+          pc = pCur + row*obsId->xPixels + 
+               obsId->x1 + obsId->x2 - 2*maxOutput -1;
 
-          for ( col = 0 ; col < xWindowSize ; col ++)
+          for ( col = 0 ; col < xWindowDataSize ; col ++)
               *(pd + col) = *(pc + col);
+
+          for ( col = xWindowDataSize ; col < xWindowSize ; col ++)
+              *(pd + col) = *(pc + col + obsId->oscanNb);
       }
    }
             
@@ -13452,6 +13608,7 @@ STATUS detCheckGeometry
       }
 
       sdsuId->packetsPerFrame = nPackets;
+      obsId->packetNb = nPackets;
       /*printf ("xMax=%d, yMax=%d, nPackets=%d\n", obsId->xMax, obsId->yMax, nPackets ) ;*/
    }
    else
@@ -13459,6 +13616,7 @@ STATUS detCheckGeometry
       /* In simu. mode the nb of packets per frame needs to be init. to 1. */
 
       sdsuId->packetsPerFrame = 1;
+      obsId->packetNb = 1;
    }
 
    MESSAGE_LOG2 (MSG_FULLDEBUG, 
@@ -13604,6 +13762,13 @@ STATUS detCopyGeometry
    else
       obsId->fullImageFlag = TRUE ;
 
+   /*
+    * Set the overscan region to default
+    */
+
+   obsId->oscanNb = DET_CONTROL_HRWFS_OSCAN_SIZE;
+   obsId->oscanFlag = FALSE;
+
 #ifdef DEBUG
    /*
     * Show CCD Geometry information
@@ -13629,6 +13794,7 @@ STATUS detCopyGeometry
    printf ( "yPixels : %d\n" , obsId->yPixels ) ;
    printf ( "pixels number : %d\n" , obsId->pixelsNb ) ;
    printf ( "uscan number : %d\n" , obsId->uscanNb ) ;
+   printf ( "oscan number : %d\n" , obsId->oscanNb ) ;
    printf ( "xTail : %d\n" , obsId->xTail ) ;
    printf ( "packet size : %d\n" , obsId->packetSize ) ;
    if ( obsId->fullImageFlag == TRUE )
@@ -15114,6 +15280,17 @@ uint32 detGetSirContext
       errorNumber = ERROR;
    }
 
+   /* Get the context of the "oscan" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_OSCAN_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pOscanContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_OSCAN_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
    /* Return */
 
    return ( errorNumber );
@@ -15296,4 +15473,179 @@ uint32 detDhsDisplay
    obsId->dhsQlRate = rate;
 
    return (OK); 
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   newDetFrameUnscrambleUint16
+ *
+ *   INVOCATION:
+ *   newDetFrameUnscrambleUint16 (xPixels, yPixels, oscanNb, inFrame, outBuffer)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) xPixels   (const int)    Number of columns
+ *   (>) yPixels   (const int)    Number of rows
+ *   (>) oscanNb   (const int)    Overscan number
+ *   (>) inFrame   (SDSU_FRAME *) Pointer to input frame
+ *   (<) outBuffer (uint16 *)     Pointer to output frame buffer
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if command successful, ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Unscramble an entire frame of data
+ *
+ *   DESCRIPTION:
+ *   This function takes a raw frame of data containing pixels in the order
+ *   they are read from the detector and unscrambles them to generate an output
+ *   frame with pixels in the correct order.
+ *   Output data are unsigned short int.
+ *
+ *   ACKNOWLEDGEMENTS:
+ *   This function is based around the LeachDeScramble (lds) program provided
+ *   by Les Saddlemyer and Tim Hardy, Hertzberg Institute of Astrophysics,
+ *   Canada.
+ *
+ *   EXTERNAL VARIABLES:
+ *   None. (The function needs to be reentrant)
+ *
+ *   PRIOR REQUIREMENTS:
+ *   inFrame is a data frame which contains the scrambled SDSU pixels.
+ *   outBuffer must point to a buffer large enough to contain at least 
+ *   xPixels*yPixels unsigned short integer.
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+STATUS newDetFrameUnscrambleUint16
+   (
+   const int      xPixels,         /* Number of columns.                      */
+   const int      yPixels,         /* Number of rows.                         */
+   const int      oscanNb,         /* Number of overscan column per output    */
+   SDSU_FRAME *   inFrame,         /* Pointer to input frame                  */
+   uint16 *       outBuffer        /* Pointer to output frame buffer.         */
+   )
+{
+   volatile uint16 *   ptr;        /* Pointer into frame buffer.              */
+
+   int            i, j;            /* Counters.                               */
+
+   int            nPixels;         /* Total number of pixels.                 */
+
+   int            xPixelsSector;   /* Number of columns per sector.           */
+   int            xPixelsDataSector;
+                                   /* Number of columns of data per sector.   */
+   int            xPixelsData;     /* Number of columns of data.              */
+   int            yPixelsSector;   /* Number of rows per sector.              */
+
+   volatile uint16 *  inDataPtr;   /* Pointer to start of input data.         */
+   uint16 *           outDataPtr;  /* Pointer to start of output data.        */
+
+   uint16 *        ps1;            /* Pointer to beginning of sector 1.       */
+   uint16 *        ps2;            /* Pointer to beginning of sector 2.       */
+
+#ifdef DEBUG
+   uint16          min, max;       /* Minimum and maximum.                    */
+#endif /* DEBUG */
+
+   if ( (inFrame == NULL) || (outBuffer == NULL) )
+   {
+      ERROR_SET(S_detControl_INTERNAL, 
+                "No input and/or output buffers defined", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf (
+   "newDetFrameUnscrambleUint16: Unscrambling %d x %d pixels from frame at %p to %p\n",
+   xPixels, yPixels, inFrame, outBuffer);
+
+   min = USHRT_MAX;
+   max = 0;
+#endif /* DEBUG */
+
+   /*
+    * Set pointers to the start of the data.
+    */
+
+   inDataPtr = & inFrame->pixel[0];
+   outDataPtr = outBuffer;
+
+   /*
+    * The algorithm used to unscramble the data depends on the number of outputs
+    * from the detector. If there are two outputs the sectors are arranged 
+    * like this
+    *
+    *   +------------+------------+
+    *   |  sector 1  |  sector 2  |
+    *   0----->------+-----<------0
+    *
+    * "0" shows the origin of each sector and ">" the direction of readout.
+    */
+
+
+   /* There are two outputs and therefore 2 sectors in a 2x1 pattern. */
+
+   nPixels = xPixels * yPixels;
+   xPixelsSector = xPixels / 2;
+   xPixelsDataSector = xPixelsSector - oscanNb;
+   xPixelsData = 2 * xPixelsDataSector;
+
+   yPixelsSector = yPixels;
+
+#ifdef DEBUG
+   printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
+#endif /* DEBUG */
+
+   /* Initialise the starting position for each sector */
+
+   ps1 = outDataPtr;
+   ps2 = &outDataPtr[xPixelsData - 1];
+   ptr = inDataPtr;
+
+   /* Treat one line at a time, moving sector pointers */
+
+   for (i = 0; i < yPixelsSector; i++)
+   {
+      for (j = 0; j < xPixelsDataSector; j++)
+      {
+#ifdef DEBUG
+         if ( *ptr < min ) min = *ptr;
+         if ( *ptr > max ) max = *ptr;
+         if ( *(ptr+1) < min ) min = *(ptr+1);
+         if ( *(ptr+1) > max ) max = *(ptr+1);
+#endif
+         /*
+          * Change the order here if sectors 1, 2 is
+          * different from the order of arrival
+          */
+
+         *ps1++ = *ptr++;
+         *ps2-- = *ptr++;
+      }
+
+      ps1 += xPixelsDataSector;
+      ps2 += (xPixelsDataSector + (2*oscanNb));
+
+      for ( j = xPixelsDataSector ; j < xPixelsSector ; j ++ )
+      {
+          *ps1 ++ = *ptr ++;
+          *ps2 -- = *ptr ++;
+      }
+
+      ps1 += oscanNb;
+      ps2 += (oscanNb + (2*xPixelsDataSector));
+   }
+#ifdef DEBUG
+   printf ("Values range from %d to %d\n", (int)min, (int)max);
+#endif /* DEBUG */
+
+   return (OK);
 }

@@ -1,4 +1,4 @@
-# $Id: Makefile,v 1.3 1999-05-18 21:11:10 cboyer Exp $
+# $Id: Makefile,v 1.4 2001-06-05 02:58:04 cboyer Exp $
 #
 
 APPLIC_DIR_TYPE = src
@@ -18,7 +18,7 @@ SREC   = $(ASM56000_DIR)/srec
 INSTALL_PROD = $(PROD:%=$(INSTALL_DSP)/%)
 
 # What to build:
-PROD = tim-39.lod tim-39-full.lod tim-47.lod tim-47-full.lod util.lod vme-39.lod vme-47.lod vmerom.lod
+PROD = tim-39.lod tim-39-full.lod tim-47.lod tim-47-full.lod util.lod vme-39.lod vme-47.lod vmerom.lod timrom.lod
 
 
 install: $(INSTALL_PROD)
@@ -77,6 +77,13 @@ vmerom.lod: vmeboot.asm
 	$(DSPLNK) -bvmeboot.cld -v vmeboot.cln
 	@rm -f $@
 	$(CLDLOD) vmeboot.cld >$@
+	$(SREC) -bs $@
+
+timrom.lod: timboot.asm timhead.asm
+	$(ASM56K) -b -ltimboot.ls timboot.asm
+	$(DSPLNK) -btimboot.cld -v timboot.cln
+	@rm -f $@
+	$(CLDLOD) timboot.cld >$@
 	$(SREC) -bs $@
 
 $(INSTALL_DSP)/%: %

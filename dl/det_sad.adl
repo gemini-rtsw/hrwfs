@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="33"
-	nstr="64"
-	ndynamic="32"
+	npc="34"
+	nstr="67"
+	ndynamic="33"
 	nplot="0"
 	nrd="0"
 	nes="1"
@@ -19,27 +19,27 @@ display {
 		x="328"
 		y="298"
 		width="1089"
-		height="502"
+		height="504"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4876"
-	nwords_sta="1300"
+	nwords_dspy="5016"
+	nwords_sta="1312"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2594"
-	osta="1294"
-	odynamic="2594"
-	oplot="4706"
-	ord="4706"
-	oes="4706"
-	okd="4864"
-	opd="4876"
-	opo="4876"
+	odyng="2668"
+	osta="1356"
+	odynamic="2668"
+	oplot="4846"
+	ord="4846"
+	oes="4846"
+	okd="5004"
+	opd="5016"
+	opo="5016"
 	opc="68"
-	ostr="402"
-	ocmap="1294"
-	ocrules="1294"
+	ostr="412"
+	ocmap="1356"
+	ocrules="1356"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -78,7 +78,7 @@ display {
 		x="10"
 		y="46"
 		width="1068"
-		height="449"
+		height="451"
 		groupid="0"
 	}
 }
@@ -547,8 +547,8 @@ display {
 }
 "text" {
 	object {
-		x="737"
-		y="401"
+		x="732"
+		y="423"
 		width="57"
 		height="14"
 		groupid="0"
@@ -558,8 +558,8 @@ display {
 }
 "text" {
 	object {
-		x="920"
-		y="401"
+		x="915"
+		y="423"
 		width="66"
 		height="14"
 		groupid="0"
@@ -592,6 +592,17 @@ display {
 		x="-1"
 		y="1000"
 	}
+}
+"text" {
+	object {
+		x="731"
+		y="381"
+		width="238"
+		height="14"
+		groupid="0"
+	}
+	textix="Overscan nb (per output):"
+	align="horiz. left"
 }
 "text update" {
 	object {
@@ -1975,8 +1986,8 @@ display {
 }
 "text update" {
 	object {
-		x="792"
-		y="398"
+		x="787"
+		y="420"
 		width="93"
 		height="21"
 		groupid="0"
@@ -2021,14 +2032,60 @@ display {
 }
 "text update" {
 	object {
-		x="976"
-		y="398"
+		x="971"
+		y="420"
 		width="93"
 		height="21"
 		groupid="0"
 	}
 	monitor {
 		chan="$(top)adc1"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="977"
+		y="375"
+		width="93"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)oscan"
 		clr="0"
 		bclr="7"
 		label="none"
