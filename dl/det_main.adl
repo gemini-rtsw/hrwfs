@@ -6,11 +6,11 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="13"
-	nstr="106"
-	ndynamic="8"
+	npc="19"
+	nstr="118"
+	ndynamic="13"
 	nplot="0"
-	nrd="6"
+	nrd="7"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -18,28 +18,28 @@ display {
 	object {
 		x="328"
 		y="298"
-		width="706"
-		height="370"
+		width="1019"
+		height="409"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="3320"
-	nwords_sta="140"
+	nwords_dspy="4084"
+	nwords_sta="208"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1820"
-	osta="1680"
-	odynamic="1820"
-	oplot="2348"
-	ord="2348"
-	oes="3308"
-	okd="3308"
-	opd="3320"
-	opo="3320"
+	odyng="2094"
+	osta="1886"
+	odynamic="2094"
+	oplot="2952"
+	ord="2952"
+	oes="4072"
+	okd="4072"
+	opd="4084"
+	opo="4084"
 	opc="68"
-	ostr="216"
-	ocmap="1680"
-	ocrules="1680"
+	ostr="286"
+	ocmap="1886"
+	ocrules="1886"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -65,8 +65,8 @@ display {
 "rectangle" {
 	object {
 		x="10"
-		y="226"
-		width="681"
+		y="267"
+		width="640"
 		height="130"
 		groupid="0"
 	}
@@ -97,15 +97,15 @@ display {
 	object {
 		x="10"
 		y="46"
-		width="680"
-		height="175"
+		width="998"
+		height="215"
 		groupid="0"
 	}
 }
 "text" {
 	object {
-		x="410"
-		y="105"
+		x="486"
+		y="104"
 		width="110"
 		height="20"
 		groupid="0"
@@ -115,8 +115,8 @@ display {
 }
 "text" {
 	object {
-		x="18"
-		y="163"
+		x="15"
+		y="232"
 		width="135"
 		height="20"
 		groupid="0"
@@ -126,8 +126,8 @@ display {
 }
 "text" {
 	object {
-		x="19"
-		y="76"
+		x="17"
+		y="75"
 		width="210"
 		height="20"
 		groupid="0"
@@ -137,8 +137,8 @@ display {
 }
 "text" {
 	object {
-		x="19"
-		y="105"
+		x="17"
+		y="104"
 		width="210"
 		height="20"
 		groupid="0"
@@ -148,8 +148,8 @@ display {
 }
 "text" {
 	object {
-		x="16"
-		y="229"
+		x="15"
+		y="270"
 		width="305"
 		height="22"
 		groupid="0"
@@ -159,8 +159,8 @@ display {
 }
 "text" {
 	object {
-		x="410"
-		y="134"
+		x="486"
+		y="133"
 		width="110"
 		height="20"
 		groupid="0"
@@ -170,8 +170,8 @@ display {
 }
 "text" {
 	object {
-		x="19"
-		y="134"
+		x="17"
+		y="133"
 		width="210"
 		height="20"
 		groupid="0"
@@ -181,8 +181,8 @@ display {
 }
 "text" {
 	object {
-		x="410"
-		y="77"
+		x="486"
+		y="76"
 		width="110"
 		height="20"
 		groupid="0"
@@ -190,10 +190,74 @@ display {
 	textix="STATE:"
 	align="horiz. left"
 }
+"text" {
+	object {
+		x="16"
+		y="170"
+		width="119"
+		height="22"
+		groupid="0"
+	}
+	textix="HISTORY:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="16"
+		y="194"
+		width="100"
+		height="22"
+		groupid="0"
+	}
+	textix="ERRORS:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="665"
+		y="340"
+		width="69"
+		height="18"
+		groupid="0"
+	}
+	textix="SIMUL:"
+	align="horiz. right"
+}
+"text" {
+	object {
+		x="665"
+		y="366"
+		width="68"
+		height="18"
+		groupid="0"
+	}
+	textix="DEBUG:"
+	align="horiz. right"
+}
+"rectangle" {
+	object {
+		x="656"
+		y="267"
+		width="352"
+		height="130"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="663"
+		y="273"
+		width="305"
+		height="22"
+		groupid="0"
+	}
+	textix="SYSTEM:"
+	align="horiz. left"
+}
 "text update" {
 	object {
-		x="520"
-		y="105"
+		x="596"
+		y="104"
 		width="160"
 		height="21"
 		groupid="0"
@@ -238,9 +302,9 @@ display {
 }
 "text update" {
 	object {
-		x="154"
-		y="163"
-		width="529"
+		x="151"
+		y="232"
+		width="851"
 		height="21"
 		groupid="0"
 	}
@@ -284,8 +348,8 @@ display {
 }
 "text update" {
 	object {
-		x="236"
-		y="76"
+		x="234"
+		y="75"
 		width="160"
 		height="21"
 		groupid="0"
@@ -330,8 +394,8 @@ display {
 }
 "text update" {
 	object {
-		x="236"
-		y="105"
+		x="234"
+		y="104"
 		width="160"
 		height="21"
 		groupid="0"
@@ -376,8 +440,8 @@ display {
 }
 "text update" {
 	object {
-		x="520"
-		y="134"
+		x="596"
+		y="133"
 		width="160"
 		height="21"
 		groupid="0"
@@ -422,8 +486,8 @@ display {
 }
 "text update" {
 	object {
-		x="236"
-		y="134"
+		x="234"
+		y="133"
 		width="160"
 		height="21"
 		groupid="0"
@@ -468,54 +532,8 @@ display {
 }
 "text update" {
 	object {
-		x="154"
-		y="190"
-		width="529"
-		height="21"
-		groupid="0"
-	}
-	monitor {
-		chan="hrwfs:testResults"
-		clr="0"
-		bclr="7"
-		label="none"
-		clrmod="static"
-		rulechan[0] = ""
-		rulechan[1] = ""
-		rulechan[2] = ""
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="alarm"
-		clrargs=""
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
-	}
-	align="horiz. left"
-	format="decimal"
-}
-"text update" {
-	object {
-		x="520"
-		y="76"
+		x="596"
+		y="75"
 		width="160"
 		height="21"
 		groupid="0"
@@ -558,10 +576,286 @@ display {
 	align="horiz. left"
 	format="decimal"
 }
+"text update" {
+	object {
+		x="117"
+		y="170"
+		width="442"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)historyLog"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="561"
+		y="170"
+		width="442"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)historyLog1"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="117"
+		y="196"
+		width="442"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)errorLog"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="561"
+		y="196"
+		width="442"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)errorLog1"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="738"
+		y="336"
+		width="110"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)simMode"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="738"
+		y="362"
+		width="110"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)debugMode"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
 "related display" {
 	object {
-		x="16"
-		y="257"
+		x="15"
+		y="298"
 		width="300"
 		height="22"
 		groupid="0"
@@ -694,8 +988,8 @@ display {
 }
 "related display" {
 	object {
-		x="16"
-		y="290"
+		x="15"
+		y="331"
 		width="300"
 		height="22"
 		groupid="0"
@@ -828,8 +1122,8 @@ display {
 }
 "related display" {
 	object {
-		x="16"
-		y="322"
+		x="15"
+		y="363"
 		width="300"
 		height="22"
 		groupid="0"
@@ -962,8 +1256,8 @@ display {
 }
 "related display" {
 	object {
-		x="346"
-		y="290"
+		x="345"
+		y="331"
 		width="300"
 		height="22"
 		groupid="0"
@@ -1096,8 +1390,8 @@ display {
 }
 "related display" {
 	object {
-		x="346"
-		y="257"
+		x="345"
+		y="298"
 		width="300"
 		height="22"
 		groupid="0"
@@ -1230,8 +1524,8 @@ display {
 }
 "related display" {
 	object {
-		x="346"
-		y="322"
+		x="345"
+		y="363"
 		width="300"
 		height="22"
 		groupid="0"
@@ -1362,10 +1656,144 @@ display {
 	menu_title="SAD"
 	decorate="none"
 }
+"related display" {
+	object {
+		x="667"
+		y="299"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SET SIMULATION MODE"
+		name="wfs_simulate.dl"
+		args="top=$(top),cad=simulate,car=det"
+	}
+	display[1] {
+		label="SET DEBUGGING LEVEL"
+		name="wfs_debug.dl"
+		args="top=$(top),cad=debug,car=det"
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SET MODES"
+	decorate="none"
+}
 "kill display" {
 	object {
-		x="622"
-		y="13"
+		x="939"
+		y="16"
 		width="70"
 		height="23"
 		groupid="0"

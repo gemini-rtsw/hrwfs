@@ -41,8 +41,12 @@
 #define SEQ_CONTROL_TASK_NAME      "seqControl"    /* Sequencer control task  */
                                                    /* name                    */
 
-#define SEQ_CONTROL_STATE_SIR_NAME "state"         /* Name of SIR record to   */
+#define SEQ_CONTROL_STATE_SIR_NAME "controlState"  /* Name of SIR record to   */
                                                    /* contain sequencer state */
+
+#define SEQ_CONTROL_HISTORYLOG_SIR_NAME "historyLog"  
+                                                   /* Name of SIR record to   */
+                                                   /* contain seq history log */
 
 #define SEQ_CONTROL_INIT_SIR_NAME  "initialising"  /* Name of SIR record to   */
                                                    /* contain sequencer       */
@@ -124,9 +128,7 @@ enum
    SEQ_CONTROL_CMD_ENDVERIFY,       /* EndVerify command                      */
    SEQ_CONTROL_CMD_GUIDE,           /* Guide command                          */
    SEQ_CONTROL_CMD_ENDGUIDE,        /* EndGuide command                       */
-   SEQ_CONTROL_CMD_ENDOBSERVE,      /* EndObserve command                     */
-   SEQ_CONTROL_CMD_SIMULATE,        /* Set simulation mode                    */
-   SEQ_CONTROL_CMD_DEBUG            /* Set debugging mode                     */
+   SEQ_CONTROL_CMD_ENDOBSERVE       /* EndObserve command                     */
    };
 
 

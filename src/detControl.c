@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.8 2000-02-03 01:19:07 cboyer Exp $"};
+   "$Id: detControl.c,v 1.9 2000-03-13 20:46:39 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -35,6 +35,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   11 feb 2000 - cb add some SIR records + remove detWriteFits and detFrameReduce
+ *   10 feb 2000 - cb add some SIR records 
  *   31 Jan 2000 - cb add state SIR record to handle 
  *   21 Jan 2000 - cb add observe command
  *                 replace observe command per detObserve
@@ -86,6 +88,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include <math.h>
 #include <selectLib.h>
 #include "car.h"
+#include <sirRecord.h>
 
 #include "dhs.h"
 
@@ -174,9 +177,6 @@ extern int sdsuFrameLost ;
 LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix, 
                          CAD_CMD_CONTEXT cadCmdContext, int commandNumber, 
                          SDSU_ID sdsuId, OBS_ID obsId);
-LOCAL uint32   detChop (const char * pWfsName, const char * pRecordPrefix, 
-                        CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                        SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detExposure (const char * pWfsName, const char * pRecordPrefix, 
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                             SDSU_ID sdsuId, OBS_ID obsId);
@@ -270,10 +270,7 @@ STATUS detFrameUnscrambleUint16 (const int xPixels, const int yPixels,
 STATUS detFrameScrambleUint16 (const int xPixels, const int yPixels, 
                                const int outputs, uint16 * inBuffer, 
                                uint16 * outBuffer );
-uint32 detFrameReduce (OBS_ID obsId) ;
 uint32 detFrameReduceUint16 (OBS_ID obsId) ;
-STATUS detWriteFits (char * filename, OBS_ID obsId, int xPixels, int yPixels,
-                     float * pFrameBuffer);
 STATUS detWriteFitsUint16 (char * filename, OBS_ID obsId, int xPixels, 
                            int yPixels, uint16 * pFrameBuffer);
 OBS_ID detObsContextCreate(void);
@@ -338,9 +335,6 @@ STATUS   detControl
                                             /* primitive reply string SIR     */
                                             /* record.                        */
 
-   DATREC_CONTEXT    pDetObservingContext;  /* Context structure for observing*/
-                                            /* state SIR record.              */
-
    DATREC_CONTEXT    pTestingContext;       /* Context structure for testing  */
                                             /* state SIR record.              */
 
@@ -350,29 +344,12 @@ STATUS   detControl
    DATREC_CONTEXT    pObsTypeContext;       /* Context structure for          */
                                             /* observation type SIR record.   */
 
-   DATREC_CONTEXT    pObsModeContext;       /* Context structure for          */
-                                            /* observation mode SIR record.   */
-
    DATREC_CONTEXT    pDetTypeContext;       /* Context structure for detector */
                                             /* controller type.               */
 
    DATREC_CONTEXT    pDetIdContext;         /* Context structure for detector */
                                             /* Id or SN                       */
 
-   DATREC_CONTEXT    pDataLabelContext;     /* Context structure for Data     */
-                                            /* Label SIR record               */
-
-   DATREC_CONTEXT    pIntTimeContext;       /* Context structure for          */
-                                            /* integration time  SIR record   */
-
-   DATREC_CONTEXT    pNExpRQContext ;       /* Requested nb of exp/dataset SIR*/
-                                            /* record context structure       */
-
-   DATREC_CONTEXT    pNExpContext ;         /* Actual number of exp/dataset   */
-                                            /* SIR record context structure   */
-
-   DATREC_CONTEXT    pNFramesContext ;      /* Number of frames/dataset SIR   */
-                                            /* record context structure       */
    DATREC_CONTEXT    pBunitContext ;        /* Data unit SIR record context   */
                                             /* structure                      */
 
@@ -423,6 +400,14 @@ STATUS   detControl
 
    char         pStatusString [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
                                     /* Status string.                         */
+
+   long              simMode;           /* Code for simulation mode.          */
+   char              pSimMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                                        /* Simulation mode string.            */
+
+   long              debugMode;         /* Code for debug mode.               */
+   char              pDebugMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                                        /* Debug mode string.                 */
 
    /* Create and initialise an error context structure for this task */
 
@@ -492,6 +477,24 @@ STATUS   detControl
     */
 
    dataUpdateContext = NULL;
+
+   /*
+    * Set the default simulation mode and debug mode.
+    */
+
+   epToVxSetCadSimMode (EPTOVX_SIM_MODE_NONE);
+   if (epToVxPipeWrite ("dc:simMode", "NONE", NULL) == ERROR)
+   {
+      ERROR_LOG ( "Failed to write default simulation mode to SIR record") ;
+      return (ERROR);
+   }
+
+   errorMessageFilterSet( EPTOVX_DEBUG_MODE_NONE+1 );
+   if (epToVxPipeWrite ("dc:debugMode", "NONE", NULL) == ERROR)
+   {
+      ERROR_LOG ( "Failed to write default debug mode to SIR record");
+      return (ERROR);
+   }
 
    /*
     * Get the context structures for the SIR records that are maintained by 
@@ -570,16 +573,10 @@ STATUS   detControl
       return (ERROR);
    }
 
-   /* Warning no pRecordPrefix for observing SIR record */
-
-   sprintf (pRecordName, "%s", DET_CONTROL_OBSERVING_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetObservingContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_OBSERVING_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /* Warning no pRecordPrefix for obsType record */
+   /*
+    * Init the pObsTypeContext structure  
+    * Warning no pRecordPrefix for obsType record 
+    */
 
    sprintf (pRecordName, "%s", SEQ_CONTROL_OBSTYPE_SIR_NAME);
    if (epToVxRecContextGet (pRecordName, & pObsTypeContext, NULL) == ERROR)
@@ -594,14 +591,9 @@ STATUS   detControl
       return (ERROR);
    }
 
-   /* Warning no pRecordPrefix for obsMode record */
-
-   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSMODE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pObsModeContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSMODE_SIR_NAME SIR context");
-      return (ERROR);
-   }
+   /*
+    * Init the pDetTypeContext pDetIdContext structures  
+    */
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_DETTYPE_SIR_NAME);
@@ -631,51 +623,15 @@ STATUS   detControl
       return (ERROR);
    }
 
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DATALABEL_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDataLabelContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DATALABEL_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_INTTIME_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pIntTimeContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_INTTIME_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NEXPRQ_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pNExpRQContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NEXPRQ_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NEXP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pNExpContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NEXP_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NFRAMES_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pNFramesContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
-      return (ERROR);
-   }
+   /*
+    * Init the pBunitContext structure
+    */
 
    sprintf (pRecordName, "%s:%s", pRecordPrefix, 
             DET_CONTROL_BUNIT_SIR_NAME);
    if (epToVxRecContextGet (pRecordName, & pBunitContext, NULL) == ERROR)
    {
-      ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
+      ERROR_LOG ("Failed to get DET_CONTROL_BUNIT_SIR_NAME SIR context");
       return (ERROR);
    }
 
@@ -705,6 +661,302 @@ STATUS   detControl
 
    obsId->observing = FALSE;
    obsId->totalFrames = 1;
+
+   /*
+    * Init the pDetObservingContext structure  
+    * Warning no pRecordPrefix for observing SIR record 
+    */
+
+   sprintf (pRecordName, "%s", DET_CONTROL_OBSERVING_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetObservingContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_OBSERVING_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pObsModeContext structure  
+    * Warning no pRecordPrefix for obsMode record 
+    */
+
+   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSMODE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pObsModeContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSMODE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pDataLabelContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_DATALABEL_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDataLabelContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DATALABEL_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pIntTimeContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_INTTIME_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pIntTimeContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_INTTIME_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pNExpRQContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_NEXPRQ_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpRQContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NEXPRQ_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pNExpContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_NEXP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NEXP_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pNFramesContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_NFRAMES_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNFramesContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pUTstartContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_UTSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTstartContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_UTSTART_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pUTendContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_UTEND_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTendContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_UTEND_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pExposedContext and pExposedRQContext structures
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_EXPOSED_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSED_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_EXPOSEDRQ_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedRQContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSEDRQ_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pElapsedContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_ELAPSED_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pElapsedContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_ELAPSED_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pOutputsContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_OUTPUTS_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pOutputsContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_OUTPUTS_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pDetXsizeContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_DETXSIZE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetXsizeContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETXSIZE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pDetYsizeContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_DETYSIZE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetYsizeContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETYSIZE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pXsubapContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_XSUBAP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXsubapContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSUBAP_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pYsubapContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_YSUBAP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYsubapContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSUBAP_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pXstartContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_XSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXstartContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSTART_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pYstartContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_YSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYstartContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSTART_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pXrasterContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_XRASTER_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXrasterContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XRASTER_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pYrasterContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_YRASTER_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYrasterContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YRASTER_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pXspaceContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_XSPACE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXspaceContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSPACE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pYspaceContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_YSPACE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYspaceContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSPACE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pXbinContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_XBIN_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXbinContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XBIN_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /*
+    * Init the pYbinContext structure
+    */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
+            DET_CONTROL_YBIN_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYbinContext), NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YBIN_SIR_NAME SIR context");
+      return (ERROR);
+   }
 
    /*
     * Use the wavefront sensor name provided as a function argument to
@@ -1003,6 +1255,94 @@ STATUS   detControl
    }
 
    /*
+    * Init the sad records containing the detector geometry
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->outputsNb) , 
+                        obsId->pOutputsContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init outputs sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSize) , 
+                        obsId->pDetXsizeContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init x size sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySize) , 
+                        obsId->pDetYsizeContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ysize sad record");
+      return (ERROR);
+   }
+   
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yStart) , 
+                        obsId->pYstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ystart sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSubapNb) , 
+                        obsId->pXsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xsubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySubapNb) , 
+                        obsId->pYsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init Ysubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xRaster) , 
+                        obsId->pXrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yRaster) , 
+                        obsId->pYrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSpace) , 
+                        obsId->pXspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySpace) , 
+                        obsId->pYspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xBin) , 
+                        obsId->pXbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xbin sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yBin) , 
+                        obsId->pYbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ybin sad record");
+      return (ERROR);
+   }
+
+   /*
     * If the DHS has initialised successfully, attempt to connect to it.
     */
 
@@ -1072,9 +1412,7 @@ STATUS   detControl
     * once by setting "detControlStop" to 0xf.
     */
 
-   MESSAGE_LOG3 (MSG_MINDEBUG,
-   "Entering loop waiting for commands... pWfsName=%s, pRecordPrefix=%s pCmdPacket=%#x",
-   pWfsName, pRecordPrefix, (int) cadCmdContext->pCmdPacket);
+   MESSAGE_LOG (MSG_MINDEBUG, "Entering loop waiting for commands...") ;
 
    while ( (detControlStop & detControlStopMask) == 0 )
    {
@@ -1160,26 +1498,12 @@ STATUS   detControl
             detSetup (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
                       sdsuId, obsId);
          }
-         else if (commandNumber == DET_CONTROL_CMD_CHOP)
-         {
-
-            /* Specify chop states. */
-
-            errorNumber = 
-            detChop (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                     sdsuId, obsId);
-         }
 
          else if (commandNumber == DET_CONTROL_CMD_EXPOSURE)
          {
 
             /* Define exposure parameters. */
 
-            obsId->pObsModeContext = pObsModeContext;
-            obsId->pIntTimeContext = pIntTimeContext;
-            obsId->pNExpRQContext = pNExpRQContext;
-            obsId->pNExpContext = pNExpContext;
-            obsId->pNFramesContext = pNFramesContext;
             errorNumber = 
             detExposure (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
                          sdsuId, obsId);
@@ -1235,8 +1559,6 @@ STATUS   detControl
 
             obsId->sdsuId = sdsuId;
             obsId->timeId = timeId;
-            obsId->pDetObservingContext = pDetObservingContext;
-            obsId->pDataLabelContext = pDataLabelContext;
             obsId->dhsConnection = dhsConnection;
 
             errorNumber = 
@@ -1254,13 +1576,6 @@ STATUS   detControl
 
             obsId->sdsuId = sdsuId;
             obsId->timeId = timeId;
-            obsId->pDetObservingContext = pDetObservingContext;
-            obsId->pObsModeContext = pObsModeContext;
-            obsId->pDataLabelContext = pDataLabelContext;
-            obsId->pIntTimeContext = pIntTimeContext;
-            obsId->pNExpRQContext = pNExpRQContext;
-            obsId->pNExpContext = pNExpContext;
-            obsId->pNFramesContext = pNFramesContext;
             obsId->dhsConnection = dhsConnection;
 
             errorNumber = 
@@ -1410,6 +1725,91 @@ STATUS   detControl
             errorNumber = 
             detTemp (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
                      sdsuId, obsId);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIMULATE)
+         {
+
+            /* Set simulation mode command received.
+             * Set the simulation mode and write its current value to the
+             * SIR record.
+             */
+
+            EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0,
+                                   (char *) & simMode);
+            epToVxSetCadSimMode (simMode);
+
+            switch (simMode)
+            {
+               case (EPTOVX_SIM_MODE_VSM):
+
+                  strncpy (pSimMode, "VSM", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               case (EPTOVX_SIM_MODE_FAST):
+
+                  strncpy (pSimMode, "FAST", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               case (EPTOVX_SIM_MODE_FULL):
+
+                  strncpy (pSimMode, "FULL", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               case (EPTOVX_SIM_MODE_NONE):
+
+                  strncpy (pSimMode, "NONE", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               default:
+                  strncpy (pSimMode, "INVALID", EPICS_MAX_BYTES_STRING_ATTRIB);
+            }
+
+            MESSAGE_LOG1 (MSG_LOG, "Simulation mode set to %s", pSimMode);
+
+            if (epToVxPipeWrite ("dc:simMode", pSimMode, NULL) == ERROR)
+            {
+               ERROR_LOG ("Failed to write simulation mode to SIR record");
+               errorNumber = (uint32) errnoGet();
+            }
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_DEBUG)
+         {
+            /* Debug command received.
+             * Set the debugging mode.
+             */
+
+            EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & debugMode);
+            errorMessageFilterSet( debugMode+1 );
+
+            switch (debugMode)
+            {
+               case (EPTOVX_DEBUG_MODE_NONE):
+
+                  strncpy (pDebugMode, "NONE", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               case (EPTOVX_DEBUG_MODE_MIN):
+
+                  strncpy (pDebugMode, "MIN", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               case (EPTOVX_DEBUG_MODE_FULL):
+                  strncpy (pDebugMode, "FULL", EPICS_MAX_BYTES_STRING_ATTRIB);
+                  break;
+
+               default:
+                  strncpy (pDebugMode, "INVALID", EPICS_MAX_BYTES_STRING_ATTRIB);
+            }
+
+            MESSAGE_LOG1 (MSG_LOG, "Debug mode set to %s", pDebugMode);
+
+            if (epToVxPipeWrite ("dc:debugMode", pDebugMode, NULL) == ERROR)
+            {
+               ERROR_LOG ("Failed to write debug mode to SIR record" ) ;
+               errorNumber = (uint32) errnoGet();
+            }
          }
 
          else
@@ -1617,107 +2017,6 @@ uint32 detSetup
    return (errorNumber);
 }
 
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
- *   detChop
- *
- *   INVOCATION:
- *   detChop (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, sdsuId, 
- *            obsId)
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
- *   (>) pRecordPrefix (const char *)    Record name prefix
- *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
- *   (>) commandNumber (int)             Command number
- *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
- *   (>) obsId         (OBS_ID)          Observation context structure
- *
- *   FUNCTION VALUE:
- *   (uint32)   Error number. 0 if command successful.
- *
- *   PURPOSE:
- *   Execute detChop command
- *
- *   DESCRIPTION:
- *   This function sets up the SDSU chop parameters.
- *
- *   EXTERNAL VARIABLES:
- *   None. (The function needs to be reentrant)
- *
- *   PRIOR REQUIREMENTS:
- *   None
- *
- *   INCLUDE FILES:
- *   detControl.h
- *
- *   DEFICIENCIES:
- *   None known
- *-
- */
-
-uint32 detChop
-   (
-   const char *    pWfsName,        /* Name of wavefront sensor.              */
-   const char *    pRecordPrefix,   /* Record name prefix.                    */
-   CAD_CMD_CONTEXT cadCmdContext,   /* CAD command context structure.         */
-   int             commandNumber,   /* Command number.                        */
-   SDSU_ID         sdsuId,          /* SDSU context structure.                */
-   OBS_ID          obsId            /* Observation context                    */
-   )
-{
-   uint32       errorNumber;        /* Error number reported by task.         */
-
-   long         chopMask;           /* Chop state mask.                       */
-
-   /*
-    * Initialise the error number and obtain the attributes provided with 
-    * the command.
-    */
-
-   errorNumber = 0;
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & chopMask);
-
-   /*
-    * Check there are valid SDSU and observation context structures.
-    */
-
-   if ( sdsuId == NULL )
-   {
-      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised", 
-                 ERROR_LOG_NOW);
-      errorNumber = S_detControl_INTERNAL;
-      return (errorNumber);
-   }
-
-   if ( obsId == NULL )
-   {
-      ERROR_SET (S_detControl_INTERNAL, "Observation context not initialised", 
-                 ERROR_LOG_NOW);
-      errorNumber = S_detControl_INTERNAL;
-      return (errorNumber);
-   }
-
-   /*
-    * The command can only be used when an observation is not in progress.
-    */
-
-   if ( obsId->observing )
-   {
-      ERROR_SET (S_detControl_BUSY,
-                 "Observation in progress - abort observation and try again", 
-                 ERROR_LOG_NOW);
-      errorNumber = S_detControl_BUSY;
-      return (errorNumber);
-   }
-
-   MESSAGE_LOG (MSG_LOG, "Specify chop states - NOT IMPLEMENTED YET");
-
-   return (errorNumber);
-}
-
 
 /* -------------------------------------------------------------------------- */
 
@@ -1773,6 +2072,7 @@ uint32 detExposure
    uint32          errorNumber;   /* Error number reported by task.           */
 
    long            nframe;        /* Number of frames.                        */
+   long            nframePerDataset; /* Number of frames per dataset          */
    double          exposure;      /* Exposure time in seconds.                */
 
    uint32          sdsuNframe;    /* Value for SDSU parameter NFRAME.         */
@@ -1859,10 +2159,7 @@ uint32 detExposure
          "Setting up for an infinite series of exposures of %f seconds each",
          exposure);
 
-      if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-      {
-         ERROR_LOG ("Failed to set number of frames SIR record");
-      }
+      nframePerDataset = nframe ;
       
       /* BUG WORK AROUND: THE SDSU CONTROLLER RETURNS FRAME COUNT=1 WHEN ASKED
        * FOR AN INFINITE
@@ -1882,10 +2179,7 @@ uint32 detExposure
       MESSAGE_LOG1 (MSG_LOG, 
                     "Setting up for one exposure of %f seconds", exposure);
 
-      if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-      {
-         ERROR_LOG ("Failed to set number of frames SIR record");
-      }
+      nframePerDataset = nframe ;
 
       /* BUG WORK AROUND */
       obsId->continuous = FALSE;
@@ -1897,10 +2191,7 @@ uint32 detExposure
       MESSAGE_LOG2 (MSG_LOG, 
       "Setting up for %ld exposures of %f seconds each", nframe, exposure);
 
-      if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-      {
-         ERROR_LOG ("Failed to set number of frames SIR record");
-      }
+      nframePerDataset = 1 ;
       
       /* BUG WORK AROUND */
       obsId->continuous = FALSE;
@@ -1911,15 +2202,6 @@ uint32 detExposure
    /* Set the number of frames by writing to the T_NFRAME parameter in the
     * timing DSP Also define the total number of frames in the observation
     * context structure. */
-
-   /* BUG WORK AROUND: DRIVE SDSU CONTROLLER IN ONE-SHOT MODE.
-    * SET THE NUMBER OF SDSU FRAMES TO 1 REGARDLESS. SMB - 16 JAN 99.
-    */
-
-   /*sdsuNframe = (uint32) nframe;*/  /* Modif 23 sept 1999 - cb */
-    /*sdsuNframe = (uint32) 1; */
-
-   /*obsId->totalFrames = nframe;*/
 
 #ifdef DEBUG
    printf ("detExposure: Setting T_NFRAME parameter to %lu\n", sdsuNframe);
@@ -1953,7 +2235,7 @@ uint32 detExposure
     * structure. 
     */
 
-   obsId->exposedRQ = nframe * exposure;
+   obsId->exposedRQ = 1 * exposure;
    sdsuId->exposureTicks = (int) (exposure * sysClkRateGet());
 
    /* 
@@ -1980,13 +2262,31 @@ uint32 detExposure
     * Always 1 for the moment
     */
    nexp = 1 ;
-   if (epToVxPipeWrite( NULL, &nexp, obsId->pNExpRQContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpRQContext ) == ERROR)
    {
       ERROR_LOG ("Failed to init Number exp/dataset SIR record");
    }
-   if (epToVxPipeWrite( NULL, &nexp, obsId->pNExpContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpContext ) == ERROR)
    {
       ERROR_LOG ("Failed to init Number exp/dataset SIR record");
+   }
+
+   /* 
+    * Set up the the total integration time requested 
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), obsId->pExposedRQContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init total integration time requested SIR record");
+   }
+
+   /* 
+    * Set up the the number of frames per dataset 
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, obsId->pNFramesContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set number of frames SIR record");
    }
 
    return (errorNumber);
@@ -3402,15 +3702,21 @@ uint32 observeStart
        * and construct these into character strings.
        */
 
-      if (timeThenC( obsId->rawtStart, UT1, 2, obsId->timeArrayStart ) != OK)
+      if (timeThenC( obsId->rawtStart, UT1, 3, obsId->timeArrayStart ) != OK)
       {
          ERROR_SET (0,
             "Failed to convert time stamp at observation start to date/time",
             ERROR_LOG_NOW);
       }
-      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d",
+      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
                obsId->timeArrayStart[0], obsId->timeArrayStart[1], obsId->timeArrayStart[2],
-               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5]);
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5],
+               obsId->timeArrayStart[6]);
+
+      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, obsId->pUTstartContext ) == ERROR)
+      {
+         ERROR_LOG ("Failed to set UT at start of observation SIR record");
+      }
 
 #ifdef DEBUG
       printf ( "obsId->utStartString = %s\n" , obsId->utStartString ) ;
@@ -3899,6 +4205,7 @@ uint32 detObserveStart
    /* SDSU parameters. */
 
    long           nframe;          /* Number of frames.                       */
+   long           nframePerDataset;/* Number of frames per dataset            */
    double         exposure;        /* Exposure time in seconds.               */
 
    uint32         sdsuNframe;      /* Value for SDSU parameter NFRAME.        */
@@ -4050,23 +4357,11 @@ uint32 detObserveStart
 
       if ( strcmp (pFilePath, "") == 0 )
       {
-         /*strncpy (pFullOutFileName, pOutFileName, 
-                  EPICS_MAX_BYTES_STRING_ATTRIB);*/
          strncpy (pFullSimFileName, pSimFileName, 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
       }
       else
       {
-         /*if ( strcmp(pOutFileName, "NONE") == 0 )
-         {
-            strncpy (pFullOutFileName, pOutFileName, 
-                     EPICS_MAX_BYTES_STRING_ATTRIB);
-         }
-         else
-         {
-            sprintf (pFullOutFileName, "%s/%s", pFilePath, pOutFileName );
-         } */
-
          if ( strcmp(pSimFileName, "NONE") == 0 )
          {
             strncpy (pFullSimFileName, pSimFileName, 
@@ -4082,10 +4377,6 @@ uint32 detObserveStart
        * Append the string ".fits" if it is not already present in any file 
        * name, and the name in question is not "NONE".
        */
-
-      /*if ((strcmp(pFullOutFileName, "NONE") != 0) && 
-          (strstr (pFullOutFileName, ".fits") == NULL))
-         strncat (pFullOutFileName, ".fits", EPICS_MAX_BYTES_STRING_ATTRIB);*/
 
       if ((strcmp(pFullSimFileName, "NONE") != 0) && 
           (strstr (pFullSimFileName, ".fits") == NULL))
@@ -4272,10 +4563,7 @@ uint32 detObserveStart
             "Setting up for an infinite series of exposures of %f seconds each",
             exposure);
 
-            if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-            {
-               ERROR_LOG ("Failed to set number of frames SIR record");
-            }
+            nframePerDataset = nframe ;
 
             /* BUG WORK AROUND: THE SDSU CONTROLLER RETURNS FRAME COUNT=1 
              * WHEN ASKED FOR AN INFINITE
@@ -4298,10 +4586,7 @@ uint32 detObserveStart
             MESSAGE_LOG1 (MSG_LOG, 
                     "Setting up for one exposure of %f seconds", exposure);
 
-            if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-            {
-               ERROR_LOG ("Failed to set number of frames SIR record");
-            }
+            nframePerDataset = nframe ;
 
             /* BUG WORK AROUND */
             obsId->continuous = FALSE;
@@ -4316,10 +4601,7 @@ uint32 detObserveStart
             "Setting up for %ld exposures of %f seconds each", 
             nframe, exposure);
 
-            if (epToVxPipeWrite( NULL, (char *)(int)&nframe, obsId->pNFramesContext ) == ERROR)
-            {
-               ERROR_LOG ("Failed to set number of frames SIR record");
-            }
+            nframePerDataset = 1 ;
 
             /* BUG WORK AROUND */
             obsId->continuous = FALSE;
@@ -4331,15 +4613,6 @@ uint32 detObserveStart
          /* Set the number of frames by writing to the T_NFRAME parameter in the
           * timing DSP Also define the total number of frames in the observation
           * context structure. */
-
-         /* BUG WORK AROUND: DRIVE SDSU CONTROLLER IN ONE-SHOT MODE.
-          * SET THE NUMBER OF SDSU FRAMES TO 1 REGARDLESS. SMB - 16 JAN 99.
-          */
-
-         /*sdsuNframe = (uint32) nframe;*/  /* Modif 23 sept 1999 - cb */
-          /*sdsuNframe = (uint32) 1; */
-
-         /*obsId->totalFrames = nframe;*/
 
 #ifdef DEBUG
          printf ("detExposure: Setting T_NFRAME parameter to %lu\n", 
@@ -4374,8 +4647,17 @@ uint32 detObserveStart
           * structure. 
           */
 
-         obsId->exposedRQ = nframe * exposure;
+         obsId->exposedRQ = 1 * exposure;
          sdsuId->exposureTicks = (int) (exposure * sysClkRateGet());
+
+         /* 
+          * Set up the the total integration time requested 
+          */
+
+         if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), obsId->pExposedRQContext ) == ERROR)
+         {
+            ERROR_LOG ("Failed to init total integration time requested SIR record");
+         }
 
          /*
           * Set up the observation mode context
@@ -4402,13 +4684,22 @@ uint32 detObserveStart
           */
 
          nexp = 1 ;
-         if (epToVxPipeWrite( NULL, &nexp, obsId->pNExpRQContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpRQContext ) == ERROR)
          {
             ERROR_LOG ("Failed to init Number exp/dataset SIR record");
          }
-         if (epToVxPipeWrite( NULL, &nexp, obsId->pNExpContext ) == ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &nexp, obsId->pNExpContext ) == ERROR)
          {
             ERROR_LOG ("Failed to init Number exp/dataset SIR record");
+         }
+
+         /* 
+          * Set up the the number of frames per dataset 
+          */
+
+         if (epToVxPipeWrite( NULL, (char *)(int)&nframePerDataset, obsId->pNFramesContext ) == ERROR)
+         {
+            ERROR_LOG ("Failed to set number of frames SIR record");
          }
 
          /*
@@ -4477,6 +4768,15 @@ uint32 detObserveStart
             sdsuId->exposureTicks = 
             (int) (expTim * SDSU_EXPOSURE_UNIT * sysClkRateGet());
          }
+      }
+
+      /* 
+       * Set up the the total integration time  
+       */
+
+      if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposed), obsId->pExposedContext ) == ERROR)
+      {
+         ERROR_LOG ("Failed to init total integration time SIR record");
       }
 
       /* Get a timestamp to record the time at which the observation started. */
@@ -4844,15 +5144,21 @@ uint32 detObserveStart
        * and construct these into character strings.
        */
 
-      if (timeThenC( obsId->rawtStart, UT1, 2, obsId->timeArrayStart ) != OK)
+      if (timeThenC( obsId->rawtStart, UT1, 3, obsId->timeArrayStart ) != OK)
       {
          ERROR_SET (0,
             "Failed to convert time stamp at observation start to date/time",
             ERROR_LOG_NOW);
       }
-      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d",
+      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
                obsId->timeArrayStart[0], obsId->timeArrayStart[1], obsId->timeArrayStart[2],
-               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5]);
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5],
+               obsId->timeArrayStart[6]);
+
+      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, obsId->pUTstartContext ) == ERROR)
+      {
+         ERROR_LOG ("Failed to set UT at start of observation SIR record");
+      }
 
 #ifdef DEBUG
       printf ( "obsId->utStartString = %s\n" , obsId->utStartString ) ;
@@ -5276,6 +5582,11 @@ void detObserveEnd
 
    long         observingState;      /* Observation status (busy or idle).    */
 
+   /*
+    * Other variables 
+    */
+
+   double       elapsed;
 
 #ifdef DEBUG
    printf ("detObserveEnd: %p %p %p\n", sdsuId, obsIdIn, pRawFrame);
@@ -5351,6 +5662,12 @@ void detObserveEnd
    printf ("detObserveEnd: Time at observation end: %f seconds.\n", 
            obsId->rawtEnd);
 #endif
+
+   /*
+    * Compute the elapsed time
+    */
+
+   elapsed = obsId->rawtEnd - obsId->rawtStart ;
 
    /*
     * Get the frame countdown counter attached to the data and increment
@@ -5605,6 +5922,33 @@ void detObserveEnd
 #endif
 
       /*
+       * Convert the time stamps from Gemini raw time into Universal Time
+       * and construct these into character strings.
+       */
+
+      if (timeThenC( obsId->rawtEnd, UT1, 3, obsId->timeArrayEnd ) != OK)
+      {
+         ERROR_SET (0,
+         "Failed to convert time stamp at observation end to date/time",
+         ERROR_LOG_NOW);
+      }
+         
+      sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
+               obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
+               obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5],
+               obsId->timeArrayEnd[6]);
+
+      if (epToVxPipeWrite( NULL, (char *)obsId->utEndString, obsId->pUTendContext ) == ERROR)
+      {
+         ERROR_LOG ("Failed to set UT at end of observation SIR record");
+      }
+
+      if (epToVxPipeWrite( NULL, (char *)(int)&elapsed, obsId->pElapsedContext ) == ERROR)
+      {
+         ERROR_LOG ("Failed to set elapsed time SIR record");
+      }
+
+      /*
        * Send the data to the DHS, store it to disk or do nothing, 
        * as appropriate
        */
@@ -5617,22 +5961,6 @@ void detObserveEnd
 
          if ( obsId->totalFrames == 1 )
          {
-            /*
-             * Convert the time stamps from Gemini raw time into Universal Time
-             * and construct these into character strings.
-             */
-
-            if (timeThenC( obsId->rawtEnd, UT1, 2, obsId->timeArrayEnd ) != OK)
-            {
-               ERROR_SET (0,
-                  "Failed to convert time stamp at observation end to date/time",
-                  ERROR_LOG_NOW);
-            }
-         
-            sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d",
-                     obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
-                     obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5]);
-
             dhsBdAttribAdd (obsId->dhsDataFrame, "utend", DHS_DT_STRING,
                             0, NULL, obsId->utEndString, &dhsErrno);
             CHECK_DHS (dhsErrno);
@@ -8149,6 +8477,80 @@ uint32 detGeometry
       sdsuId->packetsPerFrame = nPackets;
    }
 
+   /*
+    * Init the geometry sad records
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xStart) , 
+                        obsId->pXstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xstart sad record");
+      return (ERROR);
+   }
+   
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yStart) , 
+                        obsId->pYstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ystart sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSubapNb) , 
+                        obsId->pXsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xsubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySubapNb) , 
+                        obsId->pYsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init Ysubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xRaster) , 
+                        obsId->pXrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yRaster) , 
+                        obsId->pYrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSpace) , 
+                        obsId->pXspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySpace) , 
+                        obsId->pYspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xBin) , 
+                        obsId->pXbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xbin sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yBin) , 
+                        obsId->pYbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ybin sad record");
+      return (ERROR);
+   }
+
    return (errorNumber);
 }
 
@@ -8770,6 +9172,80 @@ uint32 detFrameSize
        */
 
       sdsuId->packetsPerFrame = nPackets;
+   }
+
+   /*
+    * Init the geometry sad records
+    */
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xStart) , 
+                        obsId->pXstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xstart sad record");
+      return (ERROR);
+   }
+   
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yStart) , 
+                        obsId->pYstartContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ystart sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSubapNb) , 
+                        obsId->pXsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xsubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySubapNb) , 
+                        obsId->pYsubapContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init Ysubap sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xRaster) , 
+                        obsId->pXrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yRaster) , 
+                        obsId->pYrasterContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yraster sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xSpace) , 
+                        obsId->pXspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->ySpace) , 
+                        obsId->pYspaceContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init yspace sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->xBin) , 
+                        obsId->pXbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init xbin sad record");
+      return (ERROR);
+   }
+
+   if (epToVxPipeWrite( NULL, (char *)(int)& (obsId->yBin) , 
+                        obsId->pYbinContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init ybin sad record");
+      return (ERROR);
    }
 
    return (errorNumber);
@@ -11315,160 +11791,6 @@ STATUS detFrameScrambleUint16
 
 /*+
  *   FUNCTION NAME:
- *   detFrameReduce
- *
- *   INVOCATION:
- *   detFrameReduce ( obsId ) 
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (!) obsId         (OBS_ID)          Observation context structure
- *
- *   FUNCTION VALUE:
- *   (uint32)   Error number. 0 if command successful.
- *
- *   PURPOSE:
- *   Reduce frame in case of windowing
- *
- *   DESCRIPTION:
- *   In case of windowing, because of the two outputs, the number of read pixels 
- *   can be bigger that the real window requested. This function cancels the 
- *   pixels which are outside the window.
- *
- *   EXTERNAL VARIABLES:
- *   None. (The function needs to be reentrant)
- *
- *   PRIOR REQUIREMENTS:
- *   None
- *
- *   INCLUDE FILES:
- *   detControl.h
- *
- *   DEFICIENCIES:
- *   NONE
- *-
- */
-
-uint32 detFrameReduce
-   (
-   OBS_ID          obsId          /* Observation context structure.           */
-   )
-{
-   uint32         errorNumber;      /* Error number reported by task.         */
-
-   int            row;
-   int            col;
-   int            xWindowSize;
-   int            yWindowSize;
-   int            maxOutput;
-   int            size1;
-   int            size2;
-   int            offset;
-   float *        pDisp;
-   float *        pCur;
-   float *        pc;
-   float *        pd;
-
-   /*
-    * Check there is valid observation context structure
-    */
-
-   if ( obsId == NULL )
-   {
-      ERROR_SET (S_detControl_INTERNAL, "Observation context not initialised", 
-                 ERROR_LOG_NOW);
-      errorNumber = S_detControl_INTERNAL;
-      return (errorNumber);
-   }
-
-   /*
-    * Check if the windowingFlag is set
-    */
-
-   if ( obsId->windowingFlag == FALSE ) 
-   {
-      ERROR_SET (S_detControl_BAD_ATTRIBUTE, 
-         "The windowing flag has to be set" , ERROR_LOG_NOW);
-      errorNumber = S_detControl_BAD_ATTRIBUTE;
-      return (errorNumber);
-   }
-
-   /*
-    * Reduce the frame
-    */
-
-   xWindowSize = obsId->x2 - obsId->x1 + 1;
-   yWindowSize = obsId->y2 - obsId->y1 + 1;
-
-   maxOutput = DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb);
-
-   pDisp = obsId->pDispFrame;
-   pCur = obsId->pCurFrame;
-      
-   if ( obsId->x1 <= maxOutput )
-   {
-      if ( obsId->x2 <= maxOutput )
-      {
-         for ( row = 0 ; row < yWindowSize ; row ++)
-         {
-             pd = pDisp + row*obsId->xPixelsDhs;
-             pc = pCur + row*obsId->xPixels;
-
-             for ( col = 0 ; col < xWindowSize ; col ++)
-                 *(pd + col) = *(pc + col);
-         }
-      }
-      else
-      {
-         size1 = maxOutput - obsId->x1 + 1;
-         size2 = obsId->x2 - maxOutput;
-
-         if ( size1 > size2 )
-         {
-            for ( row = 0 ; row < yWindowSize ; row ++)
-            {
-                pd = pDisp + row*obsId->xPixelsDhs;
-                pc = pCur + row*obsId->xPixels;
-
-                for ( col = 0 ; col < xWindowSize ; col ++)
-                    *(pd + col) = *(pc + col);
-            }
-         }
-         else
-         {
-            if ( obsId->xBin == 1 )
-               offset = obsId->x1 - obsId->xStart + 16 - 1;
-            else
-               offset = obsId->x1 - (DET_CONTROL_HRWFS_XSIZE/obsId->xBin - obsId->x2 + 1) ;
-            for ( row = 0 ; row < yWindowSize ; row ++)
-            {
-                pd = pDisp + row*obsId->xPixelsDhs;
-                pc = pCur + row*obsId->xPixels + offset;
-
-                for ( col = 0 ; col < xWindowSize ; col ++)
-                    *(pd + col) = *(pc + col);
-            }
-         }
-      }
-   }
-   else
-   {
-      for ( row = 0 ; row < yWindowSize ; row ++)
-      {
-          pd = pDisp + row*obsId->xPixelsDhs;
-          pc = pCur + row*obsId->xPixels + obsId->xRaster;
-
-          for ( col = 0 ; col < xWindowSize ; col ++)
-              *(pd + col) = *(pc + col);
-      }
-   }
-            
-   return (OK);
-}
-
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
  *   detFrameReduceUint16
  *
  *   INVOCATION:
@@ -11623,273 +11945,6 @@ uint32 detFrameReduceUint16
 
 /*+
  *   FUNCTION NAME:
- *   detWriteFits
- *
- *   INVOCATION:
- *   detWriteFits (filename obsId, xPixels, yPixels, pImageBuffer)
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (>) filename     (char *)   Name of file to contain data.
- *   (>) obsId        (OBS_ID)   Current observation context structure
- *   (>) xPixels      (int)      Number of pixels along X axis
- *   (>) yPixels      (int)      Number of pixels along Y axis
- *   (!) pImageBuffer (float *)  Pointer to image buffer
- *
- *   FUNCTION VALUE:
- *   (STATUS)   OK if command successful, ERROR if unsuccessful
- *
- *   PURPOSE:
- *   Write floating point data to FITS file (TEMPORARY FUNCTION)
- *
- *   DESCRIPTION:
- *   This function writes the contents of the frame buffer to a FITS file.
- *
- *   ACKNOWLEDGEMENTS:
- *   This function is based on a private function provided by Andrew Johnson.
- *
- *   EXTERNAL VARIABLES:
- *   None. (The function needs to be reentrant)
- *
- *   PRIOR REQUIREMENTS:
- *   It is assumed that pImageBuffer points to a buffer of memory containing
- *   xPixels*yPixels unsigned short integer pixel values.
- *
- *   INCLUDE FILES:
- *   detControl.h
- *
- *   DEFICIENCIES:
- *   This function does not write very good FITS files. It needs to be rewritten
- *   to use the cFitsio library.
- *-
- */
-
-STATUS detWriteFits
-   (
-   char *         filename,        /* Name of file to be written.             */
-   OBS_ID         obsId,           /* Current observation context structure.  */
-   int            xPixels,         /* Number of pixels along X axis.          */
-   int            yPixels,         /* Number of pixels along Y axis.          */
-   float *        pImageBuffer     /* Pointer to image data.                  */
-   )
-{
-   int            nPixels;          /* Number of pixels.                      */
-   int            i;                /* Counter.                               */
-   FILE *         fp;               /* File descriptor.                       */
-
-   int            headerCount;      /* Count of header items written.         */
-
-   float          fileBuffer[720];  /* 2880 byte buffer for FITS file.        */
-                                    /* [assumes sizeof(float)=4].             */
-   float*         pFileData;
-   int            nBlocks;
-   int            block;
-   int            extra;
-   char           telName [40];
-
-   /*
-    * Check the parameters provided.
-    */
-
-   if (pImageBuffer == NULL)
-   {
-      ERROR_SET(S_detControl_INTERNAL, "No image buffer defined", 
-                ERROR_LOG_SAVE);
-      return (ERROR);
-   }
-
-   if ( (xPixels <= 0) || (yPixels <= 0) )
-   {
-      ERROR_SET2 (S_detControl_BAD_ATTRIBUTE,
-         "Bad number of pixels given, %d X %d", ERROR_LOG_SAVE,
-         xPixels, yPixels);
-      return (ERROR);
-   }
-
-   /*
-    * Convert the time stamps from Gemini raw time into Universal Time
-    * and construct these into character strings.
-    */
-
-   /*if (timeThenC( obsId->rawtStart, UT1, 2, obsId->timeArrayStart ) != OK)
-   {
-      ERROR_SET (0, 
-         "Failed to convert time stamp at observation start to date/time",
-         ERROR_LOG_NOW);
-   }*/
-
-   if (timeThenC( obsId->rawtEnd, UT1, 2, obsId->timeArrayEnd ) != OK)
-   {
-      ERROR_SET (0, 
-         "Failed to convert time stamp at observation end to date/time",
-         ERROR_LOG_NOW);
-   }
-
-   sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d",
-            obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
-            obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5]);
-
-   wfsGetTelName ( telName ) ;
-
-   fp = fopen (filename, "w");
-
-   if (fp == NULL)
-   {
-      ERROR_SET(0, "Can't create/open FITS file", ERROR_LOG_SAVE);
-      return (ERROR);
-   }
-
-   headerCount = 0;
-
-   fprintf (fp, "SIMPLE  =                    T /                                                ");
-   headerCount++;
-   fprintf (fp, "BITPIX  =                  -32 /                                                ");
-   headerCount++;
-   fprintf (fp, "NAXIS   =                    2 /                                                ");
-   headerCount++;
-   fprintf (fp, "NAXIS1  =                %5d /                                                ", xPixels);
-   headerCount++;
-   fprintf (fp, "NAXIS2  =                %5d /                                                ", yPixels);
-   headerCount++;
-   fprintf (fp, "BZERO   =                    0 /                                                ");
-   headerCount++;
-   fprintf (fp, "EXTEND  =                    T /                                                ");
-   headerCount++;
-   fprintf (fp, "UTSTART ='%20s'/                                                ", obsId->utStartString);
-   headerCount++;
-   fprintf (fp, "UTEND   ='%20s'/                                                ", obsId->utEndString);
-   headerCount++;
-   fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->exposed);
-   headerCount++;
-   fprintf (fp, "DARKTIME=      %15f /                                                ", obsId->exposed);
-   headerCount++;
-   fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
-   headerCount++;
-   fprintf (fp, "TELESCOP='%20s'/                                                ", telName);
-   headerCount++;
-   fprintf (fp, "OBSERVAT='%20s'/                                                ", telName);
-   headerCount++;
-   fprintf (fp, "BUNIT   ='%20s'/                                                ", DET_BUNIT);
-   headerCount++;
-   fprintf (fp, "UNITS   ='%20s'/                                                ", DET_BUNIT);
-   headerCount++;
-   fprintf (fp, "INSTRUME='%20s'/                                                ", obsId->pWfsName);
-   headerCount++;
-   fprintf (fp, "OBSTYPE ='%20s'/                                                ", obsId->pObsType);
-   headerCount++;
-
-   if ( obsId->wcsStatus == 0 )
-   {
-      fprintf (fp, "CTYPE1  ='%20s'/                                                ", obsId->ctype1);
-      headerCount++;
-      fprintf (fp, "CRPIX1  =      %15f /                                                ", obsId->crpix1);
-      headerCount++;
-      fprintf (fp, "CRVAL1  =      %15f /                                                ", obsId->crval1);
-      headerCount++;
-      fprintf (fp, "CTYPE2  ='%20s'/                                                ", obsId->ctype2);
-      headerCount++;
-      fprintf (fp, "CRPIX2  =      %15f /                                                ", obsId->crpix2);
-      headerCount++;
-      fprintf (fp, "CRVAL2  =      %15f /                                                ", obsId->crval2);
-      headerCount++;
-      fprintf (fp, "CD1_1   =      %15f /                                                ", obsId->cd1_1);
-      headerCount++;
-      fprintf (fp, "CD1_2   =      %15f /                                                ", obsId->cd1_2);
-      headerCount++;
-      fprintf (fp, "CD2_1   =      %15f /                                                ", obsId->cd2_1);
-      headerCount++;
-      fprintf (fp, "CD2_2   =      %15f /                                                ", obsId->cd2_2);
-      headerCount++;
-      fprintf (fp, "RADECSYS='%20s'/                                                ", obsId->radecsys);
-      headerCount++;
-   }
-
-   fprintf (fp, "RA      =      %15f /                                                ", obsId->RA);
-   headerCount++;
-   fprintf (fp, "DEC     =      %15f /                                                ", obsId->Dec);
-   headerCount++;
-   fprintf (fp, "EQUINOX =      %15f /                                                ", obsId->equinox);
-   headerCount++;
-   fprintf (fp, "MJDOBS  =      %15f /                                                ", obsId->mjdobs);
-   headerCount++;
-   fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
-   headerCount++;
-   fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
-   headerCount++;
-   fprintf (fp, "DATASEC ='%20s'/                                                ", obsId->dataSec);
-   headerCount++;
-   fprintf (fp, "CCDSEC  ='%20s'/                                                ", obsId->ccdSec);
-   headerCount++;
-   fprintf (fp, "ORIGSEC ='%20s'/                                                ", obsId->origSec);
-   headerCount++;
-   fprintf (fp, "DETTYPE ='%20s'/                                                ", obsId->detType);
-   headerCount++;
-   fprintf (fp, "DETID   ='%20s'/                                                ", obsId->detId);
-   headerCount++;
-   fprintf (fp, "END                                                                             ");
-   headerCount++;
-
-   /*
-    * Fill up the remaining header records (which must be a whole number of
-    * 2880-byte or 36-line blocks) with blanks.
-    */
-
-   headerCount = headerCount % 36;
-
-   for ( i=headerCount; i<36; i++)
-   {
-      fprintf (fp, "                                                                                ");
-   }
-
-   /* write image data in 2880-byte blocks */
-
-   nPixels = xPixels * yPixels;
-
-   nBlocks = nPixels / 720;
-   extra   = nPixels % 720;
-
-   pFileData = pImageBuffer;
-   for (block=0; block<nBlocks; block++)
-   {
-      if ( fwrite (pFileData, sizeof (float), 720, fp) != 720 )
-      {
-         ERROR_SET(0, "Problem writing FITS output file", ERROR_LOG_SAVE);
-         fclose (fp);
-         return (ERROR);
-      }
-      pFileData += 720;
-   }
-
-   if ( extra > 0 )
-   {
-      for (i=0; i<extra; i++)
-         fileBuffer[i] = *pFileData++;
-      for (; i<720; i++)                  /* Pad remainder of block */
-         fileBuffer[i] = 0.0;
-
-      if ( fwrite (fileBuffer, sizeof (float), 720, fp) != 720 )
-      {
-         ERROR_SET(0, "Problem writing FITS output file", ERROR_LOG_SAVE);
-         fclose (fp);
-         return (ERROR);
-      }
-   }
-   
-   /* tidy up */
-
-   if (fclose (fp))
-   {
-      ERROR_SET(0, "Problem closing FITS output file", ERROR_LOG_SAVE);
-      return (ERROR);
-   }
-
-   return (OK);
-}
-
-
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
  *   detWriteFitsUint16
  *
  *   INVOCATION:
@@ -11956,6 +12011,8 @@ STATUS detWriteFitsUint16
    int            extra;
 
    char           telName [40] ;
+   char           utStartReduceString [20] ;
+   char           utEndReduceString [20] ;
 
    /*
     * Check the parameters provided.
@@ -11976,31 +12033,24 @@ STATUS detWriteFitsUint16
       return (ERROR);
    }
 
-
    /*
-    * Convert the time stamps from Gemini raw time into Universal Time
-    * and construct these into character strings.
+    * Get the telescope name
     */
 
-   /*if (timeThenC ( obsId->rawtStart, UT1, 2, obsId->timeArrayStart ) != OK)
-   {
-      ERROR_SET (0, 
-         "Failed to convert time stamp at observation start to date/time",
-         ERROR_LOG_NOW);
-   }*/
-
-   if (timeThenC ( obsId->rawtEnd, UT1, 2, obsId->timeArrayEnd ) != OK)
-   {
-      ERROR_SET (0, 
-         "Failed to convert time stamp at observation end to date/time",
-         ERROR_LOG_NOW);
-   }
-
-   sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d",
-            obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
-            obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5]);
-
    wfsGetTelName ( telName ) ;
+
+   /*
+    * Reduce strings for utstart and utend
+    */
+
+   utStartReduceString[0] = '\0' ;
+   utEndReduceString[0] = '\0' ;
+   strncat ( utStartReduceString , obsId->utStartString , 19) ;
+   strncat ( utEndReduceString , obsId->utEndString , 19) ;
+
+   /*
+    * Open and write the fits file
+    */
 
    fp = fopen (filename, "w");
 
@@ -12029,9 +12079,9 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "EXTEND  =                    T /                                                ");
    headerCount++;
-   fprintf (fp, "UTSTART ='%20s'/                                                ", obsId->utStartString);
+   fprintf (fp, "UTSTART ='%20s'/                                                ", utStartReduceString);
    headerCount++;
-   fprintf (fp, "UTEND   ='%20s'/                                                ", obsId->utEndString);
+   fprintf (fp, "UTEND   ='%20s'/                                                ", utEndReduceString);
    headerCount++;
    fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->exposed);
    headerCount++;
@@ -13740,3 +13790,111 @@ STATUS detReadFitsImageUint16
    return (OK);
 }
 
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detHeadTempGet
+ *
+ *   INVOCATION:
+ *   detReadFitsImageUint16 (struct sirRecord *psir)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (<) psir (struct sirRecord *) Pointer to headTemp sir record
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if command successful, ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Write the temperature of the CCD into the SIR record
+ *
+ *   DESCRIPTION:
+ *   Fot this sir record, I have decided to use Epics facilities and not epToVxLib.
+ *   Faster and simpler.
+ *
+ *   EXTERNAL VARIABLES:
+ *   None. 
+ *
+ *   PRIOR REQUIREMENTS:
+ *   external variables :detSdsuIdHr, detObsIdHr
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *   fitsio.h
+ *
+ *   DEFICIENCIES:
+ *   None
+ *-
+ */
+
+STATUS detHeadTempGet
+   (
+   struct sirRecord *       psir /* Pointer to "headTemp" sir record       */
+   )
+{
+   uint32   value ;
+
+   int      sample ;
+
+   double   meanValue6, meanValue7;
+   double   sdsuTemp6, sdsuTemp7, sdsuTemp;
+
+   if ( detObsIdHr == NULL )
+   {
+      return (ERROR);
+   }
+
+   if ( detSdsuIdHr == NULL )
+   {
+      return (ERROR);
+   }
+
+   if ( detObsIdHr->observing != TRUE )
+   {
+      meanValue6 = meanValue7 = 0.0;
+      for ( sample=0; sample<20; sample++)
+      {
+         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC6", &value) == ERROR)
+         {
+            ERROR_LOG ("Failed to read thermistor 1 temperature parameter");
+            return (ERROR);
+         }
+         else
+         {
+            meanValue6 += (double) value;
+         }
+
+         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC7", &value) == ERROR)
+         {
+            ERROR_LOG ("Failed to read thermistor 2 temperature parameter");
+            return (ERROR);
+         }
+         else
+         {
+            meanValue7 += (double) value;
+         }
+      }
+
+      meanValue6 /= 20.0;
+      meanValue7 /= 20.0;
+
+      sdsuTemp6 = meanValue6 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
+      sdsuTemp7 = meanValue7 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
+
+      sdsuTemp = (sdsuTemp6 + sdsuTemp7) / 2.0 ;
+
+#ifdef DEBUG
+      printf ( "detHeadTempGet() : not observing -> val = %f\n" , sdsuTemp ) ;
+#endif
+      *(double *)psir->val = sdsuTemp ;
+   }
+#ifdef DEBUG
+   else
+   {
+      printf ( "detHeadTempGet() observing then wait...\n" ) ;
+   }
+#endif
+
+   return (OK) ;
+}
+  

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: cicsCarHealth.c,v 1.2 2000-01-05 20:09:28 cboyer Exp $"};
+   "$Id: cicsCarHealth.c,v 1.3 2000-03-13 20:46:39 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -21,6 +21,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   cicsHealthCombine  - Combine together multiple health values.
  *   cicsStringAppend   - Append two string inputs together
  *   cicsStringFilter   - Pass a string as long as it differs from a given tag
+ *   cicsStateCombine   - Combine together multiple state values.
  *
  *   EXTERNAL MODULES:
  *   None
@@ -54,11 +55,15 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   24-Mar-1998: All occurences of strcpy replaced by strncpy,
  *                since strcpy can sometimes lead to memory
  *                corruption.                                      (smb)
+ *   28-Feb-2000: Add cicsStateCombine() routine needed by the seq (cb)
  *-
  */
 /* *INDENT-OFF* */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/01/05 20:09:28  cboyer
+ * Tidy up the directory src: remove all the not used files and tidy up
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:22  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -819,3 +824,117 @@ STATUS cicsStringFilter( struct genSubRecord *pgensub )
 }
 
 /* -------------------------------------------------------------------------- */
+
+/*+
+ *   Function name:
+ *   cicsStateCombine
+ *
+ *   Purpose:
+ *   Generate a state value from the states of the CC and DC
+ *
+ *   Description:
+ *   This routine generates an overall "state" value from the combined
+ *   states of the Components Controller and Detector Controller for hrwfs.
+ *   The input states are expressed as strings and the output state by
+ *   a number (see ICD 7b). As far as the output state is concerned,
+ *   the input states "CONFIGURING" are treated as being equivalent to
+ *   "RUNNING". 
+ *
+ *   Invocation:
+ *   cicsStateCombine (pgensub)
+ *
+ *   Parameters: (">" input, "!" modified, "<" output)  
+ *      (!)   pgensub  (struct genSubRecord *pgsub)  Pointer to gensub structure
+
+ *
+ *   Epics inputs:
+ *   a => Input state of CC
+ *   b => Input state of DC 
+ *   c => Input state of sequencer 
+ *
+ *   Epics outputs:
+ *   vala => Overall state of hrwfs seq as string
+ *   valb => Overall state of hrwfs seq as a number
+ *
+ *   Function value:
+ *   (<)  status  (long)  Return status, 0 = OK
+ * 
+ *-
+ */
+
+long cicsStateCombine (struct genSubRecord *pgensub) 
+{
+     int ccState ;
+     int dcState ;
+     int seqState ;
+     int overallState ;
+     int status ;
+
+     char ccStateStr[MAX_STRING_SIZE] ;
+     char dcStateStr[MAX_STRING_SIZE] ;
+     char seqStateStr[MAX_STRING_SIZE] ;
+     char *states[] = {"BOOTING", "INITIALISING", "RUNNING"} ;
+
+     /* Some init */
+
+     status = OK ;
+
+     /* Read input state strings for CC and DC */
+
+     strncpy ( ccStateStr, (char *)pgensub->a, MAX_STRING_SIZE ) ;
+     strncpy ( dcStateStr, (char *)pgensub->b, MAX_STRING_SIZE ) ;
+     strncpy ( seqStateStr, (char *)pgensub->c, MAX_STRING_SIZE ) ;
+
+     /* Convert CC string state to a number */
+
+     ccState = 0 ;      /* Assume it is BOOTING by default */
+
+     if (!strncmp (ccStateStr, "INITIALISING", 12))
+        ccState = 1 ;
+
+     if (!strncmp (ccStateStr, "RUNNING", 7) ||
+         !strncmp (ccStateStr, "CONFIGURING", 11))
+        ccState = 2 ;
+
+     /* Convert DC string state to a number */
+
+     dcState = 0 ;      /* Assume it is BOOTING by default */
+
+     if (!strncmp (dcStateStr, "INITIALISING", 12))
+        dcState = 1 ;
+
+     if (!strncmp (dcStateStr, "RUNNING", 7) ||
+         !strncmp (dcStateStr, "CONFIGURING", 11))
+        dcState = 2 ;
+
+     /* Convert seq string state to a number */
+
+     seqState = 0 ;      /* Assume it is BOOTING by default */
+
+     if (!strncmp (seqStateStr, "INITIALISING", 12))
+        seqState = 1 ;
+
+     if (!strncmp (seqStateStr, "RUNNING", 7) ||
+         !strncmp (seqStateStr, "CONFIGURING", 11))
+        seqState = 2 ;
+
+     /* Set overall state to the lowest individual states */
+
+     overallState = 2 ;
+
+     if ( seqState < overallState ) overallState = seqState ;
+     if ( ccState < overallState ) overallState = ccState ;
+     if ( dcState < overallState ) overallState = dcState ;
+
+     strcpy ((char *)pgensub->vala, states[overallState]) ;
+     *(long *)pgensub->valb = (long)overallState ;
+
+#ifdef DEBUG
+     printf ( "cicsStateCombine: dcState=%d, ccState=%d, seqState=%d, overall=%d\n",
+              dcState, ccState, seqState, overallState ) ;
+     printf ( "states[%d]=%s\n" , overallState , states[overallState]) ;
+#endif
+
+     return (OK);
+}
+

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.6 2000-02-03 01:19:25 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.7 2000-03-13 20:46:40 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   1 mar 2000  - cb work on historyLog of seq and debug and simulate...
+ *   11 feb 2000 - cb add dc:exposed, dc:exposedRQ, dc:utstart, dc:utend, 
+ *                    dc:elapsed
+ *                    + add all the sir record containing the detector geometry
  *   31 jan 2000 - cb add obsType, obsMode, dc:detType, dc:detID sirs
  *   21 jan 2000 - cb add command setObserve
  *   20 jan 2000 - cb add verify and verifying, endVerify and 
@@ -186,9 +190,17 @@ CAD_RECORD pWfsDbCadList [] =
       NO_TIMEOUT
    },
    {
-      RECORD_NAME ("simulate"),
+      RECORD_NAME ("test"),
       SEQ_CONTROL_TASK_NAME,
-      SEQ_CONTROL_CMD_SIMULATE,
+      SEQ_CONTROL_CMD_TEST,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      120.0
+   },
+   {
+      RECORD_NAME ("dc:simulate"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIMULATE,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
@@ -197,23 +209,15 @@ CAD_RECORD pWfsDbCadList [] =
                                                 ATTRIB (EPTOVX_SIM_MODE_NONE)}
    },
    {
-      RECORD_NAME ("debug"),
-      SEQ_CONTROL_TASK_NAME,
-      SEQ_CONTROL_CMD_DEBUG,
+      RECORD_NAME ("dc:debug"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_DEBUG,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,      ATTRIB (EPTOVX_DEBUG_MODE_NONE),
                                                 {ATTRIB (EPTOVX_DEBUG_MODE_NONE),
                                                 ATTRIB (EPTOVX_DEBUG_MODE_FULL)}
-   },
-   {
-      RECORD_NAME ("test"),
-      SEQ_CONTROL_TASK_NAME,
-      SEQ_CONTROL_CMD_TEST,
-      STOP_DIRECTIVE_UNSUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0
    },
    {
       RECORD_NAME ("dc:detSetup"),
@@ -225,15 +229,6 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, DET_CONTROL_PAR_FILE_PATH,   {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, "hrparams.par", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG, "-1", {"-1", "3"}
-   },
-   {
-      RECORD_NAME ("dc:detChop"),
-      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
-      DET_CONTROL_CMD_CHOP,
-      STOP_DIRECTIVE_UNSUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      40.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "0",         {"0", "7"}
    },
    {
       RECORD_NAME ("dc:detExposure"),
@@ -510,19 +505,15 @@ SIR_RECORD   pWfsDbSirList [] =
       EPICS_DATA_TYPE_STRING
    },
    {
+      RECORD_NAME ("controlState"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
       RECORD_NAME ("health"),
       EPICS_DATA_TYPE_STRING
    },
    {
       RECORD_NAME ("controlHealth"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
-      RECORD_NAME ("debugMode"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
-      RECORD_NAME ("simMode"),
       EPICS_DATA_TYPE_STRING
    },
    {
@@ -594,18 +585,6 @@ SIR_RECORD   pWfsDbSirList [] =
       EPICS_DATA_TYPE_STRING
    },
    {
-      RECORD_NAME ("historyLog1"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
-      RECORD_NAME ("errorLog"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
-      RECORD_NAME ("errorLog1"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
       RECORD_NAME ("cpuUsed00"),
       EPICS_DATA_TYPE_LONG,
       5.0
@@ -634,6 +613,30 @@ SIR_RECORD   pWfsDbSirList [] =
    },
    {
       RECORD_NAME ("dc:health"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:historyLog"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:historyLog1"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:errorLog"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:errorLog1"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:debugMode"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:simMode"),
       EPICS_DATA_TYPE_STRING
    },
    {
@@ -683,6 +686,78 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("dc:bunit"),
       EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:exposed"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:elapsed"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:exposedRQ"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:utstart"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:utend"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:outputs"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:detXsize"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:detYsize"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:xsubap"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:ysubap"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:xstart"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:ystart"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:xras"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:yras"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:xspace"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:yspace"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:xbin"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:ybin"),
+      EPICS_DATA_TYPE_LONG
    },
    {
       RECORD_NAME ("observing"),

@@ -1,10 +1,16 @@
 [schematic2]
-uniq 108
+uniq 109
 [tools]
 [detail]
 s 2464 -704 500 512 wfsDetSad.sch
 s 128 2176 500 0 Wavefront Sensing - WFS Detector Status Records
 [cell use]
+use esirs -64 -217 100 0 outputs
+xform 0 144 -64
+p 0 -256 100 0 1 DESC:Number of outputs
+p -128 -480 100 0 0 FDSC:SDSU parameter OUTPUTS
+p 0 -288 100 0 1 FTVL:LONG
+p 0 -320 100 0 1 PV:$(sadtop)$(wfs)
 use esirs 544 -217 100 0 gain
 xform 0 752 -64
 p 608 -256 100 0 1 DESC:Detector gain parameter
@@ -90,7 +96,7 @@ p 608 1664 100 0 1 DESC:On-chip integration time
 p 608 1568 100 0 1 EGU:seconds
 p 480 1440 100 0 0 FDSC:SDSU parameter T_EXP
 p 608 1632 100 0 1 FTVL:DOUBLE
-p 736 1632 100 0 0 PREC:4
+p 608 1536 100 0 1 PREC:4
 p 608 1600 100 0 1 PV:$(sadtop)$(wfs)
 use esirs 544 1223 100 0 nreads
 xform 0 752 1376
@@ -109,10 +115,13 @@ p 608 608 100 0 1 VAL:0
 use esirs 544 263 100 0 headTemp
 xform 0 752 416
 p 608 224 100 0 1 DESC:Detector head temperature
-p 608 128 100 0 1 EGU:Kelvin
+p 608 128 100 0 1 EGU:Celsius
 p 480 0 100 0 0 FDSC:Detector head temperature
 p 608 192 100 0 1 FTVL:DOUBLE
+p 736 192 100 0 0 PREC:4
 p 608 160 100 0 1 PV:$(sadtop)$(wfs)
+p 608 96 100 0 1 SCAN:5 second
+p 832 96 100 0 1 SNAM:detHeadTempGet
 use esirs 1152 1703 100 0 detXsize
 xform 0 1360 1856
 p 1216 1664 100 0 1 DESC:Total X size of detector
@@ -160,9 +169,9 @@ xform 0 1616 784
 p 2608 -688 200 0 1 author:S.M.Beard
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:B.Goodrich
-p 3120 -784 200 0 -1 date:$Date: 2000-02-03 01:18:01 $
-p 2576 2320 200 0 -1 id:$Id: wfsDetSad.sch,v 1.2 2000-02-03 01:18:01 cboyer Exp $
+p 3120 -784 200 0 -1 date:$Date: 2000-03-13 20:46:38 $
+p 2576 2320 200 0 -1 id:$Id: wfsDetSad.sch,v 1.3 2000-03-13 20:46:38 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2608 -496 200 0 -1 revision:$Revision: 1.2 $
+p 2608 -496 200 0 -1 revision:$Revision: 1.3 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor Detector Status Records
 [comments]

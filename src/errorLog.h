@@ -1,15 +1,18 @@
 /*+
- *	MODULE NAME:
- *	errorLog
+ * MODULE NAME:
+ * errorLog
  *
- *	FILENAME:
- *	errorLog.h
+ * FILENAME:
+ * errorLog.h
  *
- *	PURPOSE:
- *	Include file for errorLog application code
+ * PURPOSE:
+ * Include file for errorLog application code
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:26  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.9  1998/12/07 11:17:19  cics
  * Removed obsolete and unmanageable COPYRIGHT statement.
  *
@@ -41,8 +44,8 @@
  *-
  */
 
-#ifndef	__INCerrorLogh
-#define	__INCerrorLogh
+#ifndef   __INCerrorLogh
+#define   __INCerrorLogh
 
 
 /* includes */
@@ -51,7 +54,7 @@
 #include <vxWorks.h>
 #else
 #error This code only runs under VxWorks
-#endif	/* vxWorks */
+#endif   /* vxWorks */
 
 #include <stdio.h>
 #include "gemModNum.h"
@@ -64,31 +67,33 @@
  * for the error logging task.
  */
 
-#define	LOGTASK_TASK_NAME			"errorLog"
-#define	LOGTASK_PIPE_NAME			"errorLog"
-#define	LOGTASK_INIT_MSG_PREFIX		"Initial_Error_Count: "
-#define	LOGTASK_INIT_MSG_SIZE		21
+#define   LOGTASK_TASK_NAME         "errorLog"
+#define   LOGTASK_PIPE_NAME         "errorLog"
+#define   LOGTASK_INIT_MSG_PREFIX   "Initial_Error_Count: "
+#define   LOGTASK_INIT_MSG_SIZE     21
 
-	/*
-	 * Error number codes used by errorLog.
-	 * These are designed to be processed using the vxWorks "makeStatTbl" utility.
-	 */
+   /*
+    * Error number codes used by errorLog.
+    * These are designed to be processed using the vxWorks "makeStatTbl" utility
+    */
 
-#define	S_errorLog_FOPEN_FAIL		(M_errorLog | 1)	/* Error while opening log file	*/
-#define	S_errorLog_FCLOSE_FAIL		(M_errorLog | 2)	/* Error while closing log file	*/
-#define	S_errorLog_BAD_COMMAND		(M_errorLog | 3)	/* Unrecognised command			*/
-#define	S_errorLog_READ_FAILURE		(M_errorLog | 4)	/* Read from pipe failed		*/
-#define	S_errorLog_EPICS_ERROR		(M_errorLog | 5)	/* Error reported by EPICS		*/
+#define S_errorLog_FOPEN_FAIL   (M_errorLog | 1) /* Error while opening log   */
+                                                 /* file                      */
+#define S_errorLog_FCLOSE_FAIL  (M_errorLog | 2) /* Error while closing log   */
+                                                 /* file                      */
+#define S_errorLog_BAD_COMMAND  (M_errorLog | 3) /* Unrecognised command      */
+#define S_errorLog_READ_FAILURE (M_errorLog | 4) /* Read from pipe failed     */
+#define S_errorLog_EPICS_ERROR  (M_errorLog | 5) /* Error reported by EPICS   */
 
 /* Define the commands recognised by the error logging task.
  * Only one command (set mode) is recognised.
  */
 
 enum
-	{
-	LOGTASK_CMD_OPEN = 0,		/* Open log file.				*/
-	LOGTASK_CMD_CLOSE,			/* Close log file.				*/
-	LOGTASK_CMD_CLEAR			/* Clear error counters.		*/
-	};
+   {
+   LOGTASK_CMD_OPEN = 0,     /* Open log file.            */
+   LOGTASK_CMD_CLOSE,        /* Close log file.           */
+   LOGTASK_CMD_CLEAR         /* Clear error counters.     */
+   };
 
 #endif /* __INCerrorLogh */

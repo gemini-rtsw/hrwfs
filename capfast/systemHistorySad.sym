@@ -1,0 +1,10 @@
+[symbol2]
+bbox -96 -96 96 96
+uniq 129
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -96 -80 systemHistorySad
+r 0 -96 -96 96 96
+[comments]

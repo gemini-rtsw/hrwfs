@@ -13,6 +13,8 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   11 feb 2000 - cb add some detector geometry sir records
+ *   10 feb 2000 - cb add some sir records
  *   31 jan 2000 - cb add detector controller state SIR record
  *   19 jan 2000 - cb add testing sir record
  *   18 nov 1999 - cb add qlStream parameter and add cmd DET_CONTROL_CMD_DHSINFO
@@ -109,6 +111,79 @@ typedef   unsigned long   DHS_CONNECT;
 #define   DET_CONTROL_BUNIT_SIR_NAME          "bunit"
                                     /* Name of SIR record containing    */
                                     /* the data unit                    */
+
+#define   DET_CONTROL_UTSTART_SIR_NAME        "utstart"
+                                    /* Name of SIR record containing    */
+                                    /* the ut at start of observation   */
+
+#define   DET_CONTROL_UTEND_SIR_NAME          "utend"
+                                    /* Name of SIR record containing    */
+                                    /* the ut at end of observation     */
+
+#define   DET_CONTROL_EXPOSED_SIR_NAME        "exposed"
+                                    /* Name of SIR record containing    */
+                                    /* the total integration time       */
+
+#define   DET_CONTROL_EXPOSEDRQ_SIR_NAME      "exposedRQ"
+                                    /* Name of SIR record containing    */
+                                    /* the requested total integration  */
+                                    /* time                             */
+
+#define   DET_CONTROL_ELAPSED_SIR_NAME        "elapsed"
+                                    /* Name of SIR record containing    */
+                                    /* the elapsed time                 */
+
+#define   DET_CONTROL_OUTPUTS_SIR_NAME        "outputs"
+                                    /* Name of SIR record containing    */
+                                    /* the number of ouputs             */
+
+#define   DET_CONTROL_DETXSIZE_SIR_NAME       "detXsize"
+                                    /* Name of SIR record containing    */
+                                    /* the X detector size              */
+
+#define   DET_CONTROL_DETYSIZE_SIR_NAME       "detYsize"
+                                    /* Name of SIR record containing    */
+                                    /* the Y detector size              */
+
+#define   DET_CONTROL_XSUBAP_SIR_NAME         "xsubap"
+                                    /* Name of SIR record containing    */
+                                    /* the X detector size              */
+
+#define   DET_CONTROL_YSUBAP_SIR_NAME         "ysubap"
+                                    /* Name of SIR record containing    */
+                                    /* the Y detector size              */
+
+#define   DET_CONTROL_XSTART_SIR_NAME         "xstart"
+                                    /* Name of SIR record containing    */
+                                    /* the X left offset                */
+
+#define   DET_CONTROL_YSTART_SIR_NAME         "ystart"
+                                    /* Name of SIR record containing    */
+                                    /* the Y bottom offset              */
+
+#define   DET_CONTROL_XRASTER_SIR_NAME        "xras"
+                                    /* Name of SIR record containing    */
+                                    /* the X subaperture size           */
+
+#define   DET_CONTROL_YRASTER_SIR_NAME        "yras"
+                                    /* Name of SIR record containing    */
+                                    /* the Y subaperture size           */
+
+#define   DET_CONTROL_XSPACE_SIR_NAME         "xspace"
+                                    /* Name of SIR record containing    */
+                                    /* the X space between subapertures */
+
+#define   DET_CONTROL_YSPACE_SIR_NAME         "yspace"
+                                    /* Name of SIR record containing    */
+                                    /* the Y space between subapertures */
+
+#define   DET_CONTROL_XBIN_SIR_NAME           "xbin"
+                                    /* Name of SIR record containing    */
+                                    /* the X binning factor             */
+
+#define   DET_CONTROL_YBIN_SIR_NAME           "ybin"
+                                    /* Name of SIR record containing    */
+                                    /* the Y binning factor             */
 
    /*
     * Define the VME addresses of the SDSU controllers installed on the bus.
@@ -250,9 +325,9 @@ typedef   struct      /* Context structure used to describe an observation.   */
    char          ccdSec[22];
    char          origSec[22];
    int           timeArrayStart[7];/* Array of year/month/day/hour/min/sec    */
-   char          utStartString[20];/* String which contains UTSTART data      */
+   char          utStartString[24];/* String which contains UTSTART data      */
    int           timeArrayEnd[7];  /* Array of year/month/day/hour/min/sec   */
-   char          utEndString[20];  /* String to contain UTEND data           */
+   char          utEndString[24];  /* String to contain UTEND data           */
    char          detType[16];
    char          detId[16];
 
@@ -370,7 +445,42 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                       /* record context structure             */
    DATREC_CONTEXT pNFramesContext ;   /* Number of frames/data set SIR        */
                                       /* record context structure             */
-   
+   DATREC_CONTEXT pUTstartContext ;   /* UT at start of observation SIR record*/
+                                      /* context structure                    */
+   DATREC_CONTEXT pUTendContext ;     /* UT at end of observation SIR record  */
+                                      /* context structure                    */
+   DATREC_CONTEXT pExposedRQContext ; /* Requested total integration time SIR */
+                                      /* record context structure             */
+   DATREC_CONTEXT pExposedContext ;   /* Actual total integration time SIR    */
+                                      /* record context structure             */
+   DATREC_CONTEXT pElapsedContext ;   /* Actual elapsed time SIR record       */
+                                      /* context structure                    */
+   DATREC_CONTEXT pOutputsContext ;   /* Number of outputs SIR record         */
+                                      /* context structure                    */
+   DATREC_CONTEXT pDetXsizeContext ;  /* X detector size SIR record context   */
+                                      /* structure                            */
+   DATREC_CONTEXT pDetYsizeContext ;  /* Y detector size SIR record context   */
+                                      /* structure                            */
+   DATREC_CONTEXT pXsubapContext ;    /* X subaperture size SIR record        */
+                                      /* context structure                    */
+   DATREC_CONTEXT pYsubapContext ;    /* Y subaperture size SIR record        */
+                                      /* context structure                    */
+   DATREC_CONTEXT pXstartContext ;    /* X left offset SIR record context     */
+                                      /* structure                            */
+   DATREC_CONTEXT pYstartContext ;    /* Y bottom offset SIR record context   */
+                                      /* structure                            */
+   DATREC_CONTEXT pXrasterContext ;   /* X subaperture size SIR record        */
+                                      /* context structure                    */
+   DATREC_CONTEXT pYrasterContext ;   /* Y subaperture size SIR record        */
+                                      /* context structure                    */
+   DATREC_CONTEXT pXspaceContext ;    /* X space between subapertures SIR     */
+                                      /* record context structure             */
+   DATREC_CONTEXT pYspaceContext ;    /* Y space between subapertures SIR     */
+                                      /* record context structure             */
+   DATREC_CONTEXT pXbinContext ;      /* X binning factor SIR record context  */
+                                      /* structure                            */
+   DATREC_CONTEXT pYbinContext ;      /* Y binning factor SIR  record context */
+                                      /* structure                            */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*
@@ -399,9 +509,7 @@ typedef   struct      /* Context structure used to describe an observation.   */
 enum
    {
 
-   /* GBDS commands. */
    DET_CONTROL_CMD_SETUP = 0,  /* Set up SDSU controller parameters.          */
-   DET_CONTROL_CMD_CHOP,       /* Specify chop states mask.                   */
    DET_CONTROL_CMD_EXPOSURE,   /* Specify exposure time.                      */
    DET_CONTROL_CMD_OBSTYPE,    /* Specify observation type.                   */
    DET_CONTROL_CMD_DHSINFO,    /* Specify quick look stream.                  */
@@ -414,14 +522,8 @@ enum
    DET_CONTROL_CMD_CONTINUE,   /* Continue observation.                       */
    DET_CONTROL_CMD_STOP,       /* Stop observation.                           */
    DET_CONTROL_CMD_ABORT,      /* Abort observation.                          */
-
-   /* genSub commands. */
-
-
-   /* Engineering commands. */
    DET_CONTROL_CMD_INITIALISE, /* Initialise SDSU controller.                 */
    DET_CONTROL_CMD_RESET,      /* Reset SDSU controller.                      */
-   DET_CONTROL_CMD_GIVEUP,     /* Give up control of hardware (HRWFS/OIWFS).  */
    DET_CONTROL_CMD_TEST,       /* Test SDSU controller                        */
    DET_CONTROL_CMD_SAVE,       /* Save SDSU controller parameters.            */
    DET_CONTROL_CMD_GEOMETRY,   /* Set detector readout geometry.              */
@@ -430,7 +532,9 @@ enum
    DET_CONTROL_CMD_MODE,       /* Set detector readout mode.                  */
    DET_CONTROL_CMD_OFFSET,     /* Set detector ADC offsets.                   */
    DET_CONTROL_CMD_TEMP,       /* Define temperature control params.          */
-   DET_CONTROL_CMD_FRAME_SIZE  /* Define frame size                           */
+   DET_CONTROL_CMD_FRAME_SIZE, /* Define frame size                           */
+   DET_CONTROL_CMD_DEBUG,      /* Set debugging mode                          */
+   DET_CONTROL_CMD_SIMULATE    /* Set simulation mode                         */
    };
 
    /* Public variables */

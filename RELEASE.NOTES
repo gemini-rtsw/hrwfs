@@ -69,5 +69,14 @@ V0-8 2 Feb 2000 CB:
   - src : replace wfsControl per seqControl module.
   - add sad records
 
+V0-9 13 March 2000 - CB
+  - add 4 new sad records: exposed, exposedRQ, utstart, utend
+  - add new sad record: elapsed
+  - detControl.c : remove detFrameReduce() and detWriteFits()
+  - cicsCarHealth.c add cicsStateCombine() + add correct handling of state from seq
+  - remove errorLog.c
+  - change current history, errorLog records to dc:histor... (db + dm + simpleLogHrwfs.c)
+  - add systemHistorySad.sch and sym
+
 dev
   - for the moment startup cd install instead of iocpath

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: simpleLogHrwfs.c,v 1.2 2000-01-05 20:09:55 cboyer Exp $"};
+   "$Id: simpleLogHrwfs.c,v 1.3 2000-03-13 20:46:40 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -36,6 +36,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/01/05 20:09:55  cboyer
+ * Tidy up the directory src: remove all the not used files and tidy up
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:23  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -101,16 +104,16 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  * for the error logging task.
  */
 
-#define LOGTASK_HISTORY_LOG_NAME0 "historyLog"   
+#define LOGTASK_HISTORY_LOG_NAME0 "dc:historyLog"   
                                       /* Name of SIR to contain history log   */
                                       /* message.                             */
-#define LOGTASK_HISTORY_LOG_NAME1 "historyLog1"   
+#define LOGTASK_HISTORY_LOG_NAME1 "dc:historyLog1"   
                                       /* Name of SIR to contain history log   */
                                       /* message overflow.                    */
-#define LOGTASK_ERROR_LOG_NAME0 "errorLog"      
+#define LOGTASK_ERROR_LOG_NAME0 "dc:errorLog"      
                                       /* Name of SIR to contain error log     */
                                       /* message.                             */
-#define LOGTASK_ERROR_LOG_NAME1 "errorLog1"
+#define LOGTASK_ERROR_LOG_NAME1 "dc:errorLog1"
                                       /* Name of SIR to contain error log     */
                                       /* message overflow.                    */
 
