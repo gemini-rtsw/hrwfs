@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.17 2001-06-08 04:26:13 cboyer Exp $"};
+   "$Id: detControl.c,v 1.18 2001-06-11 07:45:52 cjm Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -329,7 +329,8 @@ uint32 detWriteDefSirContext (OBS_ID obsId);
 STATUS   detControl
    (
    const char *   pWfsName,        /* Name of wavefront sensor "hrwfs"        */
-   const char *   pRecordPrefix    /* Record name prefix                      */
+   const char *   pRecordPrefix,   /* Record name prefix                      */
+   BOOL           simDemand        /* Demand simulation mode */
    )
 {
    /* Variables associated with VxWorks environment. */
@@ -598,15 +599,15 @@ STATUS   detControl
     * command.
     */
 
-   if (vmeAddress == 0)
-   {
-      simulate = TRUE;
+   if (simDemand == TRUE) {
+      simulate = TRUE ;
+   } else { 
+      if (vmeAddress == 0) {
+        simulate = TRUE;
+      } else {
+        simulate = FALSE;
+      }
    }
-   else
-   {
-      simulate = FALSE;
-   }
-
    sdsuId = sdsuContextCreate (vmeAddress, simulate);
    if ( (sdsuId == NULL) ||
         (sdsuReset (sdsuId, SDSU_RESET_VME | SDSU_RESET_CONTROLLER) == ERROR)
@@ -14359,6 +14360,7 @@ STATUS detCheckGeometry
       /* In simu. mode the nb of packets per frame needs to be init. to 1. */
 
       sdsuId->packetsPerFrame = 1;
+      nPackets = 1 ;
       obsId->packetNb = 1;
    }
 
