@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.4 1999-11-23 03:38:06 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.5 2000-01-05 20:10:06 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,9 +63,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
- *   18 nov 1999 - new setDhsInfo command 
- *   25 oct 1999 - new observe command 
- *   14 oct 1999 - simplified version for HRWFS only
+ *   18 nov 1999 - cb new setDhsInfo command 
+ *   25 oct 1999 - cb new observe command 
+ *   14 oct 1999 - cb simplified version for HRWFS only
  *-
  */
 

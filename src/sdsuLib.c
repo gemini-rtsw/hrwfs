@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: sdsuLib.c,v 1.2 1999-11-04 04:07:03 cboyer Exp $"};
+   "$Id: sdsuLib.c,v 1.3 2000-01-05 20:09:51 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -80,8 +80,6 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *   EXTERNAL MODULES:
  *   timeoutLib             - Timeout library
- *   sysextLib              - BSP system library extensions (only ifndef 
- *                            NO_SYSEXTLIB)
  *   errorLib               - error handling library
  *
  *   FUNCTION NAME(S):
@@ -162,6 +160,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Corinne Boyer
  *
  *INDENT-OFF*
+ *   10 dec 99 cb: tidy up
  *   6 oct 99 cb: add Chris Tierney code sdsu_checkRepBuf into sdsuPrimitiveRead
  *                or sdsuPrimitiveWrite + routine sdsu_checkRepBuf -> doesn't 
  *                work
@@ -205,9 +204,6 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include "timeoutLib.h"
 /*#include "xycom.h"*/
 
-#ifndef NO_SYSEXTLIB                 /* Define this macro to remove sysextLib */
-#include "sysextLib.h"
-#endif   
 
 /****************************************************************** Defines ***/
 /*#define CHECK_REPLY_BUFFER*/
@@ -1108,7 +1104,7 @@ uint32 sdsuVersionGet ( SDSU_ID         context,
     */
 
    if (destId == SDSU_IDENT_HST)
-      return (sdsu_getVersion ("$Revision: 1.2 $"));
+      return (sdsu_getVersion ("$Revision: 1.3 $"));
    
    /*
     * The SDSU context must be valid if the code gets this far, as the version 

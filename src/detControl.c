@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.6 1999-11-23 03:38:03 cboyer Exp $"};
+   "$Id: detControl.c,v 1.7 2000-01-05 20:09:33 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -4119,8 +4119,6 @@ void detObserveEnd
          "Saving unscrambled data from %p to directly to file \"%s\"...",
          obsId->pDispFrame, pFileNameString);
 
-         /*if ( ospWriteUShortImage ( obsId->pDispFrame, pFileNameString, 
-                                    obsId->xPixelsDhs, obsId->yPixelsDhs) == ERROR )*/
          if (detWriteFitsUint16 (pFileNameString, obsId, obsId->xPixelsDhs, 
                                  obsId->yPixelsDhs, obsId->pDispFrame) == ERROR)
          {

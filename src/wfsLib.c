@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.3 1999-11-23 03:38:07 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.4 2000-01-05 20:10:07 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -21,7 +21,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   particular processor.
  *
  *   The wfsLib library also relies on external variables describing the
- *   EPICS database defined in "wfsDb.c" and "wfsDb.h" and external
+ *   EPICS database defined in "wfsHrwfsDb.c" and "wfsHrwfsDb.h" and external
  *   variables describing the local site defined in "wfsSite.c" and "wfsSite.h"
  *
  *   FUNCTION NAME(S):
@@ -33,108 +33,31 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   wfsWriteState         - Writes current state variable to EPICS record
  *   wfsShow               - Display information about the current environment
  *   wfsWriteName          - Write current name of system to EPICS record
+ *   wfsInitTelName        - Init the telescope name from the TCS
+ *   wfsGetTelName         - Get the local copy of the TCS Telescope name
  *
  *   IGNORED FUNCTION NAME(S):
  *   wfs_errorLogPipeSet   - Initialises the error logging pipe
  *
  *   EXTERNAL MODULES:
- *   errorLib.c            - Contains error count for current processor, errorCount
- *   wfsDb.c               - Contains EPICS record initialistion info, pWfsDbRecInitialised
- *   wfsSite.c             - Contains site configuration database, pWfsArchProcessor
+ *   errorLib.c            - Contains error count for current processor, 
+ *                           errorCount
+ *   wfsHrwfsDb.c          - Contains EPICS record initialistion info, 
+ *                           pWfsDbRecInitialised
+ *   wfsSite.c             - Contains site configuration database, 
+ *                           pWfsArchProcessor
  *
  *   AUTHORS:
  *   Nick Dillon
  *   Steven Beard
  *
  *   MODIFICATION
- *   22 Nov 1999 - cb - bug fixed into wfsInitTelName 
- *   9 Nov 1999 - cb - add wfsInitTelName and wfsGetTelName
+ *   - 10 dec 1999 - cb - tidy up
+ *   - 22 Nov 1999 - cb - bug fixed into wfsInitTelName 
+ *   - 9 Nov 1999 - cb - add wfsInitTelName and wfsGetTelName
+ *   - A lot of SMB modifications before delivery by UK.
+ *   - Creation 28 Nov 1997
  *
- *INDENT-OFF*
- * $Log: not supported by cvs2svn $
- * Revision 1.2  1999/11/10 20:45:41  cboyer
- * Telescope name is now read from the TCS tcs:name record
- * Bug fixed for WCS when binning or windowing
- *
- * Revision 1.1.1.1  1999/03/17 03:14:24  cboyer
- * Initial creation of the Gemini HRWFS repository
- *
- * Revision 1.25  1999/02/26 cboyer
- * Add wfsWriteName routine
- *
- * Revision 1.24  1998/12/07 11:17:27  cics
- * Removed obsolete and unmanageable COPYRIGHT statement.
- *
- * Revision 1.23  1998/11/30 15:54:44  cics
- * Modifications made during SMB visit to Hilo, November 1998
- *
- * Revision 1.22  1998/10/08 16:20:46  cics
- * Dependency on sysextLib revised. Private function changed from P_errorLogPipeSet to wfs_errorLogPipeSet
- *
- * Revision 1.21  1998/10/01 13:49:27  cics
- * Unchanged variables changed to const
- *
- * Revision 1.20  1998/09/28 08:54:10  cics
- * Give warning if an attempt if made to compile this file for anything other than vxWorks
- *
- * Revision 1.19  1998/09/09 14:35:37  cics
- * Global variables renamed to ensure they are unique
- *
- * Revision 1.18  1998/08/13 09:09:33  smb
- * Added author comment
- *
- * Revision 1.17  1998/07/09 15:22:48  smb
- * sysextProcNumGet replaced with sysProcNumGet
- *
- * Revision 1.16  1998/06/30 14:07:17  smb
- * Ensure everything works when sysextLib and mpPipeDrv removed. Fixed mistakes.
- *
- * Revision 1.15  1998/06/30 13:31:36  smb
- * Do not include VME mode if NO_SYSEXTLIB requested.
- *
- * Revision 1.14  1998/06/30 13:11:31  smb
- * Dependency on sysextLib and mpPipeDrv can be removed using NO_SYSEXTLIB and NO_MPPIPEDRV macros.
- *
- * Revision 1.13  1998/05/13 11:03:20  smb
- * Extra checking and debugging information added. Bus reset on timeout removed.
- *
- * Revision 1.12  1998/03/27 12:07:06  smb
- * Minor changes to clarify logic
- *
- * Revision 1.11  1998/03/24 16:16:37  smb
- * Several bugs fixed and notes added
- *
- * Revision 1.10  1998/03/05 14:23:23  smb
- * Comment dates made more international
- *
- * Revision 1.9  1998/03/02 14:06:28  smb
- * Site specific parts removed from wfsLib
- *
- * Revision 1.8  1998/02/23 13:38:57  smb
- * Rearranged code for printability
- *
- * Revision 1.7  1998/02/05 15:26:52  smb
- * wfsWriteState added
- *
- * Revision 1.6  1998/01/30 15:30:19  smb
- * Fixed some problems uncovered by prolint
- *
- * Revision 1.5  1998/01/21 10:47:09  smb
- * Message logging added
- *
- * Revision 1.4  1998/01/19 16:18:21  smb
- * Update individual health records
- *
- * Revision 1.3  1997/12/02 16:10:49  smb
- * Cannot write commit date due to bug in epToVxPipeWrite
- *
- * Revision 1.2  1997/12/02 15:48:15  smb
- * Use RCS keywords to write version record
- *
- * Revision 1.1.1.1  1997/11/28 11:46:17  anj
- * Imported using tkCVS
- *
- *INDENT-ON*
  *-
  */
 
@@ -158,48 +81,40 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include <sirRecord.h>
 #include <genSubRecord.h>
 
-#ifndef NO_SYSEXTLIB                     /* Define this macro to remove sysextLib   */
-#include "sysextLib.h"
-#else
 #define SYSEXT_MAX_N_PROC   15
-#endif   /* NO_SYSEXTLIB */
-
-#ifndef NO_MPPIPEDRV                     /* Define this macro to remove mpPipeDrv   */
-#include "mpPipeDrv.h"
-#endif   /* NO_MPPIPEDRV */
 
 #include "epToVxLib.h"
 #include "wfsLib.h"
 #include "errorLog.h"
-#include "wfsDb.h"
+#include "wfsHrwfsDb.h"
 #include "wfsSite.h"
 
 
 /* Defines */
 
-/* #define DEBUG */                     /* Define this macro to enable debug messages */
+/* #define DEBUG */             /* Define this macro to enable debug messages */
 
-#define WFSLIB_LOGPIPE_NMSG_SLOTS  8       /* Size of error log message queue.    */
+#define WFSLIB_LOGPIPE_NMSG_SLOTS  8     /* Size of error log message queue.  */
 
-LOCAL STATUS   wfs_errorLogPipeSet (void); /* Private function for initialising   */
-                                           /* the error logging pipe used by each */
-                                           /* wavefront sensor control process.   */
+LOCAL STATUS wfs_errorLogPipeSet (void); /* Private function for initialising */
+                                         /* error logging pipe used by each   */
+                                         /* wavefront sensor control process. */
 
 /* imported variables */
 
-IMPORT BOOL     pWfsDbRecInitialised [N_RECORD_TYPES];
-                                           /* Array to show when each type of     */
-                                           /* EPICS record has been initialised.  */
-                                           /* It is imported from "wfsDb.c".      */
+IMPORT BOOL pWfsDbRecInitialised [N_RECORD_TYPES];
+                                         /* Array to show when each type of   */
+                                         /* EPICS record has been initialised.*/
+                                         /* It is imported from "wfsDb.c".    */
 
-IMPORT int      errorCount;                /* Current global error count.         */
-                                           /* It is imported from "errorLib.c".   */
+IMPORT int errorCount;                   /* Current global error count.       */
+                                         /* It is imported from "errorLib.c". */
 
 /* Global variables */
 
 char tcsTelName [40] ;
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -218,9 +133,11 @@ char tcsTelName [40] ;
  *   Initialise wavefront sensor control library
  *
  *   DESCRIPTION:
- *   This routine carries out an integrity check on the "pWfsArchProcessor" data
- *   structure initialised in wfsSite.c and used internally by the wfsLib library.
- *   It will return OK if the structure looks ok or ERROR if a problem is detected.
+ *   This routine carries out an integrity check on the "pWfsArchProcessor" 
+ *   data structure initialised in wfsSite.c and used internally by the wfsLib 
+ *   library.
+ *   It will return OK if the structure looks ok or ERROR if a problem is 
+ *   detected.
  *
  *   The function only checks that the number of processors is sensible and
  *   a valid target type could be obtained for each processor. It is up to the
@@ -254,7 +171,8 @@ STATUS   wfsLibInit (void)
 
    if ((pWfsNumProcessors < 1) || (pWfsNumProcessors >= SYSEXT_MAX_N_PROC))
    {
-      ERROR_SET (S_wfsLib_INVALID_DATA, "Invalid number of processors", ERROR_LOG_SAVE);
+      ERROR_SET (S_wfsLib_INVALID_DATA, "Invalid number of processors", 
+                 ERROR_LOG_SAVE);
    }
 
    /*
@@ -274,16 +192,20 @@ STATUS   wfsLibInit (void)
               pWfsArchProcessor[procNum].procRamSize);
 
       if ( (targetType == -1) ||
-           ((targetType != TARGET_TYPE_MV167) && (targetType != TARGET_TYPE_HKBAJA47)) )
+           ((targetType != TARGET_TYPE_MV167) && 
+           (targetType != TARGET_TYPE_HKBAJA47) &&
+           (targetType != TARGET_TYPE_MV2700)) )
       {
-         ERROR_SET (S_wfsLib_INVALID_DATA, "Unknown target type", ERROR_LOG_SAVE);
+         ERROR_SET (S_wfsLib_INVALID_DATA, "Unknown target type", 
+                    ERROR_LOG_SAVE);
          return (ERROR);
       }
 
       if ( (pWfsArchProcessor[procNum].procClockRate <= 0.0) ||
            (pWfsArchProcessor[procNum].procRamSize == 0) )
       {
-         ERROR_SET (S_wfsLib_INVALID_DATA, "Bad clock rate or RAM size", ERROR_LOG_SAVE);
+         ERROR_SET (S_wfsLib_INVALID_DATA, "Bad clock rate or RAM size", 
+                    ERROR_LOG_SAVE);
          return (ERROR);
       }
    }
@@ -292,7 +214,7 @@ STATUS   wfsLibInit (void)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -349,7 +271,7 @@ int   wfsTargetTypeGet
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -393,7 +315,7 @@ int wfsNumProcsGet (void)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -421,20 +343,20 @@ int wfsNumProcsGet (void)
  *   The error log redirection flag can be used to direct log messages
  *
  *   EXTERNAL VARIABLES:
- *   (>)   pWfsNumProcessors      (int)     Number of processors
+ *   (>) pWfsNumProcessors    (int)     Number of processors
  *
- *   (>)   pWfsArchProcessor      (WFS_ARCH_PROCESSOR[])   Array of data structures
+ *   (>) pWfsArchProcessor    (WFS_ARCH_PROCESSOR[])   Array of data structures
  *
- *   (<)   wfsDbEpicsDbIsLocal    (BOOL)    Set if the EPICS database
- *                                          is on the local processor
- *                                          (defined in module
- *                                          "wfsDb.c")
+ *   (<) wfsDbEpicsDbIsLocal  (BOOL)    Set if the EPICS database
+ *                                      is on the local processor
+ *                                      (defined in module
+ *                                      "wfsDb.c")
  *
- *   (<)   pWfsDbRecInitialised   (BOOL[])  Array of flags set when
- *                                          each type of EPICS record
- *                                          has been initialised
- *                                          (defined in module
- *                                          "wfsDb.c")
+ *   (<) pWfsDbRecInitialised (BOOL[])  Array of flags set when
+ *                                      each type of EPICS record
+ *                                      has been initialised
+ *                                      (defined in module
+ *                                      "wfsDb.c")
  *
  *   PRIOR REQUIREMENTS:
  *   The "pWfsArchProcessor" data structure should have been defined and
@@ -492,47 +414,26 @@ STATUS wfsSysInit
    }
 
    /*
-    * Check the processor number is sensible. Processor numbers start at zero, so
-    * the valid range is from 0 to one less than the number of processors.
+    * Check the processor number is sensible. Processor numbers start at zero, 
+    * so the valid range is from 0 to one less than the number of processors.
     */
 
    if ( (processorNumber < 0) || (processorNumber >= pWfsNumProcessors) )
    {
-      ERROR_SET (S_wfsLib_BAD_ARGUMENT, "Invalid processor number supplied", ERROR_LOG_NOW);
-      return (ERROR);
-   }
-
-#ifndef NO_SYSEXTLIB
-
-   /*
-    * Using sysextLib.
-    * Always set the processor number.
-    */
-
-   printf ("wfsSysInit: Setting processor number to %d.\n", processorNumber);
-   if (sysextProcNumSet (processorNumber) == ERROR)
-   {
-      ERROR_LOG ("Failed to set processor number");
+      ERROR_SET (S_wfsLib_BAD_ARGUMENT, "Invalid processor number supplied", 
+                 ERROR_LOG_NOW);
       return (ERROR);
    }
 
    /*
-    * Set the bus-arbitration mode to that defined in the
-    * "pWfsArchProcessor" data structure.
-    */
-   sysextVmeReqRelInit (& pWfsArchProcessor [processorNumber].vmeMode);
-
-#else
-   /*
-    * Not using sysextLib.
-    * If the processor number for the CPU board is different from the value provided
-    * then set it.
+    * If the processor number for the CPU board is different from the value 
+    * provided then set it.
     */
 
    if (processorNumber != (sysProcNumGet()))
    {
-      printf ("wfsSysInit: Setting processor number to %d without sysextLib.\n",
-         processorNumber);
+      printf ("wfsSysInit: Setting processor number to %d\n",
+              processorNumber);
       sysProcNumSet (processorNumber);
       if (processorNumber != (sysProcNumGet()))
       {
@@ -542,11 +443,10 @@ STATUS wfsSysInit
    }
    else
    {
-      printf ("wfsSysInit: Processor number already defined to %d without sysextLib.\n",
-         processorNumber);
+      printf ("wfsSysInit: Processor number already defined to %d.\n",
+              processorNumber);
    }
 
-#endif /* NO_SYSEXTLIB */
 
    /*
     * Obtain the target types for each of the processors on the bus and load
@@ -559,25 +459,7 @@ STATUS wfsSysInit
       pTargetType [procNum] = pWfsArchProcessor [procNum].targetType;
    }
 
-#ifndef NO_SYSEXTLIB
-
-#ifdef DEBUG
-      printf ("wfsSysInit: Initialising VME network with targets: ");
-      for (procNum = 0; procNum < pWfsNumProcessors; procNum++)
-      {
-         printf ("proc%d=%d ", procNum, pTargetType [procNum]);
-      }
-      printf ("\n");
-#endif /* DEBUG */
-
-   if (sysextVmeNetworkInit (pWfsNumProcessors, pTargetType) == ERROR)
-   {
-      ERROR_LOG ("Failed to initialise VME network");
-      return (ERROR);
-   }
-#else
-      printf ("wfsSysInit: No need to initialise VME network without sysextLib.\n");
-#endif   /* NO_SYSEXTLIB */
+   printf ("wfsSysInit: No need to initialise VME network.\n");
 
    /*
     * Check whether the task is running on the root processor (processor 0)
@@ -596,7 +478,7 @@ STATUS wfsSysInit
        */
 
 #ifdef DEBUG
-      printf ("wfsSysInit: Initialising timeout timer and mpPipeDrv. EPICS is local.\n");
+      printf ("wfsSysInit: Initialising timeout timer. EPICS is local.\n");
 #endif
 
       wfsDbEpicsDbIsLocal = TRUE;
@@ -606,15 +488,6 @@ STATUS wfsSysInit
          ERROR_LOG ("Failed to initialise timeout timer");
          return (ERROR);
       }
-
-#ifndef NO_MPPIPEDRV
-/*      if (mpPipeDrv (PIPE_DRV_TIMEOUT_PROC_0, TRUE) == ERROR) */
-      if (mpPipeDrv (PIPE_DRV_TIMEOUT_PROC_0, FALSE) == ERROR)   /* Disable bus reset - SMB 7 May 98 */
-      {
-         ERROR_LOG ("Failed to initialise mpPipeDrv");
-         return (ERROR);
-      }
-#endif   /* NO_MPPIPEDRV */
    }
    else
    {
@@ -628,7 +501,7 @@ STATUS wfsSysInit
        */
 
 #ifdef DEBUG
-      printf ("wfsSysInit: Initialising timeout timer and mpPipeDrv. EPICS is not local.\n");
+      printf ("wfsSysInit: Initialising timeout timer. EPICS is not local.\n");
 #endif
 
       if (timeoutInit () == ERROR)
@@ -636,14 +509,6 @@ STATUS wfsSysInit
          ERROR_LOG ("Failed to initialise timeout timer");
          return (ERROR);
       }
-
-#ifndef NO_MPPIPEDRV
-      if (mpPipeDrv (PIPE_DRV_TIMEOUT_PROC_N, FALSE) == ERROR)
-      {
-         ERROR_LOG ("Failed to initialise mpPipeDrv");
-         return (ERROR);
-      }
-#endif   /* NO_MPPIPEDRV */
    }
 
    /*
@@ -678,7 +543,7 @@ STATUS wfsSysInit
     */
 
 #ifdef DEBUG
-      printf ("wfsSysInit: Initialising EPICS record pipe.\n");
+   printf ("wfsSysInit: Initialising EPICS record pipe.\n");
 #endif
 
    if (epToVxPipeInit (processorNumber) == ERROR)
@@ -712,7 +577,7 @@ STATUS wfsSysInit
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -779,7 +644,7 @@ STATUS   wfsWriteVersion (void)
 #ifdef NO_RCS
    if (epToVxPipeWrite ("version", COMPILE_DATE_AND_TIME, 0) == ERROR)
 #else
-    if (epToVxPipeWrite ("version", "$Revision: 1.3 $", 0) == ERROR)
+    if (epToVxPipeWrite ("version", "$Revision: 1.4 $", 0) == ERROR)
 #endif
    {
       ERROR_LOG ("Failed to write version number");
@@ -792,7 +657,7 @@ STATUS   wfsWriteVersion (void)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -856,7 +721,7 @@ STATUS   wfsWriteState (char * recordName, int value)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -892,7 +757,7 @@ STATUS   wfsWriteState (char * recordName, int value)
  *                                       "wfsDb.c")
  *
  *   (>)   pWfsDbRecInitialised   (BOOL[]) 
- *                                        Array of flags set when
+ *                                       Array of flags set when
  *                                       each type of EPICS record
  *                                       has been initialised
  *                                       (defined in module
@@ -952,31 +817,21 @@ STATUS wfsShow (void)
          printf ("MV167    ");
       else if ( pWfsArchProcessor[procNum].targetType == TARGET_TYPE_HKBAJA47 )
          printf ("HKBAJA47 ");
+      else if ( pWfsArchProcessor[procNum].targetType == TARGET_TYPE_MV2700 )
+         printf ("MV2700 ");
       else
          printf ("unknown  ");
 
       clockRate = pWfsArchProcessor[procNum].procClockRate / 1.0e06;
       ramSize = (float) pWfsArchProcessor[procNum].procRamSize / 1.048576e06;
       printf ("%9.2f  %9.2f  ", clockRate, ramSize );
-
-#ifndef NO_SYSEXTLIB
-      printf ("%d %d %d %d %d %d\n",
-              pWfsArchProcessor[procNum].vmeMode.requestLevel,
-              pWfsArchProcessor[procNum].vmeMode.releaseWhenDone,
-              pWfsArchProcessor[procNum].vmeMode.fairRequester,
-              pWfsArchProcessor[procNum].vmeMode.roundRobinArbiter,
-              pWfsArchProcessor[procNum].vmeMode.requestLevelDma,
-              pWfsArchProcessor[procNum].vmeMode.fairRequesterDma );
-#else
-      printf ("(no sysextLib)\n");
-#endif   /* NO_SYSEXTLIB */
    }
 
    return (OK);
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -995,13 +850,13 @@ STATUS wfsShow (void)
  *   Resets the VME bus (engineering function)
  *
  *   DESCRIPTION:
- *   This routine resets the VME bus. It may be used to free up the VME bus if it
- *   has hung up after a software or hardware problem. The reset will cause the
- *   IOC to reboot.
+ *   This routine resets the VME bus. It may be used to free up the VME bus 
+ *   if it has hung up after a software or hardware problem. The reset will 
+ *   cause the IOC to reboot.
  *
  *   NOTE:
- *   This code has been copied from sysextLib, since sysextLib is no longer going
- *   to be used. It only works on an mv167.
+ *   This code has been copied from sysextLib, since sysextLib is no longer 
+ *   going to be used. It only works on an mv167.
  *
  *   EXTERNAL VARIABLES:
  *   None
@@ -1020,11 +875,13 @@ STATUS wfsShow (void)
  *-
  */
 
-#define   BIT_SET(p, d)    { __typeof__ (* (p)) __temp = (* (p));   \
+#define BIT_SET(p, d)    { __typeof__ (* (p)) __temp = (* (p));   \
                            * (p) = __temp | (d); }
 
-#define   BUS_RESET_REG_MV167   0xfff40060   /* Bus reset register for MVME167           */
-#define   BUS_RESET_BIT_MV167   0x01800000   /* Reset-Switch-Enable and Bus-Reset bits   */
+#define BUS_RESET_REG_MV167 0xfff40060   /* Bus reset register for MVME167    */
+
+#define BUS_RESET_BIT_MV167 0x01800000   /* Reset-Switch-Enable and Bus-Reset */
+                                         /* bits                              */
 
 void   wfsBusReset (void)
 {
@@ -1040,7 +897,7 @@ void   wfsBusReset (void)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   IGNORED FUNCTION NAME:
@@ -1081,10 +938,11 @@ void   wfsBusReset (void)
 
 STATUS   wfs_errorLogPipeSet (void)
 {
-   int      procNumber;           /* Processor number */
-   int      fd;                   /* File descriptor for pipe */
-   STATUS   (* pipeCreate) ();    /* Pointer to appropriate pipe create function */
-   char     pNameExtension [4];   /* Pipe name extension */
+   int      procNumber;           /* Processor number                         */
+   int      fd;                   /* File descriptor for pipe                 */
+   STATUS   (* pipeCreate) ();    /* Pointer to appropriate pipe create       */
+                                  /* function                                 */
+   char     pNameExtension [4];   /* Pipe name extension                      */
 
    /*
     * Obtain the processor number and point to the appropriate pipe creation
@@ -1098,19 +956,8 @@ STATUS   wfs_errorLogPipeSet (void)
    {
       return (ERROR);
    }
-#ifndef NO_MPPIPEDRV
-   else if (procNumber == 0)
-   {
-      pipeCreate = pipeDevCreate;
-   }
-   else
-   {
-      pipeCreate = mpPipeDevCreate;
-   }
-#else
-   pipeCreate = pipeDevCreate;   /* Without MPPIPEDRV always use conventional pipe driver. */
+   pipeCreate = pipeDevCreate;
 
-#endif   /* NO_MPPIPEDRV */
 
    /*
     * Make up a pipe name extension from the processor number and open the
@@ -1123,7 +970,8 @@ STATUS   wfs_errorLogPipeSet (void)
       -1, 0.0, 0.0)) == ERROR)
    {
       printErr ("wfs_errorLogPipeSet: Error creating and opening error logging pipe\n");
-      ERROR_SET (S_wfsLib_ERRLOG_PIPE_FAIL, "Pipe create/open failed", ERROR_LOG_NOW);
+      ERROR_SET (S_wfsLib_ERRLOG_PIPE_FAIL, "Pipe create/open failed", 
+                 ERROR_LOG_NOW);
       return (ERROR);
    }
 
@@ -1139,7 +987,7 @@ STATUS   wfs_errorLogPipeSet (void)
    return (OK);
 }
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -1158,7 +1006,8 @@ STATUS   wfs_errorLogPipeSet (void)
  *   Writes the current software name to the "name" EPICS record
  *
  *   DESCRIPTION:
- *   This routine writes the name of the software to an EPICS record called "name".
+ *   This routine writes the name of the software to an EPICS record called 
+ *   "name".
  *
  *   EXTERNAL VARIABLES:
  *
@@ -1181,7 +1030,7 @@ STATUS   wfsWriteName (struct sirRecord *psir)
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:
@@ -1219,13 +1068,14 @@ STATUS   wfsInitTelName (struct genSubRecord *pgensub)
 {
 
     strcpy ( tcsTelName , (char *)pgensub->a ) ; 
-    if ( (strcmp ( tcsTelName , "Gemini North" ) != 0) && ( strcmp ( tcsTelName , "Gemini South" ) != 0) )
+    if ( (strcmp ( tcsTelName , "Gemini North" ) != 0) && 
+         ( strcmp ( tcsTelName , "Gemini South" ) != 0) )
        strcpy ( tcsTelName , "Gemini North" ) ;
     return (OK) ;
 }
 
 
-/* ------------------------------------------------------------------------------------------------ */
+/* -------------------------------------------------------------------------- */
 
 /*+
  *   FUNCTION NAME:

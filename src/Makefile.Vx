@@ -30,7 +30,7 @@ USR_CFLAGS = -DNO_SYSEXTLIB -DNO_MPPIPEDRV -O2
 LIBSRCS.c	= \
 	../cicsCarHealth.c \
 	../cicsLib.c \
-	../epToVxLibHrwfs.c \
+	../epToVxLib.c \
 	../errorLib.c \
 	../ospInvertFuncs.c \
 	../ospLib.c \
@@ -47,12 +47,9 @@ APPLSRCS.c	= \
 	../wfsHrwfsDb.c \
 	../wfsResourceMonitor.c \
 	../wfsSite.c \
-	../testHarness.c \
-	../testKit.c \
 	../sdsuRead.c \
 	../strcasecmp.c \
-	../fpscr.c \
-	../dhstests.c
+	../fpscr.c 
 
 SRCS.c	= $(LIBSRCS.c) $(APPLSRCS.c)
 
