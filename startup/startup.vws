@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.1 1999-05-18 21:22:07 cboyer Exp $
+# $Id: startup.vws,v 1.2 1999-07-16 04:07:22 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -42,17 +42,11 @@ ld < $(epics)/extensions/bin/$(arch)/timeSeq
 
 # Load the Gemini data handling libraries
 ld < $(version)/bin/$(arch)/strcasecmp
-#ld < /gemini/dhs/external/lib/vw68k/libers.o
-#ld < /gemini/dhs/external/lib/vw68k/libimp.o
-#ld < /gemini/dhs/external/lib/vw68k/libsds.o
-#ld < /gemini/dhs/lib/vw68k/libgen.a
-#ld < /gemini/dhs/lib/vw68k/libdhs.a
-# TEST VERSIONS OF LIBRARIES - REMOVE WHEN INSTALLED
-ld < /gemini/dhs/external/lib/vw68k/libers.o
-ld < /home/dayle/gemini/dhs27jan99/bin/$(arch)/libimp.o
-ld < /home/dayle/gemini/dhs27jan99/bin/$(arch)/libsds.o
-ld < /home/dayle/gemini/dhs27jan99/bin/$(arch)/libgen.o
-ld < /home/dayle/gemini/dhs27jan99/bin/$(arch)/libdhs.o
+ld < /gemini/dhs/external/lib/$(arch)/libers.o
+ld < /gemini/dhs/external/lib/$(arch)/libimp.o
+ld < /gemini/dhs/external/lib/$(arch)/libsds.o
+ld < /gemini/dhs/lib/$(arch)/libgen.a
+ld < /gemini/dhs/lib/$(arch)/libdhs.a
 
 # Load the Gemini A&G wavefront processing software
 ld < $(version)/bin/$(arch)/wfsHrwfsDb
@@ -124,7 +118,7 @@ wfsWriteVersion ()
 # Initialise the DHS for the detector controllers (clientName, numConnect, hostName, serverName)
 # (Uncomment this line to activate the DHS. Comment it to prevent the DHS from being used).
 #detDhsInit ("hrwfs", 16, "archie", "dataServerNT")
-detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNT")
+detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
 
 # Spawn generic-record i/o Daemon task after querying the number of processors
 NProc = 1

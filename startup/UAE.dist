@@ -1,6 +1,19 @@
 
-(${APPLIC_INSTALL}/bin/${T_A}) -> ${DIST_HOST}
+HOSTS = ( ${DIST_HOST} )
+
+FILES1 = ( ${APPLIC_INSTALL}/bin/${T_A} )
+FILES2 = ( ${APPLIC_INSTALL}/bin/${HOST_ARCH} )
+FILES3 = ( ${APPLIC_INSTALL}/data )
+FILES4 = ( ${APPLIC_INSTALL}/include )
+
+(${FILES1}) -> (${HOSTS})
 	install -R ${DIST_PATH}/bin/${T_A};
 
-(${APPLIC_INSTALL}/data) -> ${DIST_HOST}
+(${FILES2}) -> (${HOSTS})
+	install -R ${DIST_PATH}/bin/${HOST_ARCH};
+
+(${FILES3}) -> (${HOSTS})
 	install -R ${DIST_PATH}/data;
+
+(${FILES4}) -> (${HOSTS})
+	install -R ${DIST_PATH}/include;

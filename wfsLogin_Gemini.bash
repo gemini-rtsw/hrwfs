@@ -26,9 +26,12 @@
 #	Steven M Beard
 #
 #	HISTORY:
-#	$Id: wfsLogin_Gemini.bash,v 1.1.1.1 1999-03-17 03:14:10 cboyer Exp $
+#	$Id: wfsLogin_Gemini.bash,v 1.2 1999-07-16 04:07:17 cboyer Exp $
 #
 #	$Log: not supported by cvs2svn $
+#	Revision 1.1.1.1  1999/03/17 03:14:10  cboyer
+#	Initial creation of the Gemini HRWFS repository
+#
 #	Revision 1.1.1.1  1999/03/05 01:21:31  cboyer
 #	Initial creation of the Gemini WFS repository
 #
@@ -68,7 +71,6 @@ if [ -e $EPICS/extensions/src/gemini ] && [ -e /gemini ] ; then
     export GEMINI_ASTLIB=/gemini/astlib ;
     export GEMINI_CFITSIO=/gemini/cfitsio ;
     export GEMINI_DHS=/gemini/dhs ;
-    export DRAMA_DIR=/gemini/dhs/source/drama ;
 else
 
     echo "*** Gemini library directories not found." ;
