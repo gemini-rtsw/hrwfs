@@ -1,0 +1,28 @@
+[symbol2]
+bbox -160 -320 160 256
+port 96 208 100 0 MESS symbol 2 160 192 0
+port 112 240 100 0 VAL symbol 2 160 224 0
+port -160 198 100 0 ICID symbol 1 -160 192 0
+port -144 240 100 0 DIR symbol 1 -160 224 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -48 64 commands
+l 100 0 0 -48 112 mechanism
+l 100 0 0 -64 160 HRWFS / A&G
+r 0 -96 -320 96 256
+v 0 96 192
+160 192
+_
+v 0 96 224
+160 224
+_
+v 0 -160 192
+-96 192
+_
+v 0 -160 224
+-96 224
+_
+[comments]
