@@ -1,0 +1,22 @@
+[symbol2]
+bbox 256 512 704 768
+port 576 736 100 1792 EXPIRED symbol 2 704 736 0
+port 368 544 100 1792 STOP symbol 1 256 544 0
+port 368 736 100 1792 START symbol 1 256 736 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 150 0 0 432 640 Timer
+r 0 320 768 640 512
+v 0 640 736
+704 736
+_
+v 0 256 544
+320 544
+_
+v 0 256 736
+320 736
+_
+[comments]
