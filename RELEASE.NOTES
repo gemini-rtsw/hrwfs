@@ -223,3 +223,9 @@ V3-5 07 Jan 2005 - AAG
     IMP_StartupCP.hrwfs
     hrwfsInstall
 
+V3-6 04 Mar 2005 - AAG
+-----------------------
+  - GN DHS Server moved from archie to acamar
+    IMP_StartupMK.hrwfs
+    startup/startupMK.vws
+    
