@@ -1,0 +1,15 @@
+[symbol2]
+bbox 224 640 496 880
+port 336 848 100 1792 START symbol 1 224 848 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 304 784 Subsystem CAD
+l 100 0 0 352 752 Status
+r 0 288 880 496 640
+v 0 224 848
+288 848
+_
+[comments]
