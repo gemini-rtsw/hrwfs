@@ -201,7 +201,7 @@ V3-2 24 October 2003 - CB
   - update defDetContHRCP.dat
   - startupCP.vws: change IP address of reggie
 
-V3-2-1 11 November 2003 - PG
+V3-3 11 November 2003 - PG
 ----------------------------
   - Fixed FITS keyword problem in detControl.c
   - Fixed reggie's ip number in startupCP.vws
