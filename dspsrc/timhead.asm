@@ -1,12 +1,16 @@
        COMMENT *
 Gemini WFS Timing Board Header
 Controller: SDSU2 (preproduction PALs)
-Revision: 3.01 (matches corresponding boot code version)
+Revision: 3.02 (matches corresponding boot code version)
 (This code is adapted from timEEV written by Dr. Bob Leach at SDSU)
 
 97/10/08 BML -initial coding
 
 98/07/20 TDH -changes for new sync bit PALs (U12/U17 Rev 4.1)
+
+99/03/02 TDH -added N_W_APL, the EEPROM space allotment for each application
+             -increased APL_LEN to allow for longer applications
+             -changed APL_ADR to $105 to accomodate longer boot code
 
 	*
 
@@ -18,8 +22,9 @@ START	EQU	$08	; Starting address of program
 RCV_BUF EQU     $60	; Starting address of receiver buffer in X:
 COM_TBL EQU     $80     ; Starting address of command table in X: memory
 NUM_COM EQU     24      ; Number of entries in command table
-APL_ADR	EQU	$100	; P: memory location where application code begins
-APL_LEN	EQU	$200-APL_ADR ; Maximum length of application program
+APL_ADR	EQU	$105	; P: memory location where application code begins
+APL_LEN	EQU	$400	; Maximum length of application program
+N_W_APL	EQU	$F00	; Total number of EEPROM words per application
 
 ROM_OFF	EQU	$4000	; Boot program offset address in EEPROM
 LD_X	EQU	$4200	; Assembler loads X: starting at this EEPROM address

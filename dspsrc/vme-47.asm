@@ -354,7 +354,7 @@ EOF_XMT	JSCLR	#15,R0,CHG_HI	; If 64k boundary increment HIADDR
 ; transmit the initial frame status words and set the appropriate flags.
 
 GET_FBA	JCLR	#NEW_FBA,Y:<V_FBAHI,CHK_VME	; Skip if no new FBA 
-	BCLR	#NEW_FBA,Y:<V_FBAHI		; Clear new FBA flag bit
+;	BCLR	#NEW_FBA,Y:<V_FBAHI		; Clear new FBA flag bit
 
 	MOVE	Y:<V_FBAHI,A	; Get high word of FBA
 	MOVE	A,Y:FBAHISV	; Save high word

@@ -2,7 +2,7 @@
 Gemini WFS Timing Board Code
 CCD: EEV CCD47
 Controller: SDSU2
-Revision: 1.22   (must agree with T_SW_ID in Y: memory table)
+Revision: 1.23   (must agree with T_SW_ID in Y: memory table)
 (This code is adapted from timEEV written by Dr. Bob Leach at SDSU)
 
 This is the full version of the timing board code. It does allow
@@ -144,6 +144,15 @@ calculation and the option of producing simulated data.
              -added reset of simulated data pixel counter between 
               successive frames in a series
              -added delay to last entry in parallel clock waveform tables
+99/06/07 TDH -changed image data transmision handling of data > $7FFF
+              in sync bit mode to reflect new PAL operation
+             -changed dump gate sequence to remove unecessary instruction
+             -changed to use dump gate for XTAIL flush
+	     -added delay in simulated data transmission because of
+	      new boot code (3.02) which speeds up execution
+             -changed simulated data mode to send 3 garbage pixels
+              at beginning of readout and to skip ADC flush at end
+             -changed X binning loop to increment the pixel counter
 
 
 Assembler directives:
@@ -236,21 +245,21 @@ CLK00
 ; In sync bit mode, a bit mask is used so that data added to checksum is the 
 ; same as the data transmitted
 
-X_NORM	MOVE	Y:XMT_MSK,Y1	; get bit mask
-
-	MOVE	Y:RDAD0,A	; get pixel value (output 0)
-	AND	Y1,A1		; mask off lowest 15 bits (if sync mode)
-	MOVEP	A1,Y:WRFO	; transmit value
+X_NORM	MOVE	Y:RDAD0,A	; get pixel value (output 0)
+	JCLR	#15,A,WR_CH0	; skip if data less than 16 bits
+	JCLR	#ESYNC,Y:MODE,WR_CH0	; skip if not sync bit mode
+	MOVE	Y:B_0_14,A	; get saturation value
+WR_CH0	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
 	REP	#2
 	NOP			; delay for transmission
 
 	MOVE	Y:RDAD1,A	; get pixel value (output 1)
-	AND	Y1,A1		; mask off lowest 15 bits (if sync mode)
-	MOVEP	A1,Y:WRFO	; transmit value
+	JCLR	#15,A,WR_CH1	; skip if data less than 16 bits
+	JCLR	#ESYNC,Y:MODE,WR_CH1	; skip if not sync bit mode
+	MOVE	Y:B_0_14,A	; get saturation value
+WR_CH1	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
-	REP	#2
-	NOP			; delay for transmission
 
 	RTS
 
@@ -350,10 +359,15 @@ XMT_PID	MOVEP	A1,Y:WRFO	; transmit parameter ID
 	MOVEP	A1,Y:WRFO	; transmit low word of number of pixels
 	ADD	A,B		; add to checksum
 
+	JCLR	#SIMD,Y:<MODE,ABT_SKP	; skip if not simulation mode
+	JSR	<X_SIM			; transmit garbage pixel
+	JSR	<X_SIM			; transmit garbage pixel
+	JSR	<X_SIM			; transmit garbage pixel
+
 	ENDIF
 
 ; Skip readout if abort command received
-	JSET	#ABT_EXP,Y:<T_STATUS,END_RD	; skip readout if aborted
+ABT_SKP	JSET	#ABT_EXP,Y:<T_STATUS,END_RD	; skip readout if aborted
 
 ; Discard initial unread rows (YSTART)
 	MOVE	Y:<YSTART,A
@@ -372,7 +386,6 @@ LDROWS
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
@@ -457,7 +470,7 @@ LFLUSH3
 	JEQ	LXBIN		; skip if binning = 1 (XBIN1=0)
 	DO	A,LXBIN		; bin pixels together
 	MOVE    #<XBINCLK,R0	; address of serial (binning) clocking waveform
-	NOP
+	MOVE	(R2)+		; increment pixel counter
 	MOVE    Y:(R0)+,X0      ; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	REP	X0		; Repeat X0 times
@@ -498,17 +511,14 @@ LXSPA
 LXSUB	; End of all X subapertures
 
 ; Flush out remaining pixels in serial register (XTAIL)
-	MOVE	Y:<XTAIL,A
-	TST	A
-	JEQ	LXTAIL
-	DO	A,LXTAIL
-	MOVE    #<XCLOCK,R0	; Address of serial (skip) clocking waveform
-	MOVE	(R2)+		; increment pixel counter
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
+	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
+	MOVE	R2,X0		; get pixel counter
 	MOVE    Y:(R0)+,A       ; Start the pipeline
-	REP	X0		; Repeat X0 times
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
+	MOVE	Y:<XTAIL,A	; get # of pixels to add to counter
+	ADD	X0,A		; increment pixel counter
+	MOVE	A,R2		; save pixel counter
 
 LXTAIL
 
@@ -536,13 +546,14 @@ LYSPA
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
+
 LYSUB	; End of all Y subapertures
 
 ;	JMP	<LDROWS		; debug (continuous readout)
+	JSET	#SIMD,Y:<MODE,END_FL	; skip if simulation mode
 
 ; Digitize two more pixels to clear ADC pipeline
 	DO	#2,LPLFLSH
@@ -557,8 +568,9 @@ LYSUB	; End of all Y subapertures
 LPLFLSH
 	JSR	(R1)		; Retrieve and transmit image data
 
-; Finish readout
+END_FL
 	IF	!CCDTOOL
+; Transmit checksum
 	JCLR	#ESYNC,Y:<MODE,XMIT_CS	; Skip if not sync bit mode
 	BSET	#FD15,X:PBD		; Set sync bit value to 1
 	MOVE	Y:B_0_14,Y0		; Get mask ($7fff)
@@ -566,6 +578,7 @@ LPLFLSH
 XMIT_CS	MOVEP	B1,Y:WRFO		; transmit checksum
 	ENDIF
 
+; Finish readout
 END_RD	BCLR	#RDING,Y:<T_STATUS	; clear readout status
 	MOVE	Y:PCINIT,R2	; Reset simulated data pixel counter
 	BSET	#TIO,X:PBD	; TIO = 1
@@ -618,7 +631,6 @@ LFT1
 ; Flush serial register
 	MOVE    #<XDUMP,R0	; Address of serial dump clocking waveform
 	NOP			; register access restriction
-	MOVE    Y:(R0)+,X0	; # of waveform entries 
 	MOVE    Y:(R0)+,A       ; Start the pipeline
 	MOVE    A,X:(R6) Y:(R0)+,A	; Send out the waveform
 	MOVE    A,X:(R6)        ; Flush out the pipeline
@@ -978,6 +990,8 @@ X_SIM	MOVE	Y:B_0_11,Y1	; get bit mask ($000FFF)
 	OR	Y0,A1		; add output header (output 0)
 	MOVEP	A1,Y:WRFO	; transmit value
 	ADD	A,B		; add to checksum
+	REP	#2
+	NOP			; delay for transmission
 
 	AND	Y1,A1 Y:SIMDATA1,Y0	; mask off lowest 12 bits
 	OR	Y0,A1		; add output header (output 1)
@@ -1039,7 +1053,7 @@ DUM2	DC      0		; Not used (for compatibility with CCDtool)
 
 ; ***** Status values *****
 
-T_SW_ID		DC	$012204	; Software version 01.22 (CCD47, full-feature)
+T_SW_ID		DC	$012304	; Software version 01.23 (CCD47, full-feature)
 
 T_STATUS	DC	0	; Status word
 ; Bit definitions
@@ -1227,8 +1241,7 @@ XCLOCK	DC	XDUMP-XCLOCK-2
 	ENDIF
 
 ; Serial register dump using dump gate
-XDUMP	DC	END_WAVE1-XDUMP-2
-	DC	CLKB+P_DELAY+DG
+XDUMP	DC	CLKB+P_DELAY+DG
 	DC	CLKB+0000000+00
 
 END_WAVE1
@@ -1410,8 +1423,7 @@ LDP	DC	'LDP'
 NP_SAV	DC	1048576
 
 ; Constants
-PCINIT	DC	1-3	; Initial value for pixel counter 
-			; (offset by three for garbage pixels)
+PCINIT	DC	0	; Initial value for pixel counter 
 
 ; Check for Y: data memory overflow
         IF	@CVS(N,*)>$20000

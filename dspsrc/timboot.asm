@@ -2,7 +2,7 @@
 
 Gemini WFS Timing Board Boot Code
 Controller: SDSU2 
-Revision: 3.01  (must agree with status word T_FW_VER in P: memory)
+Revision: 3.02  (must agree with status word T_FW_VER in P: memory)
 (This code is adapted from timboot.asm, Rev. 3.00, written by Dr. Bob Leach 
 at SDSU for use with the TIMII board.)
 
@@ -10,6 +10,12 @@ at SDSU for use with the TIMII board.)
 
 98/07/20 TDH -changes to PBD initialization for new sync bit PALs 
               (U12/U17 Rev 4.1)
+
+99/03/02 TDH -changed comments to FW_ID (now board serial number)
+             -changed wait states for P: memory to 1, except during
+              EEPROM access.
+             -changed allotment of EEPROM application space in LDA
+
 
 	*
 
@@ -51,8 +57,8 @@ at SDSU for use with the TIMII board.)
 
 	ORG     P:ROM_ID,P:ROM_ID+ROM_OFF
 
-T_FW_ID		DC	$000000	; Institution | Location | Instrument
-T_FW_VER	DC	$030102	; Version 3.01, board #2 = timing
+T_FW_ID		DC	$000000	; board serial number
+T_FW_VER	DC	$030202	; Version 3.02, board #2 = timing
 
 
 
@@ -105,7 +111,7 @@ INIT	MOVEC   #$0002,OMR	; Operating Mode Register = Normal
 	MOVEP	#$0007,X:PCDDR	; Port C Data Direction Register
 				;   Set signals listed in PCD above to outputs
 
-	MOVEP	#$0181,X:BCR	; Wait states = X: Y: P: and Y: ext. I/O
+	MOVEP	#$0191,X:BCR	; Wait states = X: Y: P: and Y: ext. I/O
 
 	MOVEP   #$0000,X:IPR	; Write to interrupt priority register
 
@@ -122,6 +128,8 @@ INIT	MOVEC   #$0002,OMR	; Operating Mode Register = Normal
 X_LOOP
         MOVE    A1,X:(R1)+	; Write 24-bit words to X: memory
 X_MOVE
+
+	BCLR	#7,X:BCR	; Reduce P: wait states after X: init
 
 ; Reset the Utility board to force it to re-boot
 	BCLR	#TIM_U_RST,X:<LATCH	
@@ -365,6 +373,7 @@ RDY     JCLR    #22,A,RDR	; Test address bit for Y: memory
         MOVE    Y:(R0),X0	; Read from Y data memory
 	JMP     <FINISH1	; Send out a header with the value
 RDR	JCLR	#23,A,ERROR	; Test address bit for read from EEPROM memory
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
 	MOVE	X:<THREE,X0	; Convert to word address to a byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X0,Y0,A		; Multiply	
@@ -378,6 +387,7 @@ RDR	JCLR	#23,A,ERROR	; Test address bit for read from EEPROM memory
 	NOP
 L1RDR
 	MOVE    A1,X0           ; FINISH1 transmits X0 as its reply
+	BCLR	#7,X:BCR	; Restore P: speed to fast
 	JMP     <FINISH1
 
 
@@ -397,6 +407,7 @@ WRY     JCLR    #22,A,WRR	; Test address bit for Y: memory
         MOVE    X0,Y:(R0)	; Write to Y: memory
 	JMP	<FINISH
 WRR	JCLR	#23,A,ERROR	; Test address bit for write to EEPROM
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
 	MOVE	X:<THREE,X1	; Convert to word address to a byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X1,Y0,A		; Multiply	
@@ -414,6 +425,7 @@ WRR	JCLR	#23,A,ERROR	; Test address bit for write to EEPROM
 L2WRR
 	NOP                     ; DO loop nesting restriction
 L1WRR
+	BCLR	#7,X:BCR	; Restore P: accesses speed
 	JMP     <FINISH
 
 
@@ -421,13 +433,13 @@ L1WRR
 ; Read EEPROM code into DSP locations starting at P:APL_ADR
 
 LDAPPL	MOVE	X:(R4)+,X0	; Number of application program
-	MOVE	X:<C600,Y0
-	MPY	X0,Y0,A  X:<ZERO,X1
-	ASR	A  X:<C300,X0
-	SUB	X,A  #APL_ADR,R7
-	MOVE	A0,R0		; EEPROM address = # x $600 - $300
+	MOVE	#N_W_APL,Y0 	; Space allowed per application
+	MPY	X0,Y0,A  #APL_ADR,R7
+	ASR	A		; Correct for 24-bit multiply
+	MOVE	A0,R0		; EEPROM address = # x N_W_APL
 	BSET	#15,R0		; All EEPROM accesses are with A15=1
-	DO	#$200-APL_ADR,LD_LA2 ; Load from APL_ADR to $200
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
+	DO	#APL_LEN,LD_LA2	; Loop through application program
 	DO	#3,LD_LA1
 	MOVE	P:(R0)+,A2	; Read from EEPROM
 	REP	#8
@@ -451,7 +463,7 @@ LD_LA4
 
 ; Transfer Y: memory, containing waveforms and readout parameters
 	MOVE	#0,R7		; Start at bottom of Y: memory
-	DO	#$200-APL_ADR-32,LD_LA6	; Update Y: DSP memory
+	DO	#N_W_APL-APL_LEN-32,LD_LA6	; Update Y: DSP memory
 	DO	#3,LD_LA5
 	MOVE	P:(R0)+,A2	; Read from EEPROM
 	REP	#8
@@ -460,6 +472,7 @@ LD_LA4
 LD_LA5
 	MOVE	A1,Y:(R7)+	; Write to DSP Y: memory
 LD_LA6
+	BCLR	#7,X:BCR	; Restore P: accesses speed
 	JMP	<FINISH
 
 
@@ -473,7 +486,7 @@ LD_LA6
 ; ******************************   X Data   *******************************
 
 ; Status and header processing words
-        ORG     X:0,X:LD_X
+        ORG     X:0,P:LD_X
 STAT	DC      0       ; Status word 
 LATCH	DC      $E0	; Value in latch chip U25  --> $E2 for parallel mode
 HDR	DC	0	; Header for all commands
@@ -505,7 +518,7 @@ TIM_ACK	DC	$AAAAAA		; Word for timing acknowledging SSI service
 ; The command table is resident in X: data memory; 32 entries maximum
 ; The first part of the command table will be loaded with application commands
 
-	ORG     X:COM_TBL,X:COM_TBL+LD_X
+	ORG     X:COM_TBL,P:COM_TBL+LD_X
 
 	DC	0,START,0,START,0,START,0,START
 	DC	0,START,0,START,0,START,0,START
