@@ -97,7 +97,7 @@ V1-1 24 July 2000 - CB
     darktime were wrong when doing 3 exposures for ex.
   - new ADC offsets: 2340, 2350
 
-V1-2 working on it CB
+V1-2 15 Feb 2001 - CB
 ---------------------
   - hrwfsInstall : replace the link to cfitsio
     (/home/cboyer/wfs_lib/cfitsio-ppc) per /gemini/cfitsio/cfitsio
@@ -114,4 +114,13 @@ V1-2 working on it CB
   - ADC offset for binning and no binning (par and src)
 
 
-dev equivalent to V1-2
+V1-3 20 Feb 2001 - CB
+---------------------
+  - add command detDhsDisplay
+  - when reboot, exit properly the dhs. Add detDhsConnected flag.
+  - sir record dhsCon in sad to indicates status of the connection, 
+    remove detDhsSem leftover when we have one detControl for 3 WFS
+  - startup_MINIMAL.vws: remove all routeAdd
+  - Now startupMK.vws and startupCP.vws
+
+dev equivalent to V1-3

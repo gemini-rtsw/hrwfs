@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.8 2000-07-24 20:28:03 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.9 2001-02-20 20:41:49 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,8 +63,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   19 feb 2001 - cb add sir dhsCon
+ *   16 feb 2001 - cb add cad detDhsDisplay
  *   15 may 2000 - cb add detDhsReconnect cad record
- *   1 mar 2000  - cb work on historyLog of seq and debug and simulate...
+ *   01 mar 2000 - cb work on historyLog of seq and debug and simulate...
  *   11 feb 2000 - cb add dc:exposed, dc:exposedRQ, dc:utstart, dc:utend, 
  *                    dc:elapsed
  *                    + add all the sir record containing the detector geometry
@@ -460,6 +462,15 @@ CAD_RECORD pWfsDbCadList [] =
       SIMULATION_MODE_SUPPORTED,
       40.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "0", {"0", "1"}
+   },
+   {
+      RECORD_NAME ("dc:detDhsDisplay"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_DHS_DISPLAY,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "1", {"1", "500"}
    }
 };
 
@@ -772,6 +783,10 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("observing"),
       EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:dhsCon"),
+      EPICS_DATA_TYPE_STRING
    }
 };
 

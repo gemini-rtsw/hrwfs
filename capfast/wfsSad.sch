@@ -1,5 +1,5 @@
 [schematic2]
-uniq 138
+uniq 139
 [tools]
 [detail]
 w 1420 747 100 0 n#69 ecalcs.counter.FLNK 1360 800 1424 800 1424 704 1488 704 esirs.heartBeat.SLNK
@@ -43,31 +43,6 @@ p 1344 1664 100 0 1 DESC:Debugging mode
 p 1216 1440 100 0 0 FDSC:Software version
 p 1344 1632 100 0 1 FTVL:STRING
 p 1344 1600 100 0 1 PV:$(sadtop)$(wfs)
-use errorLogSad 3808 423 100 0 errorLogSad#135
-xform 0 3920 544
-use hwout 320 247 100 0 hwout#60
-xform 0 416 288
-p 416 279 100 0 -1 val(outp):$(top)observeC.IVAL PP NMS
-use hwout 352 887 100 0 hwout#36
-xform 0 448 928
-p 448 919 100 0 -1 val(outp):$(mindex)
-use hwout 352 663 100 0 hwout#37
-xform 0 448 704
-p 448 695 100 0 -1 val(outp):$(hindex) PP MS
-use estringouts 32 871 100 0 pushOmss
-xform 0 160 944
-p 96 848 100 0 1 OMSL:closed_loop
-p 96 816 100 0 1 PV:$(sadtop)$(wfs)
-p 32 976 75 1280 -1 palrm(DOL):MS
-p 320 928 75 768 -1 palrm(OUT):MS
-p 288 928 75 768 -1 pproc(OUT):NPP
-use estringouts 32 647 100 0 pushVal
-xform 0 160 720
-p 96 624 100 0 1 OMSL:closed_loop
-p 96 592 100 0 1 PV:$(sadtop)$(wfs)
-p 32 752 75 1280 -1 palrm(DOL):MS
-p 320 704 75 768 -1 palrm(OUT):MS
-p 288 704 75 768 -1 pproc(OUT):PP
 use esirs 672 1703 100 0 version
 xform 0 880 1856
 p 736 1664 100 0 1 DESC:Software version
@@ -109,6 +84,37 @@ p -320 -32 100 0 1 HIHI:3
 p -480 -32 100 0 1 LOLO:0
 p -480 0 100 0 1 LOW:0
 p -480 -64 100 0 1 PV:$(sadtop)
+use esirs 2528 1703 100 0 dhsCon
+xform 0 2736 1856
+p 2592 1664 100 0 1 DESC:Simulation mode
+p 2464 1440 100 0 0 FDSC:Software version
+p 2592 1632 100 0 1 FTVL:STRING
+p 2592 1600 100 0 1 PV:$(sadtop)$(wfs)
+use errorLogSad 3808 423 100 0 errorLogSad#135
+xform 0 3920 544
+use hwout 320 247 100 0 hwout#60
+xform 0 416 288
+p 416 279 100 0 -1 val(outp):$(top)observeC.IVAL PP NMS
+use hwout 352 887 100 0 hwout#36
+xform 0 448 928
+p 448 919 100 0 -1 val(outp):$(mindex)
+use hwout 352 663 100 0 hwout#37
+xform 0 448 704
+p 448 695 100 0 -1 val(outp):$(hindex) PP MS
+use estringouts 32 871 100 0 pushOmss
+xform 0 160 944
+p 96 848 100 0 1 OMSL:closed_loop
+p 96 816 100 0 1 PV:$(sadtop)$(wfs)
+p 32 976 75 1280 -1 palrm(DOL):MS
+p 320 928 75 768 -1 palrm(OUT):MS
+p 288 928 75 768 -1 pproc(OUT):NPP
+use estringouts 32 647 100 0 pushVal
+xform 0 160 720
+p 96 624 100 0 1 OMSL:closed_loop
+p 96 592 100 0 1 PV:$(sadtop)$(wfs)
+p 32 752 75 1280 -1 palrm(DOL):MS
+p 320 704 75 768 -1 palrm(OUT):MS
+p 288 704 75 768 -1 pproc(OUT):PP
 use wfsDataSad 2960 423 100 0 wfsDataSad#102
 xform 0 3056 544
 use wfsDetSad 2512 423 100 0 wfsDetSad#101
@@ -141,9 +147,9 @@ xform 0 1616 784
 p 2608 -688 200 0 1 author:S.M.Beard
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:B.Goodrich
-p 3120 -784 200 0 -1 date:$Date: 2000-03-13 20:46:38 $
-p 2576 2320 200 0 -1 id:$Id: wfsSad.sch,v 1.3 2000-03-13 20:46:38 cboyer Exp $
+p 3120 -784 200 0 -1 date:$Date: 2001-02-20 20:41:48 $
+p 2576 2320 200 0 -1 id:$Id: wfsSad.sch,v 1.4 2001-02-20 20:41:48 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2608 -496 200 0 -1 revision:$Revision: 1.3 $
+p 2608 -496 200 0 -1 revision:$Revision: 1.4 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor Status Records
 [comments]

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.12 2001-02-15 01:43:41 cboyer Exp $"};
+   "$Id: detControl.c,v 1.13 2001-02-20 20:41:49 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   19 feb 2001 - cb add detDhsDisplay command and sir record dhsCon
+ *   16 feb 2001 - cb add detDhsConnected flag
  *   09 feb 2001 - cb remove error when stop an observation not in progress
  *                 ADC offset now for bin and no bin
  *                 also move all the DATREC_CONTEXT into detControl.h
@@ -143,7 +145,9 @@ char    pDetDhsServerName [EPICS_MAX_BYTES_STRING_ATTRIB + 1] = "NONE";
 BOOL    detDhsInitialised = FALSE; /* Flag to determine whether the DHS       */
                                    /* library has been initialised.           */
 
-SEM_ID  detDhsSem = NULL;          /* Semaphore to control access to DHS.     */
+BOOL    detDhsConnected = NOT_CONNECTED;
+                                   /* Flag to determine whether the WFS is    */
+                                   /* connected to the DHS.                   */
 
 DHS_CONNECT detDhsConnection = NULL;
                                    /* DHS connection ID for this controller   */
@@ -255,6 +259,9 @@ LOCAL uint32   detTemp (const char * pWfsName, const char * pRecordPrefix,
                         SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32 detDhsReconnect (CAD_CMD_CONTEXT cadCmdContext,
                               int commandNumber, SDSU_ID sdsuId, OBS_ID obsId);
+LOCAL uint32   detDhsDisplay (CAD_CMD_CONTEXT cadCmdContext,
+                              int commandNumber, SDSU_ID sdsuId, OBS_ID obsId);
+
 
 /******************************************* Plus some additional functions ***/
 
@@ -494,6 +501,7 @@ STATUS   detControl
 
    obsId->observing = FALSE;
    obsId->totalFrames = 1;
+   obsId->dhsQlRate = 1;
 
    /*
     * Get the context structures for the SIR records.
@@ -1000,10 +1008,40 @@ STATUS   detControl
          ERROR_LOG ("Failed to connect to DHS");
          initWarning = TRUE;
       }      
+
+      if ( detDhsConnected == CONNECTED )
+      {
+         if (epToVxPipeWrite (NULL, "CONNECTED", obsId->pDhsConContext)
+             == ERROR)
+         {
+            ERROR_LOG (
+            "Failed to initialise DET_CONTROL_DHSCON_SIR_NAME record");
+            errorNumber = ERROR;
+         }
+      };
+
+      if ( detDhsConnected == NOT_CONNECTED )
+      {
+         if (epToVxPipeWrite (NULL, " NOT CONNECTED", obsId->pDhsConContext)
+             == ERROR)
+         {
+            ERROR_LOG (
+            "Failed to initialise DET_CONTROL_DHSCON_SIR_NAME record");
+            errorNumber = ERROR;
+         }
+      };
    }
    else
    {
       MESSAGE_LOG (MSG_WARNING, "WARNING: DHS not initialised");
+      detDhsConnected = NOT_INIT;
+      if (epToVxPipeWrite (NULL, "NOT INIT", obsId->pDhsConContext)
+          == ERROR)
+      {
+         ERROR_LOG (
+         "Failed to initialise DET_CONTROL_DHSCON_SIR_NAME record");
+         errorNumber = ERROR;
+      }
    }
 
    /*
@@ -1377,6 +1415,14 @@ STATUS   detControl
 
             errorNumber = detDhsReconnect (cadCmdContext, commandNumber,
                                            sdsuId, obsId);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_DHS_DISPLAY)
+         {
+            /* Set dhs display parameters. */
+
+            errorNumber = detDhsDisplay (cadCmdContext, commandNumber,
+                                         sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIMULATE)
@@ -2787,6 +2833,12 @@ uint32 observeStart
          return (errorNumber);
       }
 
+      /*
+       * Reset the dhs counter
+       */
+
+      obsId->dhsCounter = 0;
+
       /* Obtain the attributes */
 
       EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, pDataLabel);
@@ -3979,6 +4031,12 @@ uint32 detObserveStart
          errorNumber = S_detControl_BUSY;
          return (errorNumber);
       }
+
+      /* 
+       * Reset dhs counter
+       */
+
+      obsId->dhsCounter = 0;
 
 #ifdef DEBUG
       /* MODIF 23 SEPT */
@@ -5532,17 +5590,8 @@ void detObserveEnd
                   ERROR_LOG_NOW, (int)obsId->nframes);
       goto ERROR_EXIT;
    }
-   /* MODIF 23 SEPT */
-   /*else if ( (pRawFrame->header.status != 0) &&
-        ( ((pRawFrame->header.status & SDSU_FSTAT_OVERRUN) != 0) ||
-          ((pRawFrame->header.status & SDSU_FSTAT_CHECKSUM) != 0) ||
-          ((pRawFrame->header.status & SDSU_FSTAT_FRAMESYNC) != 0) ||
-          ((pRawFrame->header.status & SDSU_FSTAT_TIMEOUT) != 0)
-        )
-      ) */
    else if ( pRawFrame->header.status != 0 )
    {
-#ifdef DEBUG
       if ((pRawFrame->header.status & SDSU_FSTAT_TIMEOUT) != 0)
       {
          MESSAGE_LOG1 (MSG_WARNING, 
@@ -5566,22 +5615,15 @@ void detObserveEnd
       else if ((pRawFrame->header.status & SDSU_FSTAT_NOK) != 0)
       {
          MESSAGE_LOG1 (MSG_WARNING,
-                       "Overwritten error in frame %d - ignored", (int)frameCount);
+         "Overwritten error in frame %d - ignored", (int)frameCount);
       }
-#endif
    }
    else
    {
-      /* Reserve the frame in the SDSU data buffer holding the raw image data */
+      /* Update the dhs counter */
 
-      /* MODIF 23 SEPT */
-      /*if (sdsuFrameReserve( sdsuId, pRawFrame ) == ERROR)
-      {
-         ERROR_LOG ("Failed to reserve raw image frame");
-         goto ERROR_EXIT;
-      }
-      bufferReserved = TRUE;*/
-   
+      obsId->dhsCounter ++ ;
+
       /*
        * Unscramble the data. The algorithm used depends on the number of
        * detector outputs, obtained earlier.
@@ -5689,16 +5731,18 @@ void detObserveEnd
       }
          
       sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
-               obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
-               obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5],
-               obsId->timeArrayEnd[6]);
+        obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
+        obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5],
+        obsId->timeArrayEnd[6]);
 
-      if (epToVxPipeWrite( NULL, (char *)obsId->utEndString, obsId->pUTendContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, (char *)obsId->utEndString, 
+                           obsId->pUTendContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set UT at end of observation SIR record");
       }
 
-      if (epToVxPipeWrite( NULL, (char *)(int)&elapsed, obsId->pElapsedContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, (char *)(int)&elapsed, 
+                           obsId->pElapsedContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set elapsed time SIR record");
       }
@@ -5710,7 +5754,8 @@ void detObserveEnd
 
       obsId->outNFrames ++ ;
 
-      if ( obsId->outOptions == 1 )
+      if ( (obsId->outOptions == 1) && 
+           ((obsId->dhsCounter % obsId->dhsQlRate) == 0) )
       {
          MESSAGE_LOG (MSG_MINDEBUG, "Sending data to DHS...");
 
@@ -10576,10 +10621,16 @@ STATUS detObsShow (
    const BOOL  verbose
    )
 {
-   const char *   outOptionStrings[4] =
+   const char *   outOptionStrings[3] =
       {
-         "NONE", "DHS", "FILE", "BOTH"
+         "NONE", "DHS", "FILE"
       };
+
+   const char *   dhsOutOptionStrings[3] =
+      {
+         "PERM", "TEMP", "QL"
+      };
+
 
    /* Check the observation context structure is valid. */
 
@@ -10595,38 +10646,82 @@ STATUS detObsShow (
    printf ("--------------------------------------------------------\n");
    printf ("Associated SDSU context          : %p\n", obsId->sdsuId);
    printf ("Observing?                       : %s\n", 
-           (obsId->observing ? "YES" : "NO") );
-   printf ("  Observing status record context: %p\n", 
-           obsId->pDetObservingContext);
-
+           (obsId->observing ? "TRUE" : "FALSE") );
+   printf ("stopped?                         : %s\n", 
+           (obsId->stopped ? "TRUE" : "FALSE") );
+   printf ("continuous?                      : %s\n", 
+           (obsId->continuous ? "TRUE" : "FALSE") );
    printf ("Total number of frames           : %d\n", obsId->totalFrames);
-
+   printf ("Out number of frames             : %d\n", obsId->outNFrames);
+   printf ("Frame counter                    : %d\n", obsId->nframes);
    printf ("Alarm timer ID                   : %d\n", (int) obsId->timeId);
-
-   printf ("Size of frame in pixels (X x Y)  : %d x %d\n", 
-           obsId->xPixels, obsId->yPixels);
-   printf ("Number of detector outputs       : %ld\n", obsId->outputsNb);
+   printf ("Name of wfs                      : %s\n", obsId->pWfsName );
+   printf ("Observation type                 : %s\n", obsId->pObsType );
 
    printf ("Output options                   : %s\n", 
            outOptionStrings[obsId->outOptions] );
-
-   if ( (obsId->outOptions == 1) || (obsId->outOptions == 3) )
-   {
-      printf ("  Data label                 : %s\n", 
-              obsId->pDataLabel);
-   }
-   if ( (obsId->outOptions == 2) || (obsId->outOptions == 3) ) 
-   {
-      printf ("  Output data file name      : %s\n", obsId->pOutFileName);
-   }
+   printf ("DHS output options               : %s\n",
+           dhsOutOptionStrings[obsId->dhsOutOptions] );
+   printf ("dhsQlRate                        : %d\n",
+           obsId->dhsQlRate );
+   printf ("dhsCounter                       : %d\n",
+           obsId->dhsCounter );
+   printf ("pCurFrame                        : %p\n",
+            obsId->pCurFrame );
+   printf ("pDispFrame                       : %p\n",
+            obsId->pDispFrame );
+   printf ("Size of frame in pixels for DHS (X x Y)  : %d x %d\n",
+           obsId->xPixelsDhs, obsId->yPixelsDhs);
+   printf ("Data label                       : %s\n", obsId->pDataLabel);
+   printf ("Output data file name            : %s\n", obsId->pOutFileName);
    printf ("  Simulated data file name       : %s (simulate=%s)\n", 
            obsId->pSimFileName,
            ((obsId->sdsuId == NULL) ? "DON'T KNOW" : (obsId->sdsuId->simulate ? "YES" : "NO")) );
 
-   printf ("Time at observation start/end    : %f %f\n", 
-           obsId->rawtStart, obsId->rawtEnd);
+   printf ("dataSec[]                        : %s\n", obsId->dataSec);
+   printf ("ccdSec[]                         : %s\n", obsId->ccdSec);
+   printf ("origSec[]                        : %s\n", obsId->origSec);
+   printf ("utStartString                    : %s\n", obsId->utStartString);
+   printf ("utEndString                      : %s\n", obsId->utEndString);
+   printf ("detType                          : %s\n", obsId->detType);
+   printf ("detId                            : %s\n", obsId->detId);
+
+   printf ("outputNb                         : %d\n", (int)obsId->outputsNb);
+   printf ("xSize                            : %d\n", obsId->xSize);
+   printf ("ySize                            : %d\n", obsId->ySize);
+   printf ("xMax                             : %d\n", obsId->xMax);
+   printf ("yMax                             : %d\n", obsId->yMax);
+   printf ("xStart                           : %d\n", obsId->xStart);
+   printf ("yStart                           : %d\n", obsId->yStart);
+   printf ("xBin                             : %d\n", obsId->xBin);
+   printf ("yBin                             : %d\n", obsId->yBin);
+   printf ("xRaster                          : %d\n", obsId->xRaster);
+   printf ("yRaster                          : %d\n", obsId->yRaster);
+   printf ("xSpace                           : %d\n", obsId->xSpace);
+   printf ("ySpace                           : %d\n", obsId->ySpace);
+   printf ("xSubapNb                         : %d\n", obsId->xSubapNb);
+   printf ("ySubapNb                         : %d\n", obsId->ySubapNb);
+   printf ("xPixels                          : %d\n", obsId->xPixels);
+   printf ("yPixels                          : %d\n", obsId->yPixels);
+   printf ("pixelsNb                         : %d\n", obsId->pixelsNb);
+   printf ("uscanNb                          : %d\n", obsId->uscanNb);
+   printf ("xTail                            : %d\n", obsId->xTail);
+   printf ("PacketSize                       : %d\n", obsId->packetSize);
+   printf ("PacketNb                         : %d\n", obsId->packetNb);
+   printf ("fullImageFlag                    : %s\n",
+           (obsId->fullImageFlag ? "TRUE" : "FALSE") );
+   printf ("binningFlag                      : %s\n",
+           (obsId->binningFlag ? "TRUE" : "FALSE") );
+   printf ("windowingFlag                    : %s\n",
+           (obsId->windowingFlag ? "TRUE" : "FALSE") );
+   printf ("x1: %d, x2: %d, y1: %d, y2: %d\n",
+            obsId->x1, obsId->x2, obsId->y1, obsId->y2);
+   printf ("Time at observation start/end    : %f %f\n", obsId->rawtStart,
+           obsId->rawtEnd);
+   printf ("Exposure time in seconds         : %f\n", obsId->expTime);
    printf ("Exposure in seconds reqst/actual : %f %f\n", 
            obsId->exposedRQ, obsId->exposed);
+   printf ("frameTime                        : %f\n", obsId->frameTime);
 
    printf ("Axis 1 world coordinate info.    : %s %f %f\n",
       obsId->ctype1, obsId->crpix1, obsId->crval1);
@@ -10637,6 +10732,7 @@ STATUS detObsShow (
    printf ("Radecsys, equinox, mjd           : %s %f %f\n",
       obsId->radecsys, obsId->equinox, obsId->mjdobs);
    printf ("\n\n");
+
 
    printf ("\n");         /* Blank line for spacing */
 
@@ -12358,7 +12454,6 @@ void detDhsErrorCallback         /* DHS error callback function.              */
  *
  *   EXTERNAL VARIABLES:
  *   (<) detDhsInitialised (BOOL)   DHS initialised flag.
- *   (<) detDhsSem         (SEM_ID) DHS semaphore
  *   (<) pDetDhsClientName (char *) Current name of DHS client= Instrument name.
  *   (<) pDetDhsHostName   (char *) Current name of DHS server host.
  *   (<) pDetDhsServerName (char *) Current name of DHS server.
@@ -12412,18 +12507,6 @@ STATUS detDhsInit
       return (ERROR);
    }
 
-   /* Create the DHS semaphore and take it, ensuring that only one task
-    * attempts to initialise the DHS and update the DHS global variables.
-    */
-
-   detDhsSem = semMCreate( SEM_Q_FIFO | SEM_DELETE_SAFE );
-   if ( (detDhsSem == NULL) || (semTake (detDhsSem, NO_WAIT) == ERROR) )
-   {
-      ERROR_SET (0, "Failed to create and take DHS semaphore", ERROR_LOG_NOW);
-      semGive (detDhsSem);
-      return (ERROR);
-   }
-
    /*
     * Initialise the DHS, specifying a unique name and maximum number 
     * of connections.
@@ -12442,7 +12525,6 @@ STATUS detDhsInit
       ERROR_SET1 (S_detControl_DHS_ERROR, 
                   "Failed to initialise DHS (dhsErrno=%d)",
                   ERROR_LOG_SAVE, dhsErrno);
-      semGive (detDhsSem);
       return (ERROR);
    }
 
@@ -12462,7 +12544,6 @@ STATUS detDhsInit
       ERROR_SET1 (S_detControl_DHS_ERROR, 
          "Failed to set up DHS error callback (dhsErrno=%d)",
          ERROR_LOG_SAVE, dhsErrno);
-      semGive (detDhsSem);
       return (ERROR);
    }
 
@@ -12490,7 +12571,6 @@ STATUS detDhsInit
       ERROR_SET1 (S_detControl_DHS_ERROR, 
             "Failed to start DHS event loop (dhsErrno=%d)",
             ERROR_LOG_SAVE, dhsErrno);
-      semGive (detDhsSem);
       return (ERROR);
    }
 
@@ -12505,7 +12585,6 @@ STATUS detDhsInit
    /* Finally, set the detDhsInitialised flag and return the semaphore. */
 
    detDhsInitialised = TRUE;
-   semGive (detDhsSem);
 
    return (OK);
 }
@@ -12565,23 +12644,7 @@ STATUS detDhsConnect
    if (!detDhsInitialised)
    {
       ERROR_SET (S_detControl_DHS_ERROR, "DHS not initialised", ERROR_LOG_NOW);
-      return (ERROR);
-   }
-
-   /*
-    * Take the DHS semaphore, so that only one WFS attempts to connect to the
-    * DHS and access the pDetDhsHostName and pDetDhsServerName global variables
-    * at any one time.
-    */
-
-#ifdef DEBUG
-   printf ("detDhsConnect: Taking DHS semaphore for HRWFS ...\n");
-#endif /* DEBUG */
-
-   if ( semTake (detDhsSem, DHS_WAIT_TIMEOUT) == ERROR )
-   {
-      ERROR_SET (0, "Failed to take DHS semaphore", ERROR_LOG_NOW);
-      semGive (detDhsSem);
+      detDhsConnected = NOT_INIT;
       return (ERROR);
    }
 
@@ -12607,13 +12670,14 @@ STATUS detDhsConnect
       ERROR_SET3 (S_detControl_DHS_ERROR, 
          "Failed to connect to DHS server %s on %s (dhsErrno=%d)",
          ERROR_LOG_SAVE, pDetDhsServerName, pDetDhsHostName, dhsErrno);
-      semGive (detDhsSem);
       return (ERROR);
    }
 
-   /* Finally, return the semaphore. */
+   /* Finally, return the semaphore and set the detDhsConnected flag. */
 
-   semGive (detDhsSem);
+   detDhsConnected = CONNECTED;
+   MESSAGE_LOG (MSG_LOG, "Connected to DHS");
+
 
    return (OK);
 }
@@ -14073,20 +14137,55 @@ uint32 detDhsReconnect
 
    if ( connect == 0 ) /* disconnect requested */
    {
-      semTake (detDhsSem, WAIT_FOREVER);
-
-      dhsErrno = 0;
-      dhsDisconnect (detDhsConnection, &dhsErrno);
-      CHECK_DHS (dhsErrno);
+      if ( detDhsConnected == CONNECTED )
+      {
+         dhsErrno = 0;
+         dhsDisconnect (detDhsConnection, &dhsErrno);
+         CHECK_DHS (dhsErrno);
+         if ( dhsErrno == DHS_S_SUCCESS )
+         {
+            detDhsConnected = NOT_CONNECTED;
+            MESSAGE_LOG (MSG_LOG, "Disconnected to DHS");
+         }
+      }
    }
    else                /* connect requested */
    {
-      if ( detDhsConnect () == ERROR )
+      if ( detDhsConnected == NOT_CONNECTED )
       {
-         ERROR_SET (0, "Can't reconnect to the dhs", ERROR_LOG_NOW);
-         return (ERROR);
+         if ( detDhsConnect () == ERROR )
+         {
+            ERROR_SET (0, "Can't reconnect to the dhs", ERROR_LOG_NOW);
+            return (ERROR);
+         }
       }
    }
+
+   /*
+    * Now report to the SIR record 
+    */
+
+   if ( detDhsConnected == CONNECTED )
+   {
+      if (epToVxPipeWrite (NULL, "CONNECTED", obsId->pDhsConContext)
+          == ERROR)
+      {
+         ERROR_LOG (
+         "Failed to initialise DET_CONTROL_DHSCON_SIR_NAME record");
+         errorNumber = ERROR;
+      }
+   };
+
+   if ( detDhsConnected == NOT_CONNECTED )
+   {
+      if (epToVxPipeWrite (NULL, " NOT CONNECTED", obsId->pDhsConContext)
+          == ERROR)
+      {
+         ERROR_LOG (
+         "Failed to initialise DET_CONTROL_DHSCON_SIR_NAME record");
+         errorNumber = ERROR;
+       }
+   };
 
    return (OK);
 }
@@ -14866,6 +14965,17 @@ uint32 detGetSirContext
       errorNumber = ERROR;
    }
 
+   /* Get the context of the "dhsCon" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DHSCON_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDhsConContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DHSCON_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
    /* Return */
 
    return ( errorNumber );
@@ -14950,7 +15060,102 @@ uint32 detWriteDefSirContext
       errorNumber = ERROR;
    }
 
+   /* Init the "dhsCon" sir record */
+
+   if (epToVxPipeWrite( NULL, "NOT CONNECTED", obsId->pDhsConContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to init dhs connection sir record");
+      errorNumber = ERROR;
+   }
+
    /* return */
 
    return (errorNumber);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detDhsDisplay
+ *
+ *   INVOCATION:
+ *   detDhsDisplay (cadCmdContext, commandNumber, sdsuId, obsId)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber (int)             Command number
+ *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
+ *   (!) obsId         (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Execute detDhsDisplay command
+ *
+ *   DESCRIPTION:
+ *   This function sets the parameters to send the data to the QL of the DHS.
+ *
+ *   EXTERNAL VARIABLES:
+ *   None.
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *-
+ */
+
+uint32 detDhsDisplay
+   (
+   CAD_CMD_CONTEXT cadCmdContext, /* CAD command context structure.           */
+   int             commandNumber, /* Command number.                          */
+   SDSU_ID         sdsuId,        /* SDSU context structure.                  */
+   OBS_ID          obsId          /* Observation context structure.           */
+   )
+{
+   uint32          errorNumber;   /* Error number reported by task.           */
+   
+   long            rate;
+
+   /*
+    * Initialise the error number and obtain the attributes provided with the
+    * command.
+    */
+
+   errorNumber = 0;
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) &rate);
+   
+   /*
+    * Check there are valid SDSU and observation context structures.
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   if ( obsId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "Observation context not initialised",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   /*
+    * The command can be used when an observation is in progress.
+    * Set the obsId parameters.
+    */
+
+   obsId->dhsQlRate = rate;
+
+   return (OK); 
 }

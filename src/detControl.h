@@ -13,6 +13,8 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   19 feb 2001 - cb add sir dhsCon
+ *   16 feb 2001 - cb add DET_CONTROL_CMD_DHS_DISPLAY, dhsQlRate, dhsCounter
  *   06 feb 2001 - cb move all the DATREC_CONTEXT structures into the obsId
  *                 structure
  *   26 jan 2001 - cb add DET_CONTROL_HRWFS_CP_INIT_FILE and
@@ -52,7 +54,7 @@ typedef   unsigned long   DHS_CONNECT;
 #endif   /* NO_DHS */
 
 
-/* defines */
+/****************************************************************** defines ***/
 
 #define STRING_SIZE       160       /* Size of a string                 */
 
@@ -192,6 +194,11 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Name of SIR record containing    */
                                     /* the Y binning factor             */
 
+#define   DET_CONTROL_DHSCON_SIR_NAME         "dhsCon"
+                                    /* Name of SIR record containing    */
+                                    /* the status of the dhs connection */
+
+
 #define   DET_CONTROL_HRWFS_SDSU_ADRS_VME     0x08000000   
                                     /* VME address of HRWFS SDSU controller   */
                                     /* If the controller is not installed its */
@@ -258,6 +265,17 @@ typedef   unsigned long   DHS_CONNECT;
 #define   DET_BUNIT "SDSU ADC units"
                                     /* Define the units of CCD data           */
 
+/********************************************************************* Enum ***/
+
+enum
+{
+   NOT_INIT = 0,           /* DHS is not initialized                          */
+   CONNECTED,              /* DHS is connected                                */
+   NOT_CONNECTED           /* DHS is not connected                            */
+};
+
+/****************************************************************** Typedef ***/
+
 typedef   struct      /* Context structure used to describe an observation.   */
 {
                            /* SDSU context information.                       */
@@ -287,6 +305,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
                            /* --------------------------                      */
    int          outOptions;/* Output options (0=none, 1=DHS, 2=file).         */
    int          dhsOutOptions;/* DHS Output options (0=PERM, 1=TEMP, 2=QL).   */
+   int          dhsCounter;/* Counter for frames to be sent to the QL         */
+   int          dhsQlRate; /* Number of frames send to the DHS QL             */
    DHS_BD_DATASET dhsDataset; /* DHS dataset ID.                              */
    DHS_BD_FRAME dhsDataFrame; /* DHS data frame ID.                           */
    uint16*      pCurFrame; /* Pointer to current unscrambled data frame.      */
@@ -495,6 +515,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                       /* structure                            */
    DATREC_CONTEXT pYbinContext ;      /* Y binning factor SIR  record context */
                                       /* structure                            */
+   DATREC_CONTEXT pDhsConContext ;    /* dhs connection status SIR record     */
+                                      /* context structure                    */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*
@@ -549,6 +571,7 @@ enum
    DET_CONTROL_CMD_FRAME_SIZE, /* Define frame size                           */
    DET_CONTROL_CMD_DHS_RECONNECT, 
                                /* Set connection with the DHS                 */
+   DET_CONTROL_CMD_DHS_DISPLAY,/* Set display parameters for dhs QL           */
    DET_CONTROL_CMD_DEBUG,      /* Set debugging mode                          */
    DET_CONTROL_CMD_SIMULATE    /* Set simulation mode                         */
    };
@@ -556,7 +579,6 @@ enum
    /* Public variables */
 
 IMPORT BOOL        detDhsInitialised;
-IMPORT SEM_ID      detDhsSem;
 IMPORT SDSU_ID     detSdsuIdHr;     /* SDSU context structure for HRWFS.      */
 
    /* Public functions */

@@ -1,5 +1,5 @@
 [schematic2]
-uniq 70
+uniq 71
 [tools]
 [detail]
 w 648 1099 100 0 n#59 hrwfsCarNext1.hrwfsCarNext1#65.FLNK 640 1088 704 1088 junction
@@ -20,6 +20,9 @@ w 824 2019 100 0 n#36 hrwfsCar.hrwfsCar#18.CLID 640 2016 1056 2016 egenSub.combA
 s 1488 80 500 512 hrwfs.sch
 s -576 2224 500 0 Gemini High Resolution Wavefront Sensor
 [cell use]
+use wfsCadMore -608 1063 100 0 wfsCadMore#70
+xform 0 -512 1184
+p -608 1056 100 0 1 set1:wfs dc:
 use hrwfsCarNext1 448 951 100 0 hrwfsCarNext1#65
 xform 0 544 1136
 use hrwfsCarNext 448 1383 100 0 hrwfsCarNext#62
@@ -70,9 +73,9 @@ xform 0 656 1200
 p 1552 64 100 0 1 author:S.M.Beard
 p 1776 48 100 0 -1 border:C
 p 1552 32 100 0 1 checked:B.Goodrich
-p 1776 16 100 0 -1 date:$Date: 2000-07-24 20:28:01 $
-p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.3 2000-07-24 20:28:01 cboyer Exp $
+p 1776 16 100 0 -1 date:$Date: 2001-02-20 20:41:48 $
+p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.4 2001-02-20 20:41:48 cboyer Exp $
 p 1792 176 100 0 -1 project:Gemini Wavefront Sensing System
-p 1552 144 100 0 -1 revision:$Revision: 1.3 $
+p 1552 144 100 0 -1 revision:$Revision: 1.4 $
 p 1792 112 100 0 -1 title:Under Top Level Schematic for HRWFS Database
 [comments]

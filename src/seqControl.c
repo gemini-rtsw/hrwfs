@@ -24,6 +24,7 @@
  *   Steven Beard
  *
  *   HISTORY MODIFICATION:
+ *   16 Feb 2001 - cb now stop with dhsExit() when reboot 
  *   18 Jan 2000 - cb new reboot command
  *   19 Jan 2000 - cb new init, test, datum and park commands
  *   20 Jan 2000 - cb new verify, endVerify, guide, endGuide commands
@@ -64,14 +65,15 @@
 
 
 
-/* defines */
+/***************************************************** External global data ***/
 
-/* global variables. These are distinguished with a "seqControl" prefix. */
+extern BOOL        detDhsConnected;                /* defined in detControl.c */
 
-BOOL seqControlStop = FALSE;          /* Stop sequencer control task.         */
+extern DHS_CONNECT detDhsConnection;               /* defined in detControl.c */
 
+/**** Global variables. These are distinguished with a "seqControl" prefix. ***/
 
-#ifndef NO_EPICS     /* START OF CODE COMPILED ONLY FOR THE EPICS ENVIRONMENT */
+BOOL seqControlStop = FALSE;                   /* Stop sequencer control task */
 
 /* -------------------------------------------------------------------------- */
 
@@ -119,7 +121,6 @@ STATUS   seqControl (void)
 
    long              initState;         /* Initialisation state.              */
    long              testState;         /* Initialisation state.              */
-   long              measState;         /* Measuring state.                   */
    long              rebootState;       /* Rebooting state.                   */
    long              parkState;         /* Park state.                        */
    long              datumState;        /* Datum state.                       */
@@ -161,10 +162,11 @@ STATUS   seqControl (void)
 
    /* Initialise context structures for the SIR records used by this task. */
 
-   if (epToVxRecContextGet (SEQ_CONTROL_HISTORYLOG_SIR_NAME, & pHistoryLogContext, NULL) 
-       == ERROR)
+   if (epToVxRecContextGet (SEQ_CONTROL_HISTORYLOG_SIR_NAME, 
+                            & pHistoryLogContext, NULL) == ERROR)
    {
-      printErr ("seqControl: Can't get SEQ_CONTROL_HISTORYLOG_SIR_NAME SIR context");
+      printErr (
+        "seqControl: Can't get SEQ_CONTROL_HISTORYLOG_SIR_NAME SIR context");
       return (ERROR);
    }
 
@@ -248,8 +250,8 @@ STATUS   seqControl (void)
       return (ERROR);
    }
 
-   if (epToVxRecContextGet (SEQ_CONTROL_ENDVERIFY_SIR_NAME, & pEndVerifyContext, NULL) 
-       == ERROR)
+   if (epToVxRecContextGet (SEQ_CONTROL_ENDVERIFY_SIR_NAME, 
+                            & pEndVerifyContext, NULL) == ERROR)
    {
       strncpy (messageLog, "Can't get SEQ_CONTROL_ENDVERIFY SIR context",
                EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -268,8 +270,8 @@ STATUS   seqControl (void)
       return (ERROR);
    }
 
-   if (epToVxRecContextGet (SEQ_CONTROL_ENDGUIDE_SIR_NAME, & pEndGuideContext, NULL) 
-       == ERROR)
+   if (epToVxRecContextGet (SEQ_CONTROL_ENDGUIDE_SIR_NAME, 
+                            & pEndGuideContext, NULL) == ERROR)
    {
       strncpy (messageLog, "Can't get SEQ_CONTROL_ENDGUIDE SIR context",
                EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -278,8 +280,8 @@ STATUS   seqControl (void)
       return (ERROR);
    }
 
-   if (epToVxRecContextGet (SEQ_CONTROL_ENDOBSERVE_SIR_NAME, & pEndObserveContext, NULL) 
-       == ERROR)
+   if (epToVxRecContextGet (SEQ_CONTROL_ENDOBSERVE_SIR_NAME, 
+                            & pEndObserveContext, NULL) == ERROR)
    {
       strncpy (messageLog, "Can't get SEQ_CONTROL_ENDOBSERVE SIR context",
                EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -401,7 +403,8 @@ STATUS   seqControl (void)
           * response from the command.
           */
 
-         printf ( "seqControl: Command %d received in simulation mode... no action taken",
+         printf ( 
+         "seqControl: Command %d received in simulation mode - no action taken",
                   commandNumber);
       }
 
@@ -662,8 +665,8 @@ STATUS   seqControl (void)
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
          endVerifyState = CAR_BUSY;
-         if (epToVxPipeWrite( NULL, (char *) &endVerifyState, pEndVerifyContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endVerifyState, 
+                              pEndVerifyContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endVerify state to BUSY",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -683,8 +686,8 @@ STATUS   seqControl (void)
           */
 
          endVerifyState = CAR_IDLE;
-         if (epToVxPipeWrite( NULL, (char *) &endVerifyState, pEndVerifyContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endVerifyState, 
+                              pEndVerifyContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endVerify state to IDLE",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -750,8 +753,8 @@ STATUS   seqControl (void)
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
          endGuideState = CAR_BUSY;
-         if (epToVxPipeWrite( NULL, (char *) &endGuideState, pEndGuideContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endGuideState, 
+                              pEndGuideContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endGuide state to BUSY",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -771,8 +774,8 @@ STATUS   seqControl (void)
           */
 
          endGuideState = CAR_IDLE;
-         if (epToVxPipeWrite( NULL, (char *) &endGuideState, pEndGuideContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endGuideState, 
+                              pEndGuideContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endGuide state to IDLE",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -794,8 +797,8 @@ STATUS   seqControl (void)
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
          endObserveState = CAR_BUSY;
-         if (epToVxPipeWrite( NULL, (char *) &endObserveState, pEndObserveContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endObserveState, 
+                              pEndObserveContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endObserve state to BUSY",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -815,8 +818,8 @@ STATUS   seqControl (void)
           */
 
          endObserveState = CAR_IDLE;
-         if (epToVxPipeWrite( NULL, (char *) &endObserveState, pEndObserveContext ) == 
-             ERROR)
+         if (epToVxPipeWrite( NULL, (char *) &endObserveState, 
+                              pEndObserveContext ) == ERROR)
          {
             strncpy (messageLog, "Failed to set endObserve state to IDLE",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
@@ -861,20 +864,34 @@ STATUS   seqControl (void)
           * reset the VME bus.
           */
 
-         /*if ( (detDhsSem != NULL) && (detDhsInitialised) )
+         if (detDhsInitialised)
          {
             strncpy (messageLog, "Closing down DHS connection.",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             printf ( "seqControl: %s\n" , messageLog ) ;
             epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 	
-            semTake (detDhsSem, WAIT_FOREVER);
+            if ( detDhsConnected == CONNECTED )
+            {
+               dhsErrno = 0;
+               dhsDisconnect (detDhsConnection, &dhsErrno);
+               if ( dhsErrno == DHS_S_SUCCESS )
+               {
+                  detDhsConnected = NOT_CONNECTED;
+                  MESSAGE_LOG (MSG_LOG, "Disconnected to DHS");
+               }
+               else
+               {
+                  strncpy (messageLog, "dhsDisconnect returns an error",
+                  EPICS_MAX_BYTES_STRING_ATTRIB);
+                  printErr ( "seqControl: %s\n" , messageLog ) ;
+               }
+            }
 
             dhsErrno = 0;
+            dhsEventLoopEnd (&dhsErrno);
             dhsExit ( &dhsErrno );
-
-            semGive (detDhsSem);
-         }*/
+         }
 
          reboot (BOOT_QUICK_AUTOBOOT);
       }
@@ -904,7 +921,8 @@ STATUS   seqControl (void)
       {
          if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
          {
-            strncpy (messageLog, "Failed to restore RUNNING state after INIT command",
+            strncpy (messageLog, 
+                     "Failed to restore RUNNING state after INIT command",
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             printErr ( "seqControl: %s\n" , messageLog ) ;
             epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
@@ -914,8 +932,8 @@ STATUS   seqControl (void)
    }
 
    /*
-    * The task has been stopped. Issue a warning message, set the health to "BAD"
-    * and free the resources allocated.
+    * The task has been stopped. Issue a warning message, set the health to 
+    * "BAD" and free the resources allocated.
     */
 
    strncpy (messageLog, "HRWFS/AC sequencer task stopped",
@@ -930,5 +948,3 @@ STATUS   seqControl (void)
 
    return (OK);
 }
-
-#endif /* NO_EPICS - END OF CODE COMPILED ONLY FOR THE EPICS ENVIRONMENT */

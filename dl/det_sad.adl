@@ -6,9 +6,9 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="30"
-	nstr="61"
-	ndynamic="29"
+	npc="31"
+	nstr="65"
+	ndynamic="30"
 	nplot="0"
 	nrd="0"
 	nes="1"
@@ -19,27 +19,27 @@ display {
 		x="328"
 		y="298"
 		width="1089"
-		height="457"
+		height="502"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4156"
-	nwords_sta="848"
+	nwords_dspy="4538"
+	nwords_sta="1068"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2072"
-	osta="1224"
-	odynamic="2072"
-	oplot="3986"
-	ord="3986"
-	oes="3986"
-	okd="4144"
-	opd="4156"
-	opo="4156"
+	odyng="2388"
+	osta="1320"
+	odynamic="2388"
+	oplot="4368"
+	ord="4368"
+	oes="4368"
+	okd="4526"
+	opd="4538"
+	opo="4538"
 	opc="68"
-	ostr="372"
-	ocmap="1224"
-	ocrules="1224"
+	ostr="382"
+	ocmap="1320"
+	ocrules="1320"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -78,7 +78,7 @@ display {
 		x="10"
 		y="46"
 		width="1068"
-		height="401"
+		height="449"
 		groupid="0"
 	}
 }
@@ -506,6 +506,43 @@ display {
 		groupid="0"
 	}
 	textix="C"
+	align="horiz. left"
+}
+"line" {
+	object {
+		x="10"
+		y="450"
+		width="1067"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="1077"
+		y="450"
+	}
+	point[1] {
+		x="10"
+		y="450"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="-1"
+	}
+	orgpoint[1] {
+		x="0"
+		y="-1"
+	}
+}
+"text" {
+	object {
+		x="12"
+		y="468"
+		width="352"
+		height="14"
+		groupid="0"
+	}
+	textix="DHS connection status ... ... ... ... :"
 	align="horiz. left"
 }
 "text update" {
@@ -1806,6 +1843,52 @@ display {
 	}
 	monitor {
 		chan="$(top)headTemp"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="366"
+		y="463"
+		width="706"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)dhsCon"
 		clr="0"
 		bclr="7"
 		label="none"

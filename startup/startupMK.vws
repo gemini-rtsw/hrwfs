@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.9 2001-02-20 20:41:50 cboyer Exp $
+# $Id: startupMK.vws,v 1.1 2001-02-20 20:41:50 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #

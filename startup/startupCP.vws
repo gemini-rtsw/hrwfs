@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.9 2001-02-20 20:41:50 cboyer Exp $
+# $Id: startupCP.vws,v 1.1 2001-02-20 20:41:50 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -21,7 +21,7 @@ pwd
 
 < $(version)/bin/$(arch)/local
 
-hostAdd ("archie","10.2.4.56")
+hostAdd ("reggie","172.17.4.15")
 
 # Load EPICS core and record stuff
 ld < $(epics)/base/bin/$(arch)/iocCore
@@ -111,7 +111,7 @@ epToVxCaInitRecords ()
 # Initialise the DHS for the detector controllers (clientName, numConnect, hostName, serverName)
 # (Uncomment this line to activate the DHS. Comment it to prevent the DHS from being used).
 
-detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+detDhsInit ("hrwfs", 16, "172.17.4.15", "dataServerSS")
 
 # Spawn generic-record i/o Daemon task after querying the number of processors
 NProc = 1
