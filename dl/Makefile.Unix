@@ -9,6 +9,6 @@ DATA    = colors.dl \
           $(patsubst ../%.adl, %.dl, $(wildcard ../*.adl ../*.bit ../*.tk ../*.sh))
 
 #List of scripts
-SCRIPTS = wfsStart $(wildcard ../*.csh)
+SCRIPTS = $(wildcard ../*.csh)
 
 include .applTop/config/RULES.Build
