@@ -139,3 +139,10 @@ dev
                   DATASEC1, DATASEC2, BIASSEC1, BIASSEC2
   - add keyword FRAME, tidy up ccdsec keywords
   - Fix a bug in detWriteFitsUint16
+
+V1-5 24 Jun 2001 - CB/CJM
+------------------------
+  - further changes to overscan/windowing code plus updates to
+    fits headers
+  - add apply/cad layer to provide ocs interface to hrwfs DC commands
+    and A&G HRWFS mechanism commands
