@@ -3,12 +3,38 @@
 # Install script for Gemini HRWFS system
 #
 
-applSetup -T mv167 -s Makefile.subdirs -I docs -I dspsrc -I par -X sys -X ar \
+applSetup -T svgm5 -s Makefile.subdirs -I docs -I dspsrc -I par -X sys -X ar \
           -depends /gemini/astlib -depends /gemini/slalib \
-          -depends /gemini/timelib -depends /gemini/cfitsio \
+          -depends /gemini/timelib -depends /home/cboyer/wfs_lib/cfitsio-ppc \
           -depends /gemini/dhs $1 > hrwfsBuild.log 2>&1
 
 applSetup  >> hrwfsBuild.log 2>&1
+
+editUAE()
+{
+ed UAE.dist << eof >/dev/null
+/^FILES4
+a
+FILES5 = ( \${APPLIC_INSTALL}/bin/asm56000 )
+FILES6 = ( \${APPLIC_INSTALL}/IMP_Startup.hrwfs )
+.
+w
+$
+a
+
+(\${FILES5}) -> (\${HOSTS})
+        install -R \${DIST_PATH}/bin/asm56000;
+(\${FILES6}) -> (\${HOSTS})
+        install -R \${DIST_PATH}/IMP_Startup.hrwfs;
+.
+w
+q
+eof
+}
+
+cd startup
+editUAE
+cd ..
 
 gmake >> hrwfsBuild.log 2>&1
 
