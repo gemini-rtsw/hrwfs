@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.27 2003-10-27 19:53:05 cboyer Exp $"};
+   "$Id: detControl.c,v 1.28 2003-11-11 15:31:29 pedro Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -13333,13 +13333,13 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "EXTEND  =                    T /                                                ");
    headerCount++;
-   fprintf (fp, "UTSTART ='%-20s'/                                                ", utStartReduceString);
+   fprintf (fp, "UTSTART = '%-19s'/                                                ", utStartReduceString);
    headerCount++;
-   fprintf (fp, "DATE-OBS='%-20s'/                                                ", obsId->utDateStartString);
+   fprintf (fp, "DATE-OBS= '%-19s'/                                                ", obsId->utDateStartString);
    headerCount++;
-   fprintf (fp, "TIME-OBS='%-20s'/                                                ", obsId->utTimeStartString);
+   fprintf (fp, "TIME-OBS= '%-19s'/                                                ", obsId->utTimeStartString);
    headerCount++;
-   fprintf (fp, "UTEND   ='%-20s'/                                                ", utEndReduceString);
+   fprintf (fp, "UTEND   = '%-19s'/                                                ", utEndReduceString);
    headerCount++;
    fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->expTime);
    headerCount++;
@@ -13347,21 +13347,21 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
    headerCount++;
-   fprintf (fp, "TELESCOP='%-20s'/                                                ", telName);
+   fprintf (fp, "TELESCOP= '%-19s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "INSTRUME='%-20s'/                                                ", obsId->instName);
+   fprintf (fp, "INSTRUME= '%-19s'/                                                ", obsId->instName);
    headerCount++;
-   fprintf (fp, "OBSERVAT='%-20s'/                                                ", telName);
+   fprintf (fp, "OBSERVAT= '%-19s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "FILTER1 ='%-20s'/                                                ", acCCId.clFilterName);
+   fprintf (fp, "FILTER1 = '%-19s'/                                                ", acCCId.clFilterName);
    headerCount++;
-   fprintf (fp, "FILTER2 ='%-20s'/                                                ", acCCId.ndFilterName);
+   fprintf (fp, "FILTER2 = '%-19s'/                                                ", acCCId.ndFilterName);
    headerCount++;
-   fprintf (fp, "ACLENS  ='%-20s'/                                                ", acCCId.lensName);
+   fprintf (fp, "ACLENS  = '%-19s'/                                                ", acCCId.lensName);
    headerCount++;
-   fprintf (fp, "FLDSTOP ='%-20s'/                                                ", acCCId.fldStopName);
+   fprintf (fp, "FLDSTOP = '%-19s'/                                                ", acCCId.fldStopName);
    headerCount++;
-   fprintf (fp, "CALSRC  ='%-20s'/                                                ", acCCId.calName);
+   fprintf (fp, "CALSRC  = '%-19s'/                                                ", acCCId.calName);
    headerCount++;
    fprintf (fp, "ACFOCUS =      %15f /                                                ", acCCId.focusPos);
    headerCount++;
@@ -13369,22 +13369,22 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "INPORT  =                %5d /                                                ", obsId->inport);
    headerCount++;
-   fprintf (fp, "BUNIT   ='%-20s'/                                                ", DET_BUNIT);
+   fprintf (fp, "BUNIT   = '%-19s'/                                                ", DET_BUNIT);
    headerCount++;
-   fprintf (fp, "UNITS   ='%-20s'/                                                ", DET_BUNIT);
+   fprintf (fp, "UNITS   = '%-19s'/                                                ", DET_BUNIT);
    headerCount++;
-   fprintf (fp, "OBSTYPE ='%-20s'/                                                ", obsId->pObsType);
+   fprintf (fp, "OBSTYPE = '%-19s'/                                                ", obsId->pObsType);
    headerCount++;
 
    if ( obsId->wcsStatus == 0 )
    {
-      fprintf (fp, "CTYPE1  ='%-20s'/                                                ", obsId->ctype1);
+      fprintf (fp, "CTYPE1  = '%-19s'/                                                ", obsId->ctype1);
       headerCount++;
       fprintf (fp, "CRPIX1  =      %15f /                                                ", obsId->crpix1);
       headerCount++;
       fprintf (fp, "CRVAL1  =      %15f /                                                ", obsId->crval1);
       headerCount++;
-      fprintf (fp, "CTYPE2  ='%-20s'/                                                ", obsId->ctype2);
+      fprintf (fp, "CTYPE2  = '%-19s'/                                                ", obsId->ctype2);
       headerCount++;
       fprintf (fp, "CRPIX2  =      %15f /                                                ", obsId->crpix2);
       headerCount++;
@@ -13398,7 +13398,7 @@ STATUS detWriteFitsUint16
       headerCount++;
       fprintf (fp, "CD2_2   =      %15f /                                                ", obsId->cd2_2);
       headerCount++;
-      fprintf (fp, "RADECSYS='%-20s'/                                                ", obsId->radecsys);
+      fprintf (fp, "RADECSYS= '%-19s'/                                                ", obsId->radecsys);
       headerCount++;
    }
 
@@ -13410,31 +13410,31 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "MJDOBS  =      %15f /                                                ", obsId->mjdobs);
    headerCount++;
-   fprintf (fp, "FRAME   ='%-20s'/                                                ", obsId->frame);
+   fprintf (fp, "FRAME   = '%-19s'/                                                ", obsId->frame);
    headerCount++;
    fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
    headerCount++;
    fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
    headerCount++;
-   fprintf (fp, "CCDSIZE ='%-20s'/                                                ", obsId->ccdSize);
+   fprintf (fp, "CCDSIZE = '%-19s'/                                                ", obsId->ccdSize);
    headerCount++;
-   fprintf (fp, "CCDSEC  ='%-20s'/                                                ", obsId->ccdSec);
+   fprintf (fp, "CCDSEC  = '%-19s'/                                                ", obsId->ccdSec);
    headerCount++;
-   fprintf (fp, "CCDSEC1 ='%-20s'/                                                ", obsId->ccdSec1);
+   fprintf (fp, "CCDSEC1 = '%-19s'/                                                ", obsId->ccdSec1);
    headerCount++;
-   fprintf (fp, "CCDSEC2 ='%-20s'/                                                ", obsId->ccdSec2);
+   fprintf (fp, "CCDSEC2 = '%-19s'/                                                ", obsId->ccdSec2);
    headerCount++;
-   fprintf (fp, "DATASEC1='%-20s'/                                                ", obsId->dataSec1);
+   fprintf (fp, "DATASEC1= '%-19s'/                                                ", obsId->dataSec1);
    headerCount++;
-   fprintf (fp, "DATASEC2='%-20s'/                                                ", obsId->dataSec2);
+   fprintf (fp, "DATASEC2= '%-19s'/                                                ", obsId->dataSec2);
    headerCount++;
-   fprintf (fp, "BIASSEC1='%-20s'/                                                ", obsId->biasSec1);
+   fprintf (fp, "BIASSEC1= '%-19s'/                                                ", obsId->biasSec1);
    headerCount++;
-   fprintf (fp, "BIASSEC2='%-20s'/                                                ", obsId->biasSec2);
+   fprintf (fp, "BIASSEC2= '%-19s'/                                                ", obsId->biasSec2);
    headerCount++;
-   fprintf (fp, "DETTYPE ='%-20s'/                                                ", obsId->detType);
+   fprintf (fp, "DETTYPE = '%-19s'/                                                ", obsId->detType);
    headerCount++;
-   fprintf (fp, "DETID   ='%-20s'/                                                ", obsId->detId);
+   fprintf (fp, "DETID   = '%-19s'/                                                ", obsId->detId);
    headerCount++;
    fprintf (fp, "END                                                                             ");
    headerCount++;
