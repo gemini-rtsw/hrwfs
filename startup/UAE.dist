@@ -16,3 +16,10 @@
 
 (${APPLIC_INSTALL}/data) -> ${DIST_HOST}
 	install -R ${DIST_PATH}/data;
+
+(${APPLIC_INSTALL}/bin/asm56000) -> (${DIST_HOST})
+        install -R ${DIST_PATH}/bin/asm56000;
+(${APPLIC_INSTALL}/IMP_Startup.hrwfs) -> (${DIST_HOST})
+        install -R ${DIST_PATH}/IMP_Startup.hrwfs;
+(${APPLIC_INSTALL}/RELEASE.NOTES) -> (${DIST_HOST})
+        install -R ${DIST_PATH}/RELEASE.NOTES;

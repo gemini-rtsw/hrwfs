@@ -10,7 +10,7 @@
 # Check that the current directory is the top level wavefront sensing directory
 # (by checking for the presence of capfast, dl and src subdirectories).
 
-if ( !( -e ./capfast ) || !( -e ./dl ) || !( -e ./src ) ) then
+if ( !( -e ./capfast ) || !( -e ./adl ) || !( -e ./src ) ) then
 
    echo "This script can only be executed in a top level UAE directory." 
    exit
@@ -31,3 +31,4 @@ echo Removing EPICS links...
 /usr/bin/rm -rf `find . -name ".applTop" -print`
 /usr/bin/rm Distfile
 /usr/bin/rm hrwfsBuild.log
+/usr/bin/rm startup/UAE.dist

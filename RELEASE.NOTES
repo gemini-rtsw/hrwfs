@@ -160,5 +160,5 @@ V2-0 25 Oct 2001 - CB
     . src: wfsHrwfsDb.c, epToVxLib.c, sdsuLib.c, hrwfsConfig.c modified
     . capfast: replace all the wait records, replace all the subcad records
     . startup: startup files modified
-    . dspsrc: Makefile rewrite
+    . dspsrc: Makefile rewrited
     . db 
