@@ -35,6 +35,7 @@ LIBSRCS.c	= \
 
 APPLSRCS.c	= \
 	../detControl.c \
+        ../hrwfsConfig.c \
 	../simpleLogHrwfs.c \
 	../seqControl.c \
 	../wfsHrwfsDb.c \
