@@ -1,4 +1,4 @@
-# $Id: startup_nodhs.vws,v 1.1 2001-04-04 05:05:15 gemvx Exp $
+# $Id: startup_nodhs.vws,v 1.2 2001-06-11 08:00:29 cjm Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -127,7 +127,8 @@ taskSpawn ("recD", 97, 0x8, 8000, epToVxCaWriteDaemon, NProc)
 # try to initialise simulateously.
 taskSpawn ("simpleLog",       99, 0x8, 8000,  simpleLog, 0, 100)
 taskDelay(3 * sysClkRateGet())
-taskSpawn ("hr:detControl",  100, 0x8, 100000, detControl, "hr", "dc")
+# To simulate the SDSU set the last parameter to 1
+taskSpawn ("hr:detControl",  100, 0x8, 100000, detControl, "hr", "dc", 0)
 taskDelay(10 * sysClkRateGet())
 taskSpawn ("seqControl",     100, 0x8, 6000,  seqControl)
 taskDelay(3 * sysClkRateGet())
