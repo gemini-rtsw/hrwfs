@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.3 1999-11-04 04:06:53 cboyer Exp $"};
+   "$Id: detControl.c,v 1.4 1999-11-04 19:51:21 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -3251,7 +3251,7 @@ uint32 detObserveStart
             dhsBdAttribAdd (obsId->dhsDataFrame, "dettype", DHS_DT_STRING, 
                             0, NULL, obsId->detType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            strcpy ( obsId->detId , "a8283-4-3" ) ;
+            strcpy ( obsId->detId , "8283-4-3" ) ;
             dhsBdAttribAdd (obsId->dhsDataFrame, "detid", DHS_DT_STRING, 
                             0, NULL, obsId->detId, &dhsErrno);
             CHECK_DHS (dhsErrno);
