@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: sdsuLib.c,v 1.4 2000-07-24 20:28:03 cboyer Exp $"};
+   "$Id: sdsuLib.c,v 1.5 2001-06-11 07:51:24 cjm Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -664,7 +664,7 @@ STATUS sdsuProbe ( const uint32 vmeAddress )
       return (ERROR);
    }
 
-   printf ("SDSU interface: Bus address = %#x, Local address = %p\n", 
+   printf ("SDSU interface: Bus address = %#lx, Local address = %p\n", 
            vmeAddress, localAddress);
       
    /***** Check that the card is present by writing to the command register ***/
@@ -1104,7 +1104,7 @@ uint32 sdsuVersionGet ( SDSU_ID         context,
     */
 
    if (destId == SDSU_IDENT_HST)
-      return (sdsu_getVersion ("$Revision: 1.4 $"));
+      return (sdsu_getVersion ("$Revision: 1.5 $"));
    
    /*
     * The SDSU context must be valid if the code gets this far, as the version 
@@ -1496,13 +1496,13 @@ STATUS   sdsuShow ( SDSU_ID    context,
            (context->fastCamera ? "YES" : "NO"));
    printf ("VME interface bus address        : %p\n", context->pVmeAddress);
    printf ("Reply buffer (local address)     : %p\n", context->pRepBuffer);
-   printf ("Reply-buffer counter             : %u\n", context->repBufCounter);
+   printf ("Reply-buffer counter             : %lu\n", context->repBufCounter);
    printf ("Command buffer (local address)   : %p\n", context->pCmdBuffer);
    printf ("Command issue/reply semaphore ID : %p\n", context->commandSem);
    printf ("Parameter address symbol table   : %p\n", context->paramSyms);
-   printf ("Max pixels per frame             : %d\n", 
+   printf ("Max pixels per frame             : %ld\n", 
            context->maxPixelsPerFrame);
-   printf ("Total size of each frame in bytes: %u\n", context->frameSize);
+   printf ("Total size of each frame in bytes: %lu\n", context->frameSize);
    printf ("Number of frames in data buffer  : %d\n", context->nFrames);
    printf ("Number of packets per frame      : %d\n", context->packetsPerFrame);
    printf ("Exposure time in ticks           : %d\n", context->exposureTicks);
@@ -1766,7 +1766,7 @@ STATUS   sdsuD ( uint32      ptr,
 
    if (sdsuPrimitiveMultiRDM (context, destId, ptr, pData, nWord) == ERROR)
    {
-      ERROR_SET1 (0, "Failed to read block of DSP memory at address %#x", 
+      ERROR_SET1 (0, "Failed to read block of DSP memory at address %#lx", 
                   ERROR_LOG_SAVE, ptr);
       cfree ((char *) pData);
       return (ERROR);
@@ -1803,7 +1803,7 @@ STATUS   sdsuD ( uint32      ptr,
             printf ("P:");
          else printf ("?:");
 
-         printf ("%06x: ", addr);
+         printf ("%06lx: ", addr);
          j = 0;
       }
 
@@ -1814,7 +1814,7 @@ STATUS   sdsuD ( uint32      ptr,
       }
       else
       {
-         printf (" %06x", pData [i++] & 0xffffff);
+         printf (" %06lx", pData [i++] & 0xffffff);
          for (k = 16; k >= 0; k-=8)
          {
             pString [j++] = (pData [i - 1] >> k) & 0xff;
@@ -2018,7 +2018,7 @@ STATUS   sdsuM ( uint32      ptr,
 
       if (sdsuPrimitiveRDM (context, destId, ptr, & data) == ERROR)
       {
-         ERROR_SET1 (0, "Failed to read DSP memory at address %#x", 
+         ERROR_SET1 (0, "Failed to read DSP memory at address %#lx", 
                      ERROR_LOG_SAVE, ptr);
          return (ERROR);
       }
@@ -2030,7 +2030,7 @@ STATUS   sdsuM ( uint32      ptr,
       else if ((ptr & SDSU_MEM_SPACE_MASK) == SDSU_MEM_SPACE_P)   printf ("P:");
       else    printf ("?:");
 
-      printf ("%06x:  %06x-", ptr, data & 0xffffff);
+      printf ("%06lx:  %06lx-", ptr, data & 0xffffff);
 
       /* Get the next user input. */
 
@@ -2064,7 +2064,7 @@ STATUS   sdsuM ( uint32      ptr,
          if (sdsuPrimitiveWRM (context, destId, ptr++, data) == ERROR)
          {
             ptr--;
-            ERROR_SET1 (0, "Failed to write DSP memory at address %#x", 
+            ERROR_SET1 (0, "Failed to write DSP memory at address %#lx", 
                         ERROR_LOG_SAVE, ptr);
             return (ERROR);
          }
@@ -2183,7 +2183,7 @@ STATUS   sdsuPrintCmdBuf ( SDSU_ID    context,
       }
       else
       {
-         printf ("%06x", context->pCmdBuffer [n - 1] & 0xffffff);
+         printf ("%06lx", context->pCmdBuffer [n - 1] & 0xffffff);
       }
 
       printf (" ");
@@ -2306,7 +2306,7 @@ STATUS   sdsuPrintRepBuf ( SDSU_ID context )
       }
       else
       {
-         printf ("%06x", (context->pRepBuffer) [n - 1] & 0xffffff);
+         printf ("%06lx", (context->pRepBuffer) [n - 1] & 0xffffff);
                                                    /* ...if no, print numeric */
       }
 
@@ -2688,7 +2688,7 @@ STATUS sdsuPrimitiveRead ( SDSU_ID      context,
       {
          /********** Nothing was written to the reply buffer before timeout ***/
          ERROR_SET3 (S_sdsuLib_REPLY_TIMEOUT,
-               "Timeout reading header word, expected=%#x, RepBuffer=%p+%d", 
+               "Timeout reading header word, expected=%#lx, RepBuffer=%p+%ld", 
                ERROR_LOG_SAVE, headerExpected, context->pRepBuffer, 
                context->repBufCounter);
 
@@ -2708,7 +2708,7 @@ STATUS sdsuPrimitiveRead ( SDSU_ID      context,
           */
          
          ERROR_SET4 (S_sdsuLib_REPLY_TIMEOUT,
-            "Unexpected header word, expected=%#x, actual=%#x, RepBuffer=%p+%d",
+            "Unexpected header word, expected=%#lx, actual=%#lx, RepBuffer=%p+%ld",
             ERROR_LOG_SAVE, headerExpected, header, context->pRepBuffer,
             context->repBufCounter);
 
@@ -2774,7 +2774,7 @@ STATUS sdsuPrimitiveRead ( SDSU_ID      context,
       {
          /* Nothing was written to the reply buffer before timeout */
          ERROR_SET2 (S_sdsuLib_REPLY_TIMEOUT, 
-                     "Timeout reading reply word, RepBuffer=%p+%d",
+                     "Timeout reading reply word, RepBuffer=%p+%ld",
                      ERROR_LOG_SAVE, context->pRepBuffer, 
                      context->repBufCounter);
 
@@ -2845,7 +2845,7 @@ STATUS sdsuPrimitiveRead ( SDSU_ID      context,
       {
          SDSU_UINT_TO_STRING (reply,pReplyString)
          ERROR_SET2 (S_sdsuLib_REPLY_TIMEOUT, 
-                     "Invalid SDSU reply, returned value=%#x=%s",
+                     "Invalid SDSU reply, returned value=%#lx=%s",
                      ERROR_LOG_SAVE, reply, pReplyString);
 
          /* BUG FIX: REPLACE SINGLE INCREMENT WITH WHILE LOOP - SMB 15 Jan 99 */
@@ -3082,7 +3082,7 @@ STATUS sdsuPrimitiveRDM ( SDSU_ID      context,
    }
    if (! sdsu_isAddressValid (address, destId))
    {
-      ERROR_SET1 (0, "Invalid address, %#x", ERROR_LOG_SAVE, address);
+      ERROR_SET1 (0, "Invalid address, %#lx", ERROR_LOG_SAVE, address);
       return (ERROR);
    }
 
@@ -3159,7 +3159,7 @@ STATUS   sdsuPrimitiveWRM ( SDSU_ID        context,
 
    if (! sdsu_isAddressValid (address, destId))
    {
-      ERROR_SET1 (0, "Invalid address, %#x", ERROR_LOG_SAVE, address);
+      ERROR_SET1 (0, "Invalid address, %#lx", ERROR_LOG_SAVE, address);
       return (ERROR);
    }
    pAddressData [0] = address;
@@ -3589,7 +3589,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
                                                 pBuffer, i) == ERROR)
                      {
                         ERROR_SET1 (0, 
-                        "Failed to write block of DSP memory at address %#x",
+                        "Failed to write block of DSP memory at address %#lx",
                         ERROR_LOG_SAVE, startAddress);
                         cfree ((char *) pBuffer);
                         return (ERROR);
@@ -3605,7 +3605,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
                                              pBuffer, i) == ERROR)
                   {
                      ERROR_SET1 (0, 
-                     "Failed to write block of DSP memory at address %#x",
+                     "Failed to write block of DSP memory at address %#lx",
                      ERROR_LOG_SAVE, startAddress);
                      cfree ((char *) pBuffer);
                      return (ERROR);
@@ -3630,7 +3630,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
                                           pBuffer, i) == ERROR)
                {
                   ERROR_SET1 (0, 
-                  "Failed to write block of DSP memory at address %#x",
+                  "Failed to write block of DSP memory at address %#lx",
                   ERROR_LOG_SAVE, startAddress);
                   cfree ((char *) pBuffer);
                   return (ERROR);
@@ -3874,7 +3874,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
                           pBuffer, i) == ERROR)
                      {
                         ERROR_SET1 (0, 
-                        "Failed to write block of DSP memory at address %#x",
+                        "Failed to write block of DSP memory at address %#lx",
                         ERROR_LOG_SAVE, startAddress);
                         cfree ((char *) pBuffer);
                         return (ERROR);
@@ -4041,19 +4041,19 @@ STATUS sdsuMemoryUpload ( SDSU_ID      context,
           */
 
          case (SDSU_MEM_INDEX_P):
-            fprintf (fd, "_DATA P %x\n", pStart [i]);
+            fprintf (fd, "_DATA P %lx\n", pStart [i]);
             pStart [i] |= SDSU_MEM_SPACE_P;
             pFinish [i] |= SDSU_MEM_SPACE_P;
             break;
 
          case (SDSU_MEM_INDEX_X):
-            fprintf (fd, "_DATA X %x\n", pStart [i]);
+            fprintf (fd, "_DATA X %lx\n", pStart [i]);
             pStart [i] |= SDSU_MEM_SPACE_X;
             pFinish [i] |= SDSU_MEM_SPACE_X;
             break;
 
          case (SDSU_MEM_INDEX_Y):
-            fprintf (fd, "_DATA Y %x\n", pStart [i]);
+            fprintf (fd, "_DATA Y %lx\n", pStart [i]);
             pStart [i] |= SDSU_MEM_SPACE_Y;
             pFinish [i] |= SDSU_MEM_SPACE_Y;
             break;
@@ -4071,15 +4071,15 @@ STATUS sdsuMemoryUpload ( SDSU_ID      context,
          switch (i)
          {
             case (SDSU_MEM_INDEX_P):
-               fprintf (fd, "_DATA P %x\n", pStart [i]);
+               fprintf (fd, "_DATA P %lx\n", pStart [i]);
                break;
 
             case (SDSU_MEM_INDEX_X):
-               fprintf (fd, "_DATA X %x\n", pStart [i]);
+               fprintf (fd, "_DATA X %lx\n", pStart [i]);
                break;
 
             case (SDSU_MEM_INDEX_Y):
-               fprintf (fd, "_DATA Y %x\n", pStart [i]);
+               fprintf (fd, "_DATA Y %lx\n", pStart [i]);
                break;
          }
 
@@ -4102,7 +4102,7 @@ STATUS sdsuMemoryUpload ( SDSU_ID      context,
          if (sdsuPrimitiveMultiRDM (context, destId, pStart [i], pBuffer, 
                                     pFinish [i] - pStart [i] + 1) == ERROR)
          {
-            ERROR_SET1 (0, "Failed to read block of DSP memory at address, %#x",
+            ERROR_SET1 (0, "Failed to read block of DSP memory at address, %#lx",
                         ERROR_LOG_SAVE, pStart [i]);
             cfree ((char *) pBuffer);
             return (ERROR);
@@ -4112,7 +4112,7 @@ STATUS sdsuMemoryUpload ( SDSU_ID      context,
 
          for (j = 0; j < pFinish [i] - pStart [i] + 1; j++)
          {
-            if (fprintf (fd, "%6x ", pBuffer [j]) < 0)
+            if (fprintf (fd, "%6lx ", pBuffer [j]) < 0)
             {
                ERROR_SET (0, "Failed to write to data record file", 
                           ERROR_LOG_SAVE);
@@ -4263,15 +4263,15 @@ STATUS sdsuFileDnload ( SDSU_ID      context,
       printf ("sdsuFileDnload: Enter address ranges (hex)\n");
 
       printf ("         P:Start P:End: ");
-      scanf ("%x %x", & start [0][SDSU_MEM_INDEX_P],
+      scanf ("%lx %lx", & start [0][SDSU_MEM_INDEX_P],
          &finish [0][SDSU_MEM_INDEX_P]);
 
       printf ("         X:Start X:End: ");
-      scanf ("%x %x", & start [0][SDSU_MEM_INDEX_X],
+      scanf ("%lx %lx", & start [0][SDSU_MEM_INDEX_X],
          &finish [0][SDSU_MEM_INDEX_X]);
 
       printf ("         Y:Start Y:End: ");
-      scanf ("%x %x", & start [0][SDSU_MEM_INDEX_Y],
+      scanf ("%lx %lx", & start [0][SDSU_MEM_INDEX_Y],
          &finish [0][SDSU_MEM_INDEX_Y]);
    }
    else
@@ -4476,13 +4476,13 @@ STATUS sdsuFileUpload ( SDSU_ID         context,
       printf ("sdsuFileDnload: Enter address ranges (hex)\n");
 
       printf ("         P:Start P:End: ");
-      scanf ("%x %x", & start [SDSU_MEM_INDEX_P], & finish [SDSU_MEM_INDEX_P]);
+      scanf ("%lx %lx", & start [SDSU_MEM_INDEX_P], & finish [SDSU_MEM_INDEX_P]);
 
       printf ("         X:Start X:End: ");
-      scanf ("%x %x", & start [SDSU_MEM_INDEX_X], & finish [SDSU_MEM_INDEX_X]);
+      scanf ("%lx %lx", & start [SDSU_MEM_INDEX_X], & finish [SDSU_MEM_INDEX_X]);
 
       printf ("         Y:Start Y:End: ");
-      scanf ("%x %x", & start [SDSU_MEM_INDEX_Y], & finish [SDSU_MEM_INDEX_Y]);
+      scanf ("%lx %lx", & start [SDSU_MEM_INDEX_Y], & finish [SDSU_MEM_INDEX_Y]);
    }
    else
    {
@@ -5367,9 +5367,9 @@ STATUS sdsuFrameShow ( SDSU_FRAME *pFrame )
    printf ("Next frame            : %p\n",  pFrame->pNext);
    printf ("Packet count          : %lu\n",  pFrame->header.packetCount);
    printf ("Frame count           : %lu\n",  pFrame->header.frameCount);
-   printf ("Frame status          : %#x\n", pFrame->header.status);
+   printf ("Frame status          : %#lx\n", pFrame->header.status);
    printf ("Parameter set ID      : %lu\n",  pFrame->header.parameterId);
-   printf ("Frame semaphore ID    : %#x\n", (uint32) pFrame->frameSem);
+   printf ("Frame semaphore ID    : %#lx\n", (uint32) pFrame->frameSem);
    printf ("Local address of data : %p\n",  pFrame->pixel);
 
    printf ("First 8 pixels: ");
@@ -8249,7 +8249,7 @@ STATUS   sdsuParamWrite
    if (sdsuPrimitiveWRM (context, destId, address, paramValue) == ERROR)
    {
       ERROR_SET2 (0, 
-      "Failed to write %s parameter to DSP memory at address %#x", 
+      "Failed to write %s parameter to DSP memory at address %#lx", 
       ERROR_LOG_SAVE,
       paramName, address);
       return (ERROR);
@@ -8456,7 +8456,7 @@ STATUS   sdsuParamRead
    if (sdsuPrimitiveRDM (context, destId, address, pValue) == ERROR)
    {
       ERROR_SET2 (0, 
-      "Failed to read %s parameter from DSP memory at address %#x", 
+      "Failed to read %s parameter from DSP memory at address %#lx", 
        ERROR_LOG_SAVE, paramName, address);
       return (ERROR);
    }
@@ -8558,7 +8558,7 @@ STATUS   sdsuParamPrint
       ERROR_LOG ("Failed to read parameter for printing");
       return (ERROR);
    }
-   printf ("%s: %s = %lu (%#x)\n", dspName, paramName, value, value);
+   printf ("%s: %s = %lu (%#lx)\n", dspName, paramName, value, value);
    
    return (OK);
 }
@@ -9038,7 +9038,7 @@ STATUS sdsuParamUpload
          }
          else
          {
-            fprintf (pParamFile, "%12s\t%8u \t;\t= 0x%08x\n",
+            fprintf (pParamFile, "%12s\t%8lu \t;\t= 0x%08lx\n",
                      vmeParamNames[i], paramValue, paramValue);
          }
       }
@@ -9064,7 +9064,7 @@ STATUS sdsuParamUpload
          }
          else
          {
-            fprintf (pParamFile, "%12s\t%8u \t;\t= 0x%08x\n",
+            fprintf (pParamFile, "%12s\t%8lu \t;\t= 0x%08lx\n",
                      timParamNames[i], paramValue, paramValue);
          }
       }
@@ -9090,7 +9090,7 @@ STATUS sdsuParamUpload
          }
          else
          {
-            fprintf (pParamFile, "%12s\t%8u \t;\t= 0x%08x\n",
+            fprintf (pParamFile, "%12s\t%8lu \t;\t= 0x%08lx\n",
                      utlParamNames[i], paramValue, paramValue);
          }
       }
@@ -9184,7 +9184,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x) [", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_PACKET_INT_ENABLE) != 0 )
       {
@@ -9213,7 +9213,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x)\n", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx)\n", paramName, value, value);
    }
 
    strcpy (paramName, "V_PIID");
@@ -9224,7 +9224,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x)\n", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx)\n", paramName, value, value);
    }
 
    strcpy (paramName, "V_FBALO");
@@ -9235,7 +9235,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x)\n", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx)\n", paramName, value, value);
    }
 
    strcpy (paramName, "V_FBAHI");
@@ -9246,7 +9246,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x) [", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_NEW_FBA_FLAG) == 0 )
       {
@@ -9267,7 +9267,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("VME: %s = %lu (%#x)\n", paramName, value, value);
+      printf ("VME: %s = %lu (%#lx)\n", paramName, value, value);
    }
 
    /* TIMING board status parameters */
@@ -9284,7 +9284,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("TIM: %s = %lu (%#x) [", paramName, value, value);
+      printf ("TIM: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_TIM_STATUS_IDLING) != 0 )
       {
@@ -9314,7 +9314,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("TIM: %s = %lu (%#x) [", paramName, value, value);
+      printf ("TIM: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_TIM_ERROR_OVERRUN) != 0 )
       {
@@ -9340,7 +9340,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("TIM: %s = %lu (%#x) [", paramName, value, value);
+      printf ("TIM: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_TIM_MODE_UNDERSCAN) != 0 )
       {
@@ -9366,7 +9366,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("TIM: %s = %lu (%#x) [", paramName, value, value);
+      printf ("TIM: %s = %lu (%#lx) [", paramName, value, value);
 
       if ( (value & SDSU_TIM_PARMID_SYNC) == 0 )
       {
@@ -9394,7 +9394,7 @@ STATUS sdsuStatusShow ( SDSU_ID context )
    }
    else
    {
-      printf ("UTL: %s = %lu (%#x) [", paramName, value, value);
+      printf ("UTL: %s = %lu (%#lx) [", paramName, value, value);
       if ( value ==  0 )
       {
          printf ("no error");
@@ -9595,17 +9595,17 @@ STATUS   sdsu_testTDL
       return (ERROR);
    }
 
-   if (verbose) printf ("Testing data link for DSP %d\n", destId);
+   if (verbose) printf ("Testing data link for DSP %ld\n", destId);
 
    /* Do TDL for each test pattern      */
    for (i = 0; i < NELEMENTS (dataOut); i++) 
    {
-      if (verbose) printf ("Test pattern %#x\n", dataOut [i]);
+      if (verbose) printf ("Test pattern %#lx\n", dataOut [i]);
 
       if (sdsuPrimitive (context, "TDL", destId, & dataOut [i], & dataIn) 
           == ERROR)
       {
-         ERROR_SET2 (0, "TDL failed writing %#x to DSP %d", ERROR_LOG_SAVE,
+         ERROR_SET2 (0, "TDL failed writing %#lx to DSP %ld", ERROR_LOG_SAVE,
             dataOut [i], destId);
          return (ERROR);
       }
@@ -9618,7 +9618,7 @@ STATUS   sdsu_testTDL
       if ((!context->simulate) && (dataOut [i] != dataIn))
       {
          ERROR_SET3 (S_sdsuLib_TEST_FAIL,
-            "TDL data mis-match, wrote %#x but read %#x from DSP %d", 
+            "TDL data mis-match, wrote %#lx but read %#lx from DSP %ld", 
             ERROR_LOG_SAVE, dataOut [i], dataIn, destId);
          return (ERROR);
       }
@@ -9713,7 +9713,7 @@ STATUS   sdsu_testRDM
       case SDSU_IDENT_UTL:
       case SDSU_IDENT_TIM:
 
-         if (verbose) printf ("Testing RDM for DSP %d at start of X space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at start of X space\n", 
                               destId);
          address = SDSU_MEM_START_X;
          * pAddress = address;
@@ -9721,87 +9721,87 @@ STATUS   sdsu_testRDM
 
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at start of X space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at start of X space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at end of X space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at end of X space\n", 
                               destId);
          address = SDSU_MEM_END_X;
          * pAddress = address;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at end of X space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at end of X space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at start of Y space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at start of Y space\n", 
                               destId);
          address = SDSU_MEM_START_Y;
          * pAddress = address;
          * pMemSpace = SDSU_MEM_SPACE_Y;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at start of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at start of Y space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at end of Y space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at end of Y space\n", 
                               destId);
          address = SDSU_MEM_END_Y;
          * pAddress = address;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at end of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at end of Y space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at start of P space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at start of P space\n", 
                               destId);
          address = SDSU_MEM_START_P;
          * pAddress = address;
          * pMemSpace = SDSU_MEM_SPACE_P;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at start of P space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at start of P space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at end of P space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at end of P space\n", 
                               destId);
          address = SDSU_MEM_END_P;
          * pAddress = address;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at end of P space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at end of P space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at start of E space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at start of E space\n", 
                               destId);
          address = SDSU_MEM_START_E;
          * pAddress = address;
          * pMemSpace = SDSU_MEM_SPACE_E;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at start of E space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at start of E space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing RDM for DSP %d at end of E space\n", 
+         if (verbose) printf ("Testing RDM for DSP %ld at end of E space\n", 
                               destId);
          address = SDSU_MEM_END_E;
          * pAddress = address;
          if (sdsuPrimitive (context, "RDM", destId, & address, & data) == ERROR)
          {
-            ERROR_SET2 (0, "RDM failed at end of E space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM failed at end of E space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -9905,7 +9905,7 @@ STATUS   sdsu_testWRM
       case SDSU_IDENT_UTL:
       case SDSU_IDENT_TIM:
 
-         if (verbose) printf ("Testing WRM for DSP %d at start of Y space\n", 
+         if (verbose) printf ("Testing WRM for DSP %ld at start of Y space\n", 
                               destId);
          address = SDSU_MEM_START_Y;
          * pAddress = address;
@@ -9914,7 +9914,7 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "RDM", destId, & address, & oldData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "RDM 1 failed at start of Y space (%#x) for DSP %d",
+            ERROR_SET2 (0, "RDM 1 failed at start of Y space (%#lx) for DSP %ld",
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -9922,14 +9922,14 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "WRM", destId, & address, & newData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "WRM 1 failed at start of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "WRM 1 failed at start of Y space (%#lx) for DSP %ld", 
                        ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
          if (sdsuPrimitive (context, "RDM", destId, & address, & readBackData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "RDM 2 failed at start of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM 2 failed at start of Y space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -9949,12 +9949,12 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "WRM", destId, & address, & oldData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "WRM 2 failed at start of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "WRM 2 failed at start of Y space (%#lx) for DSP %ld", 
                ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
 
-         if (verbose) printf ("Testing WRM for DSP %d at end of Y space\n", 
+         if (verbose) printf ("Testing WRM for DSP %ld at end of Y space\n", 
                               destId);
          address = SDSU_MEM_END_Y;
          * pAddress = address;
@@ -9962,7 +9962,7 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "RDM", destId, & address, & oldData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "RDM 1 failed at end of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM 1 failed at end of Y space (%#lx) for DSP %ld", 
                  ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -9970,14 +9970,14 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "WRM", destId, & address, & newData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "WRM 1 failed at end of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "WRM 1 failed at end of Y space (%#lx) for DSP %ld", 
                ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
          if (sdsuPrimitive (context, "RDM", destId, & address, & readBackData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "RDM 2 failed at end of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "RDM 2 failed at end of Y space (%#lx) for DSP %ld", 
                         ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -9996,7 +9996,7 @@ STATUS   sdsu_testWRM
          if (sdsuPrimitive (context, "WRM", destId, & address, & oldData) 
              == ERROR)
          {
-            ERROR_SET2 (0, "WRM 2 failed at end of Y space (%#x) for DSP %d", 
+            ERROR_SET2 (0, "WRM 2 failed at end of Y space (%#lx) for DSP %ld", 
                     ERROR_LOG_SAVE, (* pAddress | * pMemSpace), destId);
             return (ERROR);
          }
@@ -11004,7 +11004,7 @@ BOOL   sdsu_isAddressValid ( uint32         address,
          }
          else
          {
-            ERROR_SET1 (S_sdsuLib_INV_DSP_ADDRESS, "Invalid DSP address, %#x", 
+            ERROR_SET1 (S_sdsuLib_INV_DSP_ADDRESS, "Invalid DSP address, %#lx", 
                         ERROR_LOG_SAVE,
                address);
             valid = FALSE;
