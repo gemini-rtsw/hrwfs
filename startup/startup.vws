@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.5 1999-11-23 03:39:03 cboyer Exp $
+# $Id: startup.vws,v 1.6 2000-01-05 20:10:30 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -22,8 +22,8 @@ pwd
 < $(version)/bin/$(arch)/local
 
 #hostAdd ("lepus","10.2.2.63")
-hostAdd ("archie","10.2.4.56")
 #hostAdd ("betty","10.1.5.71")
+hostAdd ("archie","10.2.4.56")
 
 # Load EPICS core and record stuff
 ld < $(epics)/base/bin/$(arch)/iocCore
@@ -35,21 +35,18 @@ ld < $(epics)/base/bin/$(arch)/devSup
 ld < $(epics)/base/bin/$(arch)/seq
 
 # Load the Gemini astrometric and time libraries
-ld < $(epics)/extensions/bin/$(arch)/libsla.a
-ld < $(epics)/extensions/bin/$(arch)/libtime.a
-#ld < $(epics)/extensions/bin/$(arch)/libast.a
+ld < /gemini/slalib/bin/$(arch)/slalib
+ld < /gemini/timelib/bin/$(arch)/timelib
 ld < /gemini/astlib/bin/$(arch)/astlib
 ld < /gemini/cfitsio/cfitsio/bin/$(arch)/cFitsIo
 
-ld < $(epics)/extensions/bin/$(arch)/timeSeq
+ld < /gemini/timelib/bin/$(arch)/timeSeq
 
 # Load the Gemini data handling libraries
 ld < $(version)/bin/$(arch)/strcasecmp
 ld < /gemini/dhs/external/lib/$(arch)/libers.o
 ld < /gemini/dhs/external/lib/$(arch)/libimp.o
 ld < /gemini/dhs/external/lib/$(arch)/libsds.o
-#ld < /home/dayle/dhs/source-0.17/gemini/dhs/lib/mv2700/libgen.a
-#ld < /home/dayle/dhs/source-0.17/gemini/dhs/lib/mv2700/libdhs.a
 ld < /gemini/dhs/lib/$(arch)/libgen.a
 ld < /gemini/dhs/lib/$(arch)/libdhs.a
 
@@ -62,10 +59,6 @@ ld < $(version)/bin/$(arch)/wfsControl
 ld < $(version)/bin/$(arch)/wfsResourceMonitor
 ld < $(version)/bin/$(arch)/simpleLogHrwfs
 ld < $(version)/bin/$(arch)/fpscr
-
-# Load test harness library if required
-#ld < $(version)/bin/$(arch)/testHarness
-#ld < $(version)/bin/$(arch)/testKit
 
 # Load sequences here
 # ld < $(version)/bin/$(arch)/testseq.o
@@ -85,10 +78,6 @@ dbLoad "$(version)/data/$(dctsdr).dctsdr"
 dbLoadRecords "$(version)/data/hrwfsTop.db"
 dbLoadRecords "$(version)/data/hrwfsSadTop.db"
 
-# Load the test harness database if required
-# DO NOT LOAD THIS DATABASE IF YOU WISH TO CONNECT TO THE REAL TCS
-#dbLoadRecords "$(version)/data/testHarnessTop.db"
-
 # This turns off logging
 # iocLogDisable=1
 
@@ -97,9 +86,6 @@ dbLoadRecords "$(version)/data/hrwfsSadTop.db"
 # console (The simpleLog task will wait indefinitely for its pipe to be
 # created when logErrorsToPipe = 0)
 logErrorsToPipe = 1
-
-# Run script to enable 4-sec watchdog-timer reset (if desired)
-#< $(version)/bin/$(arch)/wdog_mv167
 
 # start the impmaster
 # (Comment this out if the DHS is not being used)
