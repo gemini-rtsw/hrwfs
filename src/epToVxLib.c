@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: epToVxLib.c,v 1.1.1.1 1999-03-17 03:14:22 cboyer Exp $"};
+	"$Id: epToVxLib.c,v 1.2 1999-11-04 04:06:59 cboyer Exp $"};
 
 /*+
  *	MODULE NAME:
@@ -121,6 +121,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:22  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.32  1998/12/07 11:17:14  cics
  * Removed obsolete and unmanageable COPYRIGHT statement.
  *
@@ -267,7 +270,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 
 /* defines */
 
-/* #define DEBUG */							/* Define this macro to enable debug messages		*/
+/*#define DEBUG*/							/* Define this macro to enable debug messages		*/
 
 #define NUM_FILES					100				/* Maximum number of file descriptors		*/
 													/* (as defined in ${VX_DIR}/.../config.h)	*/

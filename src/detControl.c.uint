@@ -731,7 +731,7 @@ STATUS	detControl
 	
 		if (strcmp (pWfsName, "hr") == 0)
 		{
-			if (sdsuSimpleReadoutOpen (sdsuId, NULL, detObserveEnd, 1, FALSE) == ERROR)
+			if (sdsuSimpleReadoutOpen (sdsuId, NULL, detObserveEnd, 1, TRUE) == ERROR)
 			{
 				ERROR_LOG ("Failed to start readout task on startup");
 				initFailed = TRUE;
@@ -5197,7 +5197,7 @@ uint32 detInit
 
 	if (strcmp (pWfsName, "hr") == 0)
 	{
-		if (sdsuSimpleReadoutOpen (*pSdsuId, NULL, detObserveEnd, 1, FALSE) == ERROR)
+		if (sdsuSimpleReadoutOpen (*pSdsuId, NULL, detObserveEnd, 1, TRUE) == ERROR)
 		{
 			ERROR_LOG ("Failed to start readout task on initialisation");
 			errorNumber = S_detControl_SDSU_ERROR;

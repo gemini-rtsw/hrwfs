@@ -17,7 +17,7 @@ include .applTop/config/CONFIG
 # USR_CFLAGS = -DDEBUG -g
 # USR_CFLAGS = -g
 # (sysextLib and mpPipeDrv are not compatible with present hardware).
-USR_CFLAGS = -DNO_SYSEXTLIB -DNO_MPPIPEDRV -g
+USR_CFLAGS = -DNO_SYSEXTLIB -DNO_MPPIPEDRV -O2
 # USR_INCLUDES =
 # USR_LDFLAGS  =
 # USR_LDLIBS   =
@@ -51,6 +51,7 @@ APPLSRCS.c	= \
 	../testKit.c \
 	../sdsuRead.c \
 	../strcasecmp.c \
+	../fpscr.c \
 	../dhstests.c
 
 SRCS.c	= $(LIBSRCS.c) $(APPLSRCS.c)

@@ -6183,7 +6183,7 @@ int /*STATUS*/ ospWriteUShortImage( unsigned short int * buffp, char * outfile,i
 
     strncpy(filename,outfile,79);
 
-    remove(filename);               /* Delete old file if it already exists */
+    /*remove(filename);*/               /* Delete old file if it already exists */
 
     status = 0;         /* initialize status before calling fitsio routines */
 
