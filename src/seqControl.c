@@ -854,12 +854,6 @@ STATUS   seqControl (void)
          }
 
          /*
-          * Wait a short time so the changes made to the state are visible.
-          */
-
-         taskDelay (2 * sysClkRateGet());
-
-         /*
           * Reboot command received. Close any connection to the DHS and 
           * reset the VME bus.
           */
@@ -892,6 +886,16 @@ STATUS   seqControl (void)
             dhsEventLoopEnd (&dhsErrno);
             dhsExit ( &dhsErrno );
          }
+
+         /*
+          * Wait a short time so the changes made to the state are visible.
+          */
+
+         taskDelay (2 * sysClkRateGet());
+
+         /*
+          * Now reboot
+          */
 
          reboot (BOOT_QUICK_AUTOBOOT);
       }
