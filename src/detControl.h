@@ -13,6 +13,10 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   06 feb 2001 - cb move all the DATREC_CONTEXT structures into the obsId
+ *                 structure
+ *   26 jan 2001 - cb add DET_CONTROL_HRWFS_CP_INIT_FILE and
+ *                 DET_CONTROL_HRWFS_MK_INIT_FILE
  *   15 may 2000 - cb add detDhsReconnect
  *   11 feb 2000 - cb add some detector geometry sir records
  *   10 feb 2000 - cb add some sir records
@@ -49,6 +53,8 @@ typedef   unsigned long   DHS_CONNECT;
 
 
 /* defines */
+
+#define STRING_SIZE       160       /* Size of a string                 */
 
 #define   DET_CONTROL_TASK_NAME               "detControl"
                                     /* Detector Controller task name.   */
@@ -210,6 +216,18 @@ typedef   unsigned long   DHS_CONNECT;
 #define DET_CONTROL_MAX_WCSPOINTS             40 
                                     /* Max number of WCS calibration points.  */
 
+#define DET_CONTROL_HRWFS_MK_INIT_FILE        "defDetContHRMK.dat"
+                                    /* Define the MK default init file for    */
+                                    /* HRWFS detector controller. Set to      */
+                                    /* "NONE" if no default settings is       */
+                                    /* required.                              */
+
+#define DET_CONTROL_HRWFS_CP_INIT_FILE        "defDetContHRCP.dat"
+                                    /* Define the CP default init file for    */
+                                    /* HRWFS detector controller. Set to      */
+                                    /* "NONE" if no default settings is       */
+                                    /* required.                              */
+
 #define   DET_CONTROL_OMF_FILE_PATH           "./bin/asm56000"
                                     /* Directory containing OMF files.        */
 
@@ -249,8 +267,6 @@ typedef   struct      /* Context structure used to describe an observation.   */
    BOOL         stopped;   /* Flag set TRUE when observation stopped.         */
    BOOL         continuous;/* BUG WORK AROUND: Set TRUE whenever the SDSU     */
                            /* controller is in continuous mode.               */
-   DATREC_CONTEXT   pDetObservingContext;
-                           /* Observing record context.                       */
    int          totalFrames;/* Total frames for observation.                  */
    int          outNFrames;/* Frame counter for output display.               */
    int          nframes;   /* Frame counter for this observation.             */
@@ -407,9 +423,33 @@ typedef   struct      /* Context structure used to describe an observation.   */
 
                            /* SAD information.                                */
 
-   DATREC_CONTEXT pDataLabelContext ; /* Data Label SIR record context        */
+   DATREC_CONTEXT pStateContext;      /* Context structure for state SIR      */
+                                      /* record.                              */
+   DATREC_CONTEXT pDetInitContext;    /* Context structure for initialising   */
+                                      /* state SIR record.                    */
+   DATREC_CONTEXT pDetInitStatusContext;
+                                      /* Context structure for SDSU           */
+                                      /* initialisation status SIR record     */
+   DATREC_CONTEXT pTestResultsContext;/* Context structure for SDSU test      */
+                                      /* results SIR record.                  */
+   DATREC_CONTEXT pTestingContext;    /* Context structure for testing state  */
+                                      /* SIR record.                          */
+   DATREC_CONTEXT pDetPrimReplyContext;  
+                                      /* Context structure for SDSU primitive */
+                                      /* reply string SIR record              */
+   DATREC_CONTEXT pObsTypeContext;    /* Context structure for observation    */
+                                      /* type SIR record.                     */
+   DATREC_CONTEXT pDetTypeContext;    /* Context structure for detector       */
+                                      /* controller type.                     */
+   DATREC_CONTEXT pDetIdContext;      /* Context structure for detector Id or */
+                                      /* SN                                   */
+   DATREC_CONTEXT pBunitContext ;     /* Data unit SIR record context         */
                                       /* structure                            */
+   DATREC_CONTEXT pDetObservingContext;
+                                      /* Observing record context.            */
    DATREC_CONTEXT pObsModeContext ;   /* Observation mode SIR record context  */
+                                      /* structure                            */
+   DATREC_CONTEXT pDataLabelContext ; /* Data Label SIR record context        */
                                       /* structure                            */
    DATREC_CONTEXT pIntTimeContext ;   /* Integration time SIR record context  */
                                       /* structure                            */

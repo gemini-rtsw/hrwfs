@@ -13,11 +13,7 @@ include .applTop/config/CONFIG
 
 # User compiler and loader flags (NO_EPICS flag is needed for all processors except zero)
 # SNC_FLAGS    =
-# USR_CFLAGS   = -DNO_EPICS
-# USR_CFLAGS = -DDEBUG -g
-# USR_CFLAGS = -g
-# (sysextLib and mpPipeDrv are not compatible with present hardware).
-USR_CFLAGS = -DNO_SYSEXTLIB -DNO_MPPIPEDRV -O2
+USR_CFLAGS = -O2 -D$(APPLIC_SITE)
 # USR_INCLUDES =
 # USR_LDFLAGS  =
 # USR_LDLIBS   =

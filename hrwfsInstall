@@ -3,10 +3,17 @@
 # Install script for Gemini HRWFS system
 #
 
+host=`hostname`
+if [ "`egrep $host /etc/hosts | egrep '^10\.'`" -ne "" ]; then
+    site=MK;
+else
+    site=CP;
+fi
+
 applSetup -T svgm5 -s Makefile.subdirs -I docs -I dspsrc -I par -X sys -X ar \
           -depends /gemini/astlib -depends /gemini/slalib \
-          -depends /gemini/timelib -depends /home/cboyer/wfs_lib/cfitsio-ppc \
-          -depends /gemini/dhs $1 > hrwfsBuild.log 2>&1
+          -depends /gemini/timelib -depends /gemini/cfitsio/cfitsio \
+          -depends /gemini/dhs -site $site $1 > hrwfsBuild.log 2>&1
 
 applSetup  >> hrwfsBuild.log 2>&1
 

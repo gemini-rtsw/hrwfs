@@ -97,4 +97,21 @@ V1-1 24 July 2000 - CB
     darktime were wrong when doing 3 exposures for ex.
   - new ADC offsets: 2340, 2350
 
-dev equivalent to V1-1
+V1-2 working on it CB
+---------------------
+  - hrwfsInstall : replace the link to cfitsio
+    (/home/cboyer/wfs_lib/cfitsio-ppc) per /gemini/cfitsio/cfitsio
+    and also add the site
+  - add a StripTool for temperature
+  - det_frameSize.dl -> replace the button x,y X 2 per YES
+  - par: add a new init file for CP and MK in order to have default
+    temp, ADC offsets and SN of the CCD
+    Temp, offset not updated according to the site in detInit and detReset.
+    I have to move all the DATREC_CONTEXT structures to obsId, I have created
+    detGetSirContext() and detWriteDefSirContext() and fix the bug.
+  - remove errors when stop an observation not in progress
+  - add a button "CLEAR ERRORS" on main detector screen
+  - ADC offset for binning and no binning (par and src)
+
+
+dev equivalent to V1-2

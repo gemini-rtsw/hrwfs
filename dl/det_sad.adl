@@ -7,11 +7,11 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="30"
-	nstr="59"
+	nstr="61"
 	ndynamic="29"
 	nplot="0"
 	nrd="0"
-	nes="0"
+	nes="1"
 	nkd="1"
 	npd="0"
 	npo="0"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="3974"
+	nwords_dspy="4156"
 	nwords_sta="848"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="2048"
-	osta="1200"
-	odynamic="2048"
-	oplot="3962"
-	ord="3962"
-	oes="3962"
-	okd="3962"
-	opd="3974"
-	opo="3974"
+	odyng="2072"
+	osta="1224"
+	odynamic="2072"
+	oplot="3986"
+	ord="3986"
+	oes="3986"
+	okd="4144"
+	opd="4156"
+	opo="4156"
 	opc="68"
 	ostr="372"
-	ocmap="1200"
-	ocrules="1200"
+	ocmap="1224"
+	ocrules="1224"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -499,8 +499,8 @@ display {
 }
 "text" {
 	object {
-		x="579"
-		y="337"
+		x="488"
+		y="336"
 		width="34"
 		height="14"
 		groupid="0"
@@ -1800,7 +1800,7 @@ display {
 	object {
 		x="366"
 		y="330"
-		width="209"
+		width="118"
 		height="21"
 		groupid="0"
 	}
@@ -1841,6 +1841,139 @@ display {
 	}
 	align="horiz. left"
 	format="decimal"
+}
+"execute script" {
+	object {
+		x="504"
+		y="330"
+		width="109"
+		height="22"
+		groupid="0"
+	}
+	script[0] {
+		label="StripTool"
+		path="StripTool tempConfig.ST"
+		args=""
+	}
+	script[1] {
+		label=""
+		path=""
+		args=""
+	}
+	script[2] {
+		label=""
+		path=""
+		args=""
+	}
+	script[3] {
+		label=""
+		path=""
+		args=""
+	}
+	script[4] {
+		label=""
+		path=""
+		args=""
+	}
+	script[5] {
+		label=""
+		path=""
+		args=""
+	}
+	script[6] {
+		label=""
+		path=""
+		args=""
+	}
+	script[7] {
+		label=""
+		path=""
+		args=""
+	}
+	script[8] {
+		label=""
+		path=""
+		args=""
+	}
+	script[9] {
+		label=""
+		path=""
+		args=""
+	}
+	script[10] {
+		label=""
+		path=""
+		args=""
+	}
+	script[11] {
+		label=""
+		path=""
+		args=""
+	}
+	script[12] {
+		label=""
+		path=""
+		args=""
+	}
+	script[13] {
+		label=""
+		path=""
+		args=""
+	}
+	script[14] {
+		label=""
+		path=""
+		args=""
+	}
+	script[15] {
+		label=""
+		path=""
+		args=""
+	}
+	script[16] {
+		label=""
+		path=""
+		args=""
+	}
+	script[17] {
+		label=""
+		path=""
+		args=""
+	}
+	script[18] {
+		label=""
+		path=""
+		args=""
+	}
+	script[19] {
+		label=""
+		path=""
+		args=""
+	}
+	script[20] {
+		label=""
+		path=""
+		args=""
+	}
+	script[21] {
+		label=""
+		path=""
+		args=""
+	}
+	script[22] {
+		label=""
+		path=""
+		args=""
+	}
+	script[23] {
+		label=""
+		path=""
+		args=""
+	}
+	clr="1"
+	bclr="13"
+	menu_title=""
+	decorate="none"
 }
 "kill display" {
 	object {

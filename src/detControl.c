@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.11 2000-07-24 20:28:02 cboyer Exp $"};
+   "$Id: detControl.c,v 1.12 2001-02-15 01:43:41 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,21 +30,25 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   09 feb 2001 - cb remove error when stop an observation not in progress
+ *                 ADC offset now for bin and no bin
+ *                 also move all the DATREC_CONTEXT into detControl.h
+ *   26 jan 2001 - cb read the detector init file according to the site
  *   15 may 2000 - cb add detDhsReconnect
  *   11 feb 2000 - cb add some SIR records + remove detWriteFits and 
  *                 detFrameReduce
  *   10 feb 2000 - cb add some SIR records 
- *   31 Jan 2000 - cb add state SIR record to handle 
- *   21 Jan 2000 - cb add observe command
+ *   31 jan 2000 - cb add state SIR record to handle 
+ *   21 jan 2000 - cb add observe command
  *                 replace observe command per detObserve
  *                 add setObserve command
- *   13 Jan 2000 - cb remove osp stuff from hrwfs
- *   22 Nov 1999 - cb change offset for detectors (2400,2398)
+ *   13 jan 2000 - cb remove osp stuff from hrwfs
+ *   22 nov 1999 - cb change offset for detectors (2400,2398)
  *                 + modify detOffset to have only two offsets
- *   18 Nov 1999 - cb add new setDhsInfo command
- *   17 Nov 1999 - cb change offset for detectors (2450,2450)
- *   9 Nov 1999 - cb TELSCOP and OBSERVAT are now updated from the TCS
- *   8 Nov 1999 - cb Fix a bug for WCS when binning or windowing
+ *   18 nov 1999 - cb add new setDhsInfo command
+ *   17 nov 1999 - cb change offset for detectors (2450,2450)
+ *   09 nov 1999 - cb TELSCOP and OBSERVAT are now updated from the TCS
+ *   08 nov 1999 - cb Fix a bug for WCS when binning or windowing
  *   27 oct 1999 - cb dhs/fits add keywords, fix bug of WCS. 
  *                 Back to detWriteFitsUint16
  *   25 oct 1999 - cb modify detObserveStart and detObserveEnd because observe 
@@ -108,7 +112,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 
 /****************************************************************** Defines ***/
 
-/*#define DEBUG*/                   /* Define this macro to enable debug messages */
+/*#define DEBUG*/               /* Define this macro to enable debug messages */
 
 #define DEBUG_DOWNLOAD          /* Define this macro to enable debug messages */
                                 /* when downloading DSP code                  */
@@ -186,8 +190,7 @@ LOCAL uint32   detExposure (const char * pWfsName, const char * pRecordPrefix,
                             SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detObstype (const char * pWfsName, const char * pRecordPrefix, 
                            CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                           SDSU_ID sdsuId, OBS_ID obsId, 
-                           DATREC_CONTEXT pObsTypeContext);
+                           SDSU_ID sdsuId, OBS_ID obsId); 
 LOCAL uint32   setDhsInfo (const char * pWfsName, const char * pRecordPrefix, 
                            CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                            SDSU_ID sdsuId, OBS_ID obsId);
@@ -217,30 +220,27 @@ LOCAL uint32   detAbort (const char * pWfsName, const char * pRecordPrefix,
 LOCAL uint32   detInit (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID * pSdsuId, OBS_ID obsId, uint32 *pVmeAddress, 
-                        int * pMaxFrames, DATREC_CONTEXT pDetInitContext, 
-                        DATREC_CONTEXT pDetInitStatusContext,
-                        DATREC_CONTEXT pStateContext);
+                        int * pMaxFrames); 
 LOCAL uint32   detReset (const char * pWfsName, const char * pRecordPrefix, 
                          CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                          SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detTest (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                        SDSU_ID sdsuId, OBS_ID obsId, 
-                        DATREC_CONTEXT pTestResultsContext,
-                        DATREC_CONTEXT pTestingContext);
+                        SDSU_ID sdsuId, OBS_ID obsId); 
 LOCAL uint32   detSave (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detGeometry (const char * pWfsName, const char * pRecordPrefix, 
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                            SDSU_ID sdsuId, OBS_ID obsId);
+                            SDSU_ID sdsuId, OBS_ID obsId, 
+                            long * pOffsetFullVect, long * pOffsetBinVect);
 LOCAL uint32   detFrameSize (const char * pWfsName, const char * pRecordPrefix, 
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                            SDSU_ID sdsuId, OBS_ID obsId);
+                            SDSU_ID sdsuId, OBS_ID obsId, 
+                            long * pOffsetFullVect, long * pOffsetBinVect);
 LOCAL uint32   detPrimitive (const char * pWfsName, const char * pRecordPrefix,
                              CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                             SDSU_ID sdsuId, OBS_ID obsId, 
-                             DATREC_CONTEXT pDetPrimReplyContext);
+                             SDSU_ID sdsuId, OBS_ID obsId); 
 LOCAL uint32   detDownload (const char * pWfsName, const char * pRecordPrefix,
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                             SDSU_ID sdsuId, OBS_ID obsId);
@@ -295,6 +295,11 @@ STATUS detReadFitsHeaderInt ( char * fileName, int nKey, char ** keyName,
                               int * keyVal);
 STATUS detReadFitsImageUint16 ( uint16 * pImageBuffer, char * fileName,
                                 int buffSize);
+uint32 detContInit (char * pInitFileName, uint32 * pTempCode,
+                    uint32 * pTempCoeff, long *pOffsetFullVect, 
+                    long * pOffsetBinVect, char * pCcdSn);
+uint32 detGetSirContext (const char * pRecordPrefix, OBS_ID obsId);
+uint32 detWriteDefSirContext (OBS_ID obsId);
 
 /* -------------------------------------------------------------------------- */
 
@@ -325,40 +330,6 @@ STATUS   detControl
 
    GSUB_DATA_CONTEXT dataUpdateContext; /* Data update context structure.     */
 
-   /* Variables associated with SDSU controller SIR records. */
-
-   DATREC_CONTEXT    pDetInitContext;   /* Context structure for initialising */
-                                        /* state SIR record.                  */
-
-   DATREC_CONTEXT    pDetInitStatusContext; /* Context structure for SDSU     */
-                                            /* initialisation status SIR      */
-                                            /* record.                        */
-
-   DATREC_CONTEXT    pTestResultsContext;   /* Context structure for SDSU test*/
-                                            /* results SIR record.            */
-
-   DATREC_CONTEXT    pDetPrimReplyContext;  /* Context structure for SDSU     */
-                                            /* primitive reply string SIR     */
-                                            /* record.                        */
-
-   DATREC_CONTEXT    pTestingContext;       /* Context structure for testing  */
-                                            /* state SIR record.              */
-
-   DATREC_CONTEXT    pStateContext;         /* Context structure for state    */
-                                            /* SIR record.                    */
-
-   DATREC_CONTEXT    pObsTypeContext;       /* Context structure for          */
-                                            /* observation type SIR record.   */
-
-   DATREC_CONTEXT    pDetTypeContext;       /* Context structure for detector */
-                                            /* controller type.               */
-
-   DATREC_CONTEXT    pDetIdContext;         /* Context structure for detector */
-                                            /* Id or SN                       */
-
-   DATREC_CONTEXT    pBunitContext ;        /* Data unit SIR record context   */
-                                            /* structure                      */
-
    /* Variables associated with the SDSU controller. */
 
    uint32       vmeAddress = 0;     /* VME address of SDSU controller. (Set to*/
@@ -380,10 +351,19 @@ STATUS   detControl
    uint32       detControlStopMask; /* Mask for detecting which detControlStop*/
                                     /* bit refers to this detector controller */
 
-   long         offset0;            /* ADC offset for output 0.               */
-   long         offset1;            /* ADC offset for output 1.               */
+   long         i;                  /* index                                  */
+   long         offsetFullVect[2];  /* ADC offset vector - no binning.        */
+   long         offsetBinVect[2];   /* ADC offset vector - binning.           */
+   long         offsetVect[2];      /* ADC offset vector                      */
    uint32       tempCode;           /* Target temperature code                */
    uint32       tempCoeff;          /* Coefficient for temperature control    */
+
+   char         detContInitFileName [ STRING_SIZE ] ;
+                                    /* Full Name of the detector controller   */
+                                    /* init file                              */
+
+   char         defFileName [ STRING_SIZE ] ;
+                                    /* Default file name according to the site*/
 
    uint32       tryDownload ;       /* Counter to stop attempt for downloading*/
 
@@ -397,19 +377,16 @@ STATUS   detControl
 
    /* Other general variables. */
 
-   char         pRecordName [EPICS_MAX_BYTES_RECORD_NAME + 1];
-                                    /* String to store record names.          */
-
    char         pStatusString [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
                                     /* Status string.                         */
 
-   long              simMode;           /* Code for simulation mode.          */
-   char              pSimMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
-                                        /* Simulation mode string.            */
+   long         simMode;            /* Code for simulation mode.              */
+   char         pSimMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                                    /* Simulation mode string.                */
 
-   long              debugMode;         /* Code for debug mode.               */
-   char              pDebugMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
-                                        /* Debug mode string.                 */
+   long         debugMode;          /* Code for debug mode.                   */
+   char         pDebugMode [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                                    /* Debug mode string.                     */
 
    /* Create and initialise an error context structure for this task */
 
@@ -499,151 +476,6 @@ STATUS   detControl
    }
 
    /*
-    * Get the context structures for the SIR records that are maintained by 
-    * this task. Each SIR is referenced by its name: first get the name of 
-    * each SIR, then call epToVxRecContextGet() in order to look-up the 
-    * context structure that has previously been assigned to the SIR during 
-    * initialisation of the local record data-base. If necessary, the SIR 
-    * records are loaded with their default values.
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, DET_CONTROL_STATE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pStateContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_STATE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /* Initialise the detector controller state to "INITIALIZING". */
-
-   if (epToVxPipeWrite( NULL, "INITIALIZING", pStateContext ) == ERROR)
-   {
-      ERROR_LOG ("Failed to set INITIALIZING state");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, DET_CONTROL_INIT_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetInitContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_INIT_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /* As soon as we have the SIR record context, set the "initialising" flag. */
-   initState = CAR_BUSY;
-   if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
-   {
-      ERROR_LOG ("Failed to set initialisation state to BUSY");
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_INIT_STATUS_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetInitStatusContext, NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_INIT_STATUS SIR context");
-      return (ERROR);
-   }
-
-   /* Warning no pRecordPrefix for testResults record */
-
-   sprintf (pRecordName, "%s", DET_CONTROL_TEST_RESULTS_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pTestResultsContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_TEST_RESULTS_SIR_NAME SIR context");
-      return (ERROR);
-   }
-   if (epToVxPipeWrite (NULL, "Not tested", pTestResultsContext) == ERROR)
-   {
-      ERROR_LOG (
-      "Failed to initialise DET_CONTROL_TEST_RESULTS_SIR_NAME record");
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_TESTING_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pTestingContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_TESTING_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_PRIM_REPLY_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetPrimReplyContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_PRIM_REPLY_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pObsTypeContext structure  
-    * Warning no pRecordPrefix for obsType record 
-    */
-
-   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSTYPE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pObsTypeContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSTYPE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   if (epToVxPipeWrite( NULL, "UNDEFINED", pObsTypeContext ) == ERROR)
-   {
-      ERROR_LOG ("Failed to set default observation type to UNDEFINED");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pDetTypeContext pDetIdContext structures  
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DETTYPE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetTypeContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DETTYPE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   if (epToVxPipeWrite( NULL, DET_TYPE, pDetTypeContext ) == ERROR)
-   {
-      ERROR_LOG ("Failed to set default detector type");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DETID_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pDetIdContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DETID_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   if (epToVxPipeWrite( NULL, DET_CCD_SN, pDetIdContext ) == ERROR)
-   {
-      ERROR_LOG ("Failed to set default detector type");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pBunitContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_BUNIT_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & pBunitContext, NULL) == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_BUNIT_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   if (epToVxPipeWrite( NULL, DET_BUNIT, pBunitContext ) == ERROR)
-   {
-      ERROR_LOG ("Failed to set default detector type");
-      return (ERROR);
-   }
-
-   /*
     * Create an observation context structure.
     */
 
@@ -657,7 +489,6 @@ STATUS   detControl
    /* Initialise the type and SN of the CCD */
 
    strcpy ( obsId->detType , DET_TYPE ) ;
-   strcpy ( obsId->detId , DET_CCD_SN ) ;
 
    /* Initialise the "observing" flag and number of frames. */
 
@@ -665,324 +496,39 @@ STATUS   detControl
    obsId->totalFrames = 1;
 
    /*
-    * Init the pDetObservingContext structure  
-    * Warning no pRecordPrefix for observing SIR record 
+    * Get the context structures for the SIR records.
     */
 
-   sprintf (pRecordName, "%s", DET_CONTROL_OBSERVING_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetObservingContext), NULL) 
+   if ( detGetSirContext (pRecordPrefix , obsId) == ERROR )
+   {
+      ERROR_LOG ("Error getting sir records context structures");
+      return (ERROR);
+   }
+
+   /* Initialise the detector controller state to "INITIALIZING". */
+
+   if (epToVxPipeWrite( NULL, "INITIALIZING", obsId->pStateContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set INITIALIZING state");
+      return (ERROR);
+   }
+
+   /* As soon as we have the SIR record context, set the "initialising" flag. */
+
+   initState = CAR_BUSY;
+   if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
        == ERROR)
    {
-      ERROR_LOG ("Failed to get DET_CONTROL_OBSERVING_SIR_NAME SIR context");
-      return (ERROR);
+      ERROR_LOG ("Failed to set initialisation state to BUSY");
    }
 
    /*
-    * Init the pObsModeContext structure  
-    * Warning no pRecordPrefix for obsMode record 
+    * Init the SIR records with default values.
     */
 
-   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSMODE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pObsModeContext), NULL) 
-       == ERROR)
+   if ( detWriteDefSirContext (obsId) == ERROR )
    {
-      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSMODE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pDataLabelContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DATALABEL_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDataLabelContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DATALABEL_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pIntTimeContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_INTTIME_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pIntTimeContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_INTTIME_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pNExpRQContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NEXPRQ_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpRQContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NEXPRQ_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pNExpContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NEXP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NEXP_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pNFramesContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_NFRAMES_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pNFramesContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pUTstartContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_UTSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pUTstartContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_UTSTART_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pUTendContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_UTEND_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pUTendContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_UTEND_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pExposedContext and pExposedRQContext structures
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_EXPOSED_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSED_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_EXPOSEDRQ_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedRQContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSEDRQ_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pElapsedContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_ELAPSED_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pElapsedContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_ELAPSED_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pOutputsContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_OUTPUTS_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pOutputsContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_OUTPUTS_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pDetXsizeContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DETXSIZE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetXsizeContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DETXSIZE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pDetYsizeContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_DETYSIZE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pDetYsizeContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_DETYSIZE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pXsubapContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_XSUBAP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXsubapContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_XSUBAP_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pYsubapContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_YSUBAP_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYsubapContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_YSUBAP_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pXstartContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_XSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXstartContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_XSTART_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pYstartContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_YSTART_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYstartContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_YSTART_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pXrasterContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_XRASTER_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXrasterContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_XRASTER_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pYrasterContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_YRASTER_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYrasterContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_YRASTER_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pXspaceContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_XSPACE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXspaceContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_XSPACE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pYspaceContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_YSPACE_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYspaceContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_YSPACE_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pXbinContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_XBIN_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pXbinContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_XBIN_SIR_NAME SIR context");
-      return (ERROR);
-   }
-
-   /*
-    * Init the pYbinContext structure
-    */
-
-   sprintf (pRecordName, "%s:%s", pRecordPrefix, 
-            DET_CONTROL_YBIN_SIR_NAME);
-   if (epToVxRecContextGet (pRecordName, & (obsId->pYbinContext), NULL) 
-       == ERROR)
-   {
-      ERROR_LOG ("Failed to get DET_CONTROL_YBIN_SIR_NAME SIR context");
-      return (ERROR);
+      ERROR_LOG ("Error initializing the sir records");
    }
 
    /*
@@ -1059,7 +605,7 @@ STATUS   detControl
        */
 
       if (epToVxPipeWrite (NULL, "WARNING: SDSU Not Initialised", 
-          pDetInitStatusContext) == ERROR)
+          obsId->pDetInitStatusContext) == ERROR)
       {
          ERROR_LOG (
          "Also failed to write warning message to SDSU status pipe.");
@@ -1079,7 +625,8 @@ STATUS   detControl
 
       MESSAGE_LOG2 (MSG_LOG, "%s: %s", pWfsName, pStatusString);
 
-      if (epToVxPipeWrite (NULL, pStatusString, pDetInitStatusContext) == ERROR)
+      if (epToVxPipeWrite (NULL, pStatusString, obsId->pDetInitStatusContext) 
+          == ERROR)
       {
          ERROR_LOG (
          "Failed to write initialisation message to SDSU status pipe.");
@@ -1175,42 +722,73 @@ STATUS   detControl
       initFailed = TRUE;
    }
 
-   /* 
-    * Set the default offsets for the HRWFS CCD sectors
+   /*
+    * Read the default settings from the detector controller init file
     */
 
-   if ( sdsuId == NULL )
+#if (MK)
+   strcpy ( defFileName, DET_CONTROL_HRWFS_MK_INIT_FILE);
+#else
+   strcpy ( defFileName, DET_CONTROL_HRWFS_CP_INIT_FILE);
+#endif
+
+   printf ( "defFileName =%s\n", defFileName);
+
+   if ( strcmp (defFileName, "NONE") != 0 )
    {
-      ERROR_LOG ("Failed to set CCD default offset");
-      initFailed = TRUE;
+      strcpy ( detContInitFileName , DET_CONTROL_PAR_FILE_PATH ) ;
+      strcat ( detContInitFileName , "/" ) ;
+      strcat ( detContInitFileName , defFileName ) ;
+
+      if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
+                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+      {
+         MESSAGE_LOG ( MSG_LOG,
+           "Failed to init detector controller default settings from file");
+
+         /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+            which is default value */
+
+         tempCode = (uint32)1282 ;
+         tempCoeff = (uint32)128 ;
+         for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+             offsetVect[i] = 2560;
+         strcpy ( obsId->detId , DET_CCD_SN ) ;
+      }
+      else
+      {
+         if ( obsId->binningFlag == FALSE )
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetFullVect[i];
+         }
+         else
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetBinVect[i];
+         }
+      }
    }
    else
    {
-      offset0 = 2340 ;
-      offset1 = 2350 ;
+      /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+         which is default value */
 
-      MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
-                    offset0, offset1);
+      tempCode = (uint32)1282 ;
+      tempCoeff = (uint32)128 ;
+      for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+          offsetVect[i] = 2560;
+      strcpy ( obsId->detId , DET_CCD_SN ) ;
+   }
 
-      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
-                         (uint32) offset0 ) == ERROR )
-      {
-         ERROR_LOG ("Error setting ADC offset 0 parameter");
-         initFailed = TRUE;
-      }
+   /*
+    * Write the CCD serial number to the corresponding SIR record
+    */
 
-      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
-                         (uint32) offset1 ) == ERROR )
-      {
-         ERROR_LOG ("Error setting ADC offset 1 parameter");
-         initFailed = TRUE;
-      }
-      if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
-      {
-         ERROR_LOG (
-         "Failed to activate TIMING DSP parameters with LDP command");
-         initFailed = TRUE;
-      }
+   if (epToVxPipeWrite( NULL, obsId->detId, obsId->pDetIdContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default detector type");
+      return (ERROR);
    }
 
    /* 
@@ -1224,9 +802,6 @@ STATUS   detControl
    }
    else
    {
-      tempCode = (uint32)1282 ;
-      tempCoeff = (uint32)128 ;
-                      
       MESSAGE_LOG2 (MSG_LOG, 
                     "Defining temperature control parameters: %#lx %#lx",
                     tempCode, tempCoeff);
@@ -1241,6 +816,42 @@ STATUS   detControl
       }
       readTempReadyFlag = TRUE ;
    }
+
+   /* 
+    * Set the default offsets for the HRWFS CCD sectors
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_LOG ("Failed to set CCD default offset");
+      initFailed = TRUE;
+   }
+   else
+   {
+      MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
+                    offsetVect[0], offsetVect[1]);
+
+      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                         (uint32) offsetVect[0] ) == ERROR )
+      {
+         ERROR_LOG ("Error setting ADC offset 0 parameter");
+         initFailed = TRUE;
+      }
+
+      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                         (uint32) offsetVect[1] ) == ERROR )
+      {
+         ERROR_LOG ("Error setting ADC offset 1 parameter");
+         initFailed = TRUE;
+      }
+      if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
+      {
+         ERROR_LOG (
+         "Failed to activate TIMING DSP parameters with LDP command");
+         initFailed = TRUE;
+      }
+   }
+
 
 
    /*
@@ -1427,14 +1038,15 @@ STATUS   detControl
    /* Finally, reset the "initialising" flag. */
 
    initState = CAR_IDLE;
-   if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
+   if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to set initialisation state to IDLE");
    }
 
    /* And set up the detector controller state to "RUNNING". */
 
-   if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, "RUNNING", obsId->pStateContext ) == ERROR)
    {
       ERROR_LOG ("Failed to set RUNNING state");
       return (ERROR);
@@ -1552,7 +1164,7 @@ STATUS   detControl
 
             errorNumber = 
             detObstype(pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                       sdsuId, obsId, pObsTypeContext);
+                       sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_DHSINFO)
@@ -1666,9 +1278,7 @@ STATUS   detControl
 
             errorNumber = 
             detInit (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                     &sdsuId, obsId, &vmeAddress, &maxFrames, 
-                     pDetInitContext, pDetInitStatusContext,
-                     pStateContext);
+                     &sdsuId, obsId, &vmeAddress, &maxFrames); 
          }
 
          else if (commandNumber == DET_CONTROL_CMD_RESET)
@@ -1688,7 +1298,7 @@ STATUS   detControl
 
             errorNumber = 
             detTest (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                     sdsuId, obsId, pTestResultsContext, pTestingContext);
+                     sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SAVE)
@@ -1708,7 +1318,7 @@ STATUS   detControl
 
             errorNumber = 
             detGeometry (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                         sdsuId, obsId); 
+                         sdsuId, obsId, offsetFullVect, offsetBinVect); 
          }
 
          else if (commandNumber == DET_CONTROL_CMD_FRAME_SIZE)
@@ -1718,7 +1328,7 @@ STATUS   detControl
 
             errorNumber = 
             detFrameSize (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                          sdsuId, obsId); 
+                          sdsuId, obsId, offsetFullVect, offsetBinVect); 
          }
 
          else if (commandNumber == DET_CONTROL_CMD_PRIMITIVE)
@@ -1728,7 +1338,7 @@ STATUS   detControl
 
             errorNumber = 
             detPrimitive (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
-                          sdsuId, obsId, pDetPrimReplyContext);
+                          sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_MODE)
@@ -2395,7 +2005,7 @@ uint32 detExposure
  *
  *   INVOCATION:
  *   detObstype (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
- *               sdsuId, obsId, pObsTypeContext)
+ *               sdsuId, obsId)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pWfsName        (const char *)    Name of wavefront sensor hr
@@ -2404,7 +2014,6 @@ uint32 detExposure
  *   (>) commandNumber   (int)             Command number
  *   (>) sdsuId          (SDSU_ID)         Current SDSU context structure
  *   (>) obsId           (OBS_ID)          Observation context structure
- *   (<) pObsTypeContext (DATREC_CONTEXT)  Observation type context structure
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -2436,8 +2045,7 @@ uint32 detObstype
    CAD_CMD_CONTEXT cadCmdContext,   /* CAD command context structure.         */
    int             commandNumber,   /* Command number.                        */
    SDSU_ID         sdsuId,          /* SDSU context structure.                */
-   OBS_ID          obsId,           /* Observation context structure.         */
-   DATREC_CONTEXT  pObsTypeContext  /* Observation type context structure     */
+   OBS_ID          obsId            /* Observation context structure.         */
    )
 {
    uint32          errorNumber;     /* Error number reported by task.         */
@@ -2490,7 +2098,7 @@ uint32 detObstype
 
    MESSAGE_LOG1 (MSG_LOG, "Observation type defined as %s", obsId->pObsType);
 
-   if (epToVxPipeWrite( NULL, obsType, pObsTypeContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, obsType, obsId->pObsTypeContext ) == ERROR)
    {
       ERROR_LOG ("Failed to set observation type SIR record");
    }
@@ -6827,9 +6435,13 @@ uint32 detStop
 
    if ( !obsId->observing )
    {
-      ERROR_SET (S_detControl_INTERNAL, "Observation not in progress", 
+      /*ERROR_SET (S_detControl_INTERNAL, "Observation not in progress", 
                  ERROR_LOG_NOW);
-      errorNumber = S_detControl_INTERNAL;
+      errorNumber = S_detControl_INTERNAL;*/
+
+      MESSAGE_LOG (MSG_LOG, "Observation not in progress" );
+      errorNumber = 0;
+
       return (errorNumber);
    }
 
@@ -7018,8 +6630,7 @@ uint32 detAbort
  *
  *   INVOCATION:
  *   detInit (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, pSdsuId, 
- *            obsId, pVmeAddress, pmaxFrames, pDetInitContext, 
- *            pDetInitStatusContext, pStateContext)
+ *            obsId, pVmeAddress, pmaxFrames)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
@@ -7032,11 +6643,6 @@ uint32 detAbort
  *   (!) pVmeAddress   (uint32 *)        Pointer to VME address of SDSU
  *                                       controller
  *   (!) pMaxFrames    (int *)           Pointer to max frames in data buffer
- *   (>) pDetInitContext       (DATREC_CONTEXT) Content structure for init
- *                                              state record
- *   (>) pDetInitStatusContext (DATREC_CONTEXT) Content structure for init
- *                                              status record
- *   (>) pStateContext (DATREC_CONTEXT)  Content structure for state record
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -7076,14 +6682,7 @@ uint32 detInit
    OBS_ID          obsId,            /* Observation context structure.        */
    uint32 *        pVmeAddress,      /* Pointer to VME address of SDSU        */
                                      /* controller.                           */
-   int *           pMaxFrames,       /* Maximum number of frames in buffer.   */
-   DATREC_CONTEXT  pDetInitContext,  /* Context structure for SDSU            */
-                                     /* initialisation state SIR record.      */
-   DATREC_CONTEXT  pDetInitStatusContext,
-                              /* Context structure for SDSU initialisation    */
-                              /* status SIR record.                           */
-   DATREC_CONTEXT  pStateContext
-                              /* Context structure for state SIR record       */
+   int *           pMaxFrames        /* Maximum number of frames in buffer.   */
    )
 {
    uint32       errorNumber;      /* Error number reported by task.           */
@@ -7105,10 +6704,18 @@ uint32 detInit
 
    uint32       mode;
 
-   long         offset0;            /* ADC offset for output 0.               */
-   long         offset1;            /* ADC offset for output 1.               */
-   uint32       tempCode;           /* Target temperature code                */
-   uint32       tempCoeff;          /* Coefficient for temperature control    */
+   long         i;               /* index                                     */
+   long         offsetVect[2];   /* ADC offset vector                         */
+   long         offsetFullVect[2];
+                                 /* ADC offset vector - no binning            */
+   long         offsetBinVect[2];/* ADC offset vector - binning               */
+   uint32       tempCode;        /* Target temperature code                   */
+   uint32       tempCoeff;       /* Coefficient for temperature control       */
+   char         defFileName [ STRING_SIZE ] ;
+                                 /* Default file name according to the site   */
+   char         detContInitFileName [ STRING_SIZE ] ;
+                                 /* Full Name of the detector controller      */
+                                 /* init file                                 */
    
    /*
     * Initialise the error number.
@@ -7143,13 +6750,14 @@ uint32 detInit
 
    /* Set the initialisation state to BUSY. */
 
-   if (epToVxPipeWrite( NULL, "INITIALIZING", pStateContext ) == ERROR)
+   if (epToVxPipeWrite( NULL, "INITIALIZING", obsId->pStateContext ) == ERROR)
    {
       ERROR_LOG ("Failed to set INITIALIZING state");
    }
 
    initState = CAR_BUSY;
-   if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
+   if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to set initialisation state to BUSY");
    }
@@ -7214,12 +6822,13 @@ uint32 detInit
       /* Set the initialisation state to ERROR. */
 
       initState = CAR_ERROR;
-      if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
+      if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to set initialisation state to ERROR");
       }
 
-      if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, "RUNNING", obsId->pStateContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set RUNNING state");
       }
@@ -7253,7 +6862,8 @@ uint32 detInit
                   "SDSU Initialised OK: ID = %-#8x", (int) *pSdsuId);
       }
 
-      if (epToVxPipeWrite (NULL, pStatusString, pDetInitStatusContext) == ERROR)
+      if (epToVxPipeWrite (NULL, pStatusString, obsId->pDetInitStatusContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to write init message to SDSU status pipe.");
       }
@@ -7310,7 +6920,7 @@ uint32 detInit
          /* Set the initialisation state to ERROR. */
 
          initState = CAR_ERROR;
-         if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) 
+         if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext)
              == ERROR)
          {
             ERROR_LOG ("Failed to set initialisation state to ERROR");
@@ -7535,24 +7145,90 @@ uint32 detInit
       epToVxSetHealth( pRecordPrefix, "WARNING" );
    }
 
+   /*
+    * Read the default settings from the detector controller init file
+    */
+
+#if (MK)
+   strcpy ( defFileName, DET_CONTROL_HRWFS_MK_INIT_FILE);
+#else
+   strcpy ( defFileName, DET_CONTROL_HRWFS_CP_INIT_FILE);
+#endif
+
+   printf ( "defFileName =%s\n", defFileName);
+
+   if ( strcmp (defFileName, "NONE") != 0 )
+   {
+      strcpy ( detContInitFileName , DET_CONTROL_PAR_FILE_PATH ) ;
+      strcat ( detContInitFileName , "/" ) ;
+      strcat ( detContInitFileName , defFileName ) ;
+
+      if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
+                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+      {
+         MESSAGE_LOG ( MSG_LOG,
+           "Failed to init detector controller default settings from file");
+
+         /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+            which is default value */
+
+         tempCode = (uint32)1282 ;
+         tempCoeff = (uint32)128 ;
+         for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+             offsetVect[i] = 2560;
+         strcpy ( obsId->detId , DET_CCD_SN ) ;
+      }
+      else
+      {
+         if ( obsId->binningFlag == FALSE )
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetFullVect[i];
+         }
+         else
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetBinVect[i];
+         }
+      }
+   }
+   else
+   {
+      /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+         which is default value */
+
+      tempCode = (uint32)1282 ;
+      tempCoeff = (uint32)128 ;
+      for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+          offsetVect[i] = 2560;
+      strcpy ( obsId->detId , DET_CCD_SN ) ;
+   }
+
+   /*
+    * Write the CCD serial number to the corresponding SIR record
+    */
+
+   if (epToVxPipeWrite( NULL, obsId->detId, obsId->pDetIdContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default detector type");
+      return (ERROR);
+   }
+
    /* 
     * Set the default offsets for HRWFS
     */
 
-   offset0 = 2340 ;
-   offset1 = 2350 ;
-
    MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
-                 offset0, offset1);
+                 offsetVect[0], offsetVect[1]);
 
    if ( sdsuParamWRP (*pSdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
-                      (uint32) offset0 ) == ERROR )
+                      (uint32) offsetVect[0] ) == ERROR )
    {
       ERROR_LOG ("Error setting ADC offset 0 parameter");
    }
 
    if ( sdsuParamWRP (*pSdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
-                      (uint32) offset1 ) == ERROR )
+                      (uint32) offsetVect[1] ) == ERROR )
    {
       ERROR_LOG ("Error setting ADC offset 1 parameter");
    }
@@ -7566,9 +7242,6 @@ uint32 detInit
     * Set the default temperature for the HRWFS 
     */
 
-   tempCode = (uint32)1282 ;
-   tempCoeff = (uint32)128 ;
-                      
    MESSAGE_LOG2 (MSG_LOG, 
                  "Defining temperature control parameters: %#lx %#lx",
                  tempCode, tempCoeff);
@@ -7594,7 +7267,8 @@ uint32 detInit
       epToVxSetHealth( pRecordPrefix, "GOOD" );
 
       initState = CAR_IDLE;
-      if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
+      if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to set initialisation state to IDLE");
       }
@@ -7603,7 +7277,7 @@ uint32 detInit
 
       readTempReadyFlag = TRUE;
 
-      if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, "RUNNING", obsId->pStateContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set RUNNING state");
       }
@@ -7611,12 +7285,13 @@ uint32 detInit
    else
    {
       initState = CAR_ERROR;
-      if (epToVxPipeWrite (NULL, (char *) &initState, pDetInitContext) == ERROR)
+      if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to set initialisation state to ERROR");
       }
 
-      if (epToVxPipeWrite( NULL, "RUNNING", pStateContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, "RUNNING", obsId->pStateContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set RUNNING state");
       }
@@ -7685,19 +7360,26 @@ uint32 detReset
    uint32       resetMask;         /* Mask specifying what to reset.          */
 
    char         pFilePath [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
-                              /* Path name for file.                    */
+                                   /* Path name for file.                     */
    char         pOmfFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
-                              /* File name.                             */
+                                   /* File name.                              */
    char         pFullOmfFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
-                              /* Combined path name and file name.      */
-   BOOL         limitAdrsRange;      /* Flag for limiting address range */
+                                   /* Combined path name and file name.       */
+   BOOL         limitAdrsRange;    /* Flag for limiting address range         */
 
    uint32       mode;
 
-   long         offset0;            /* ADC offset for output 0.               */
-   long         offset1;            /* ADC offset for output 1.               */
-   uint32       tempCode;           /* Target temperature code                */
-   uint32       tempCoeff;          /* Coefficient for temperature control    */
+   long         i;                 /* index                                   */
+   long         offsetFullVect[2]; /* ADC offset vector - no binning.         */
+   long         offsetBinVect[2];  /* ADC offset vector - binning.            */
+   long         offsetVect[2];     /* ADC offset vector                       */
+   char         defFileName [ STRING_SIZE ] ;
+                                   /* Default file name according to the site */
+   char         detContInitFileName [ STRING_SIZE ] ;
+                                   /* Full Name of the detector controller    */
+                                   /* init file                               */
+   uint32       tempCode;          /* Target temperature code                 */
+   uint32       tempCoeff;         /* Coefficient for temperature control     */
 
    /*
     * Initialise the error number and obtain the attributes provided 
@@ -7939,23 +7621,89 @@ uint32 detReset
    }
 
    /*
+    * Set the default settings from the detector controller init file
+    */
+
+#if (MK)
+   strcpy ( defFileName, DET_CONTROL_HRWFS_MK_INIT_FILE);
+#else
+   strcpy ( defFileName, DET_CONTROL_HRWFS_CP_INIT_FILE);
+#endif
+
+   printf ( "defFileName =%s\n", defFileName);
+
+   if ( strcmp (defFileName, "NONE") != 0 )
+   {
+      strcpy ( detContInitFileName , DET_CONTROL_PAR_FILE_PATH ) ;
+      strcat ( detContInitFileName , "/" ) ;
+      strcat ( detContInitFileName , defFileName ) ;
+
+      if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
+                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+      {
+         MESSAGE_LOG ( MSG_LOG,
+           "Failed to init detector controller default settings from file");
+
+         /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+            which is default value */
+
+         tempCode = (uint32)1282 ;
+         tempCoeff = (uint32)128 ;
+         for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+             offsetVect[i] = 2560;
+         strcpy ( obsId->detId , DET_CCD_SN ) ;
+      }
+      else
+      {
+         if ( obsId->binningFlag == FALSE )
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetFullVect[i];
+         }
+         else
+         {
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = offsetBinVect[i];
+         }
+      }
+   }
+   else
+   {
+      /* Set the temperature to -20.0C anyway and ADC offsets to 2560
+         which is default value */
+
+      tempCode = (uint32)1282 ;
+      tempCoeff = (uint32)128 ;
+      for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+          offsetVect[i] = 2560;
+      strcpy ( obsId->detId , DET_CCD_SN ) ;
+   }
+
+   /*
+    * Write the CCD serial number to the corresponding SIR record
+    */
+
+   if (epToVxPipeWrite( NULL, obsId->detId, obsId->pDetIdContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default detector type");
+      return (ERROR);
+   }
+
+   /*
     * Set back the default offsets
     */
 
-   offset0 = 2340 ;
-   offset1 = 2350 ;
-
    MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
-                 offset0, offset1);
+                 offsetVect[0], offsetVect[1]);
 
    if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
-                      (uint32) offset0 ) == ERROR )
+                      (uint32) offsetVect[0] ) == ERROR )
    {
       ERROR_LOG ("Error setting ADC offset 0 parameter");
    }
 
    if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
-                     (uint32) offset1 ) == ERROR )
+                     (uint32) offsetVect[1] ) == ERROR )
    {
       ERROR_LOG ("Error setting ADC offset 1 parameter");
    }
@@ -7969,9 +7717,6 @@ uint32 detReset
     * Set the default temperature for the HRWFS 
     */
 
-   tempCode = (uint32)1282 ;
-   tempCoeff = (uint32)128 ;
-                      
    MESSAGE_LOG2 (MSG_LOG, 
                  "Defining temperature control parameters: %#lx %#lx",
                  tempCode, tempCoeff);
@@ -8016,7 +7761,7 @@ uint32 detReset
  *
  *   INVOCATION:
  *   detTest (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
- *            sdsuId, obsId, pTestResultsContext, pTestingContext)
+ *            sdsuId, obsId)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
@@ -8025,10 +7770,6 @@ uint32 detReset
  *   (>) commandNumber (int)             Command number
  *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
  *   (>) obsId         (OBS_ID)          Observation context structure
- *   (!) pTestResultsContext (DATREC_CONTECT) Context structure for test
- *                                            results record
- *   (!) pTestingContext (DATREC_CONTECT) Context structure for testing
- *                                        sir record
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -8060,9 +7801,7 @@ uint32 detTest
    CAD_CMD_CONTEXT cadCmdContext, /* CAD command context structure.           */
    int             commandNumber, /* Command number.                          */
    SDSU_ID         sdsuId,        /* SDSU context structure.                  */
-   OBS_ID          obsId,         /* Observation context structure.           */
-   DATREC_CONTEXT  pTestResultsContext, /* Test results context structure     */
-   DATREC_CONTEXT  pTestingContext      /* Testing state context structure.   */
+   OBS_ID          obsId          /* Observation context structure.           */
    )
 {
    uint32          errorNumber;   /* Error number reported by task.           */
@@ -8102,7 +7841,7 @@ uint32 detTest
       ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised", 
                  ERROR_LOG_NOW);
       errorNumber = S_detControl_INTERNAL;
-      if (epToVxPipeWrite (NULL, "Bad SDSU context", pTestResultsContext) 
+      if (epToVxPipeWrite (NULL, "Bad SDSU context", obsId->pTestResultsContext)
           == ERROR)
       {
          ERROR_LOG ("Failed to write test results");
@@ -8116,7 +7855,7 @@ uint32 detTest
                  ERROR_LOG_NOW);
       errorNumber = S_detControl_INTERNAL;
       if (epToVxPipeWrite (NULL, "Bad observation context", 
-          pTestResultsContext) == ERROR)
+          obsId->pTestResultsContext) == ERROR)
       {
          ERROR_LOG ("Failed to write test results");
       }
@@ -8140,7 +7879,7 @@ uint32 detTest
 
    testingState = CAR_BUSY;
    if (epToVxPipeWrite (NULL, (char *) &testingState,
-                        pTestingContext) == ERROR)
+                        obsId->pTestingContext) == ERROR)
    {
       ERROR_LOG ("Failed to set testing state to BUSY.");
    }
@@ -8187,14 +7926,15 @@ uint32 detTest
          strncat (pTestResults, "WRM ", EPICS_MAX_BYTES_STRING_ATTRIB);
       }
 
-      if (epToVxPipeWrite (NULL, pTestResults, pTestResultsContext) == ERROR)
+      if (epToVxPipeWrite (NULL, pTestResults, obsId->pTestResultsContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to write test results");
       }
       
       testingState = CAR_ERROR;
       if (epToVxPipeWrite (NULL, (char *) &testingState,
-                           pTestingContext) == ERROR)
+                           obsId->pTestingContext) == ERROR)
       {
          ERROR_LOG ("Also failed to set testing state to ERROR.");
       }
@@ -8204,13 +7944,14 @@ uint32 detTest
    {
       MESSAGE_LOG (MSG_LOG, "Test completed successfully");
 
-      if (epToVxPipeWrite (NULL, "Tested OK", pTestResultsContext) == ERROR)
+      if (epToVxPipeWrite (NULL, "Tested OK", obsId->pTestResultsContext) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to write test results");
       }
       testingState = CAR_IDLE;
       if (epToVxPipeWrite (NULL, (char *) &testingState,
-                           pTestingContext) == ERROR)
+                           obsId->pTestingContext) == ERROR)
       {
          ERROR_LOG ("Failed to set testing state to IDLE.");
       }
@@ -8369,15 +8110,17 @@ uint32 detSave
  *
  *   INVOCATION:
  *   detGeometry (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
- *                sdsuId, obsId) 
+ *                sdsuId, obsId, pOffsetFullVect, pOffsetBinVect) 
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
- *   (>) pRecordPrefix (const char *)    Record name prefix
- *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
- *   (>) commandNumber (int)             Command number
- *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
- *   (!) obsId         (OBS_ID)          Observation context structure
+ *   (>) pWfsName        (const char *)    Name of wavefront sensor hr
+ *   (>) pRecordPrefix   (const char *)    Record name prefix
+ *   (>) cadCmdContext   (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber   (int)             Command number
+ *   (>) sdsuId          (SDSU_ID)         Current SDSU context structure
+ *   (!) obsId           (OBS_ID)          Observation context structure
+ *   (>) pOffsetFullVect (long *)          ADC offset vector - no binning
+ *   (>) pOffsetBinVect  (long *)          ADC offset vector - binning
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -8404,12 +8147,14 @@ uint32 detSave
 
 uint32 detGeometry
    (
-   const char *    pWfsName,      /* Name of wavefront sensor.                */
-   const char *    pRecordPrefix, /* Record name prefix.                      */
-   CAD_CMD_CONTEXT cadCmdContext, /* CAD command context structure.           */
-   int             commandNumber, /* Command number.                          */
-   SDSU_ID         sdsuId,        /* SDSU context structure.                  */
-   OBS_ID          obsId          /* Observation context structure.           */
+   const char *    pWfsName,        /* Name of wavefront sensor.              */
+   const char *    pRecordPrefix,   /* Record name prefix.                    */
+   CAD_CMD_CONTEXT cadCmdContext,   /* CAD command context structure.         */
+   int             commandNumber,   /* Command number.                        */
+   SDSU_ID         sdsuId,          /* SDSU context structure.                */
+   OBS_ID          obsId,           /* Observation context structure.         */
+   long *          pOffsetFullVect, /* ADC offset vector - no binning         */
+   long *          pOffsetBinVect   /* ADC offset vector - binning            */
    )
 {
    uint32         errorNumber;      /* Error number reported by task.         */
@@ -8445,6 +8190,9 @@ uint32 detGeometry
    long         reqPixelsNb;/* Total number of digitised pixels.              */
    long         defPixelsNb;/* Total number of digitised pixels.              */
    int          nPackets;   /* Number of packets expected per frame.          */
+   long         i;          /* index                                          */
+   long         offsetVect[2];
+                            /* ADC offset vector                              */
 
    /*
     * Initialise the error number and obtain the attributes provided with 
@@ -8618,10 +8366,16 @@ uint32 detGeometry
    if ( (xReqBin == 2) || ( yReqBin == 2) )
    {
       obsId->binningFlag = TRUE ;
+
+      for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+          offsetVect[i] = pOffsetBinVect[i];
    }
    else
    {
       obsId->binningFlag = FALSE ;
+
+      for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+          offsetVect[i] = pOffsetFullVect[i];
    }
 
    if ( (obsId->binningFlag == TRUE) || (obsId->windowingFlag == TRUE) )
@@ -8726,6 +8480,22 @@ uint32 detGeometry
          return (errorNumber);
       }
 
+      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                        (uint32) offsetVect[0] ) == ERROR )
+      {
+         ERROR_LOG ("Error setting ADC offset 0 parameter");
+         errorNumber = S_detControl_SDSU_ERROR;
+         return (errorNumber);
+      }
+
+      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                         (uint32) offsetVect[1] ) == ERROR )
+      {
+         ERROR_LOG ("Error setting ADC offset 1 parameter");
+         errorNumber = S_detControl_SDSU_ERROR;
+         return (errorNumber);
+      }
+
       if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
       {
          ERROR_LOG ("Failed to activate TIMING DSP parameters with LDP command");
@@ -8825,15 +8595,17 @@ uint32 detGeometry
  *
  *   INVOCATION:
  *   detFrameSize (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
- *                sdsuId, obsId) 
+ *                sdsuId, obsId, pOffsetFullVect, pOffsetBinVect) 
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
- *   (>) pRecordPrefix (const char *)    Record name prefix
- *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
- *   (>) commandNumber (int)             Command number
- *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
- *   (!) obsId         (OBS_ID)          Observation context structure
+ *   (>) pWfsName        (const char *)    Name of wavefront sensor hr
+ *   (>) pRecordPrefix   (const char *)    Record name prefix
+ *   (>) cadCmdContext   (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber   (int)             Command number
+ *   (>) sdsuId          (SDSU_ID)         Current SDSU context structure
+ *   (!) obsId           (OBS_ID)          Observation context structure
+ *   (>) pOffsetFullVect (long *)          ADC offset vector - no binning
+ *   (>) pOffsetBinVect  (long *)          ADC offset vector - binning
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -8860,12 +8632,14 @@ uint32 detGeometry
 
 uint32 detFrameSize
    (
-   const char *    pWfsName,      /* Name of wavefront sensor.                */
-   const char *    pRecordPrefix, /* Record name prefix.                      */
-   CAD_CMD_CONTEXT cadCmdContext, /* CAD command context structure.           */
-   int             commandNumber, /* Command number.                          */
-   SDSU_ID         sdsuId,        /* SDSU context structure.                  */
-   OBS_ID          obsId          /* Observation context structure.           */
+   const char *    pWfsName,        /* Name of wavefront sensor.              */
+   const char *    pRecordPrefix,   /* Record name prefix.                    */
+   CAD_CMD_CONTEXT cadCmdContext,   /* CAD command context structure.         */
+   int             commandNumber,   /* Command number.                        */
+   SDSU_ID         sdsuId,          /* SDSU context structure.                */
+   OBS_ID          obsId,           /* Observation context structure.         */
+   long *          pOffsetFullVect, /* ADC offset vector - no binning         */
+   long *          pOffsetBinVect   /* ADC offset vector - binning            */
    )
 {
    uint32         errorNumber;      /* Error number reported by task.         */
@@ -8912,6 +8686,15 @@ uint32 detFrameSize
                             /* each row.                                      */
    long         reqPixelsNb;/* Total number of digitised pixels.              */
    int          nPackets;   /* Number of packets expected per frame.          */
+
+   /*
+    * Parameters to update the ADC offset
+    */
+
+   int          updateOffset = FALSE;
+   long         i;                  /* index                                  */
+   long         offsetVect[2];      /* ADC offset vector                      */
+
 
    /*
     * Initialise the error number and obtain the attributes provided with 
@@ -9117,6 +8900,13 @@ uint32 detFrameSize
             reqX2 = xReqPixels ;
             reqY1 = yReqStart ; 
             reqY2 = yReqPixels ;
+
+            /* Init the ADC offset vector */
+
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = pOffsetBinVect[i];
+
+            updateOffset = TRUE;
          }
          else if ( ( (binFlag == TRUE) && (obsId->binningFlag == TRUE) ) ||
                    ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) /* do not change anything */
@@ -9169,6 +8959,13 @@ uint32 detFrameSize
             reqX2 = xReqPixels ;
             reqY1 = yReqStart ; 
             reqY2 = yReqPixels ;
+
+            /* Init the ADC offset vector */
+
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = pOffsetFullVect[i];
+
+            updateOffset = TRUE;
          }
       }
       else /* suppress windowing */
@@ -9201,6 +8998,13 @@ uint32 detFrameSize
             reqX2 = xReqPixels ;
             reqY1 = yReqStart ; 
             reqY2 = yReqPixels ;
+
+            /* Init the ADC offset vector */
+
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = pOffsetBinVect[i];
+
+            updateOffset = TRUE;
          }
          else if ( ( (binFlag == TRUE) && (obsId->binningFlag == TRUE) ) ||
                    ( (binFlag == FALSE) && (obsId->binningFlag == FALSE) ) ) /* do not change anything */
@@ -9262,6 +9066,13 @@ uint32 detFrameSize
             reqX2 = xReqPixels ;
             reqY1 = yReqStart ; 
             reqY2 = yReqPixels ;
+
+            /* Init the ADC offset vector */
+
+            for ( i = 0 ; i < obsId->outputsNb ; i ++ )
+                offsetVect[i] = pOffsetFullVect[i];
+
+            updateOffset = TRUE;
          }
       }
    }
@@ -9421,6 +9232,25 @@ uint32 detFrameSize
          ERROR_LOG ("Failed to download geometry parameters to TIMING DSP");
          errorNumber = S_detControl_SDSU_ERROR;
          return (errorNumber);
+      }
+
+      if ( updateOffset == TRUE )
+      {
+         if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                           (uint32) offsetVect[0] ) == ERROR )
+         {
+            ERROR_LOG ("Error setting ADC offset 0 parameter");
+            errorNumber = S_detControl_SDSU_ERROR;
+            return (errorNumber);
+         }
+
+         if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                            (uint32) offsetVect[1] ) == ERROR )
+         {
+            ERROR_LOG ("Error setting ADC offset 1 parameter");
+            errorNumber = S_detControl_SDSU_ERROR;
+            return (errorNumber);
+         }
       }
 
       if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
@@ -9803,7 +9633,7 @@ uint32 detDownload
  *
  *   INVOCATION:
  *   detPrimitive (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
- *                 sdsuId, obsId, pDetPrimReplyContext)
+ *                 sdsuId, obsId)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pWfsName             (const char *)    Name of wavefront sensor hr
@@ -9812,8 +9642,6 @@ uint32 detDownload
  *   (>) commandNumber        (int)             Command number
  *   (>) sdsuId               (SDSU_ID)         Current SDSU context structure
  *   (>) obsId                (OBS_ID)          Observation context structure
- *   (>) pDetPrimReplyContext (DATREC_CONTEXT)  Content structure for prim
- *                                              reply record
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -9845,10 +9673,7 @@ uint32 detPrimitive
    CAD_CMD_CONTEXT cadCmdContext,  /* CAD command context structure.          */
    int             commandNumber,  /* Command number.                         */
    SDSU_ID         sdsuId,         /* SDSU context structure.                 */
-   OBS_ID          obsId,          /* Observation context structure.          */
-   DATREC_CONTEXT  pDetPrimReplyContext
-                              /* Context structure for SDSU primitive         */
-                              /* reply string SIR record.                     */
+   OBS_ID          obsId           /* Observation context structure.          */
    )
 {
    uint32          errorNumber;     /* Error number reported by task.         */
@@ -9935,7 +9760,8 @@ uint32 detPrimitive
 
    sprintf (pStringAttrib, "0x%08lx 0x%08lx 0x%08lx", 
             pRepArg [0], pRepArg [1], pRepArg [2]);
-   if (epToVxPipeWrite (NULL, pStringAttrib, pDetPrimReplyContext) == ERROR)
+   if (epToVxPipeWrite (NULL, pStringAttrib, obsId->pDetPrimReplyContext) 
+       == ERROR)
    {
       ERROR_LOG ("Failed to write message to SDSU primitive reply pipe.");
       if ( errorNumber == 0 ) errorNumber = (uint32) errnoGet();
@@ -14110,7 +13936,7 @@ STATUS detHeadTempGet
    if ( ( detObsIdHr->observing != TRUE ) && ( readTempReadyFlag != FALSE ) )
    {
       meanValue6 = meanValue7 = 0.0;
-      for ( sample=0; sample<20; sample++)
+      for ( sample=0; sample<1; sample++)
       {
          if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC6", &value) == ERROR)
          {
@@ -14133,8 +13959,8 @@ STATUS detHeadTempGet
          }
       }
 
-      meanValue6 /= 20.0;
-      meanValue7 /= 20.0;
+      /*meanValue6 /= 20.0;
+      meanValue7 /= 20.0;*/
 
       sdsuTemp6 = meanValue6 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
       sdsuTemp7 = meanValue7 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
@@ -14263,4 +14089,868 @@ uint32 detDhsReconnect
    }
 
    return (OK);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detContInit
+ *
+ *   INVOCATION:
+ *   detContInit (pInitFileName, pTempCode, pTempCoeff, pOffsetFullVect, 
+ *                pOffsetBinVect, pCcdSn)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) pInitFileName   (char *)   Init file Name
+ *   (>) pTempCode       (uint32 *) Target temperature code
+ *   (>) pTempCoeff      (uint32 *) Coefficient for temperature control
+ *   (>) pOffsetFullVect (long *)   ADC offset vector when no binning [2]
+ *   (>) pOffsetBinVect  (long *)   ADC offset vector when binning [2]
+ *   (>) pCcdSn          (char *)   CCD serial number
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Init defaults values for the detector controller
+ *
+ *   DESCRIPTION:
+ *   Init default values for target temperature, ADC offsets and 
+ *   the serial number of the CCD from a init file pInitFileName
+ *
+ *   EXTERNAL VARIABLES:
+ *   None.
+ *
+ *   PRIOR REQUIREMENTS:
+ *   The pInitFileName is the full name of the file including the path.
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+
+uint32 detContInit
+   (
+   char *   pInitFileName,          /* Init file Name                         */
+   uint32 * pTempCode,              /* Target temperature code                */
+   uint32 * pTempCoeff,             /* Coefficient for temperature control    */
+   long   * pOffsetFullVect,        /* ADC offset vector [2] - no binning     */
+   long   * pOffsetBinVect,         /* ADC offset vector [2] - binning        */
+   char *   pCcdSn                  /* CCD serial number                      */
+   )
+{
+   FILE *       pFile;
+   char         comment [STRING_SIZE];
+   float        tempTarget;
+   int          coeff;
+   int          offset;
+
+   /* Open the file in read mode */
+
+   pFile = fopen ( pInitFileName, "r" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      printf ( "Failed to open the Detector Controller init file %s",
+		   pInitFileName );
+      ERROR_SET1 ( 0, "Failed to open the Detector Controller init file %s",
+		   ERROR_LOG_SAVE, pInitFileName );
+      return (ERROR);
+   }
+
+   /* Read the first line: should be a comment line */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+            "Failed to read first line of comments from the DC init file %s",
+            ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): first line of comments:\n" );
+   printf ( "%s\n" , comment );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the default target temperature */
+
+   if ( (fscanf (pFile, "%f\n", &tempTarget)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+            "Failed to read the target temperature from the DC init file %s",
+            ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( tempTarget <= -40.0 )
+   {
+      ERROR_SET ( 0,
+                  "Target temperature should be greater than -40.0C",
+                  ERROR_LOG_SAVE);
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( tempTarget <= 0.0 )
+   {
+      *pTempCode = (uint32) ((SDSU_TEMP_BASE - tempTarget) / SDSU_TEMP_UNIT);
+      *pTempCode &= 0xfff; 
+			  /* Truncate to 0xfff (which is the maximum allowed) */
+   }
+   else
+   {
+      /* Switch off cooling altogether for temperatures above 0C. */
+      *pTempCode = 0;
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): target temperature = %d\n", *pTempCode );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the default temperature coefficient */
+
+   if ( (fscanf (pFile, "%d\n", &coeff)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the temperature coefficient from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *pTempCoeff = coeff;
+
+#ifdef DEBUG
+   printf ( "detContInit(): temperature coefficient = %d\n", coeff );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the default ADC offset for output 0 - no binning */
+
+   if ( (fscanf (pFile, "%d\n", &offset)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the ADC offset0 (full) from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *(pOffsetFullVect + 0) = offset;
+
+#ifdef DEBUG
+   printf ( "detContInit(): ADC offset for output 0 (full) = %d\n", offset );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the ADC offset for output 1 - no binning */
+
+   if ( (fscanf (pFile, "%d\n", &offset)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the ADC offset1 (full) from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *(pOffsetFullVect + 1) = offset;
+
+#ifdef DEBUG
+   printf ( "detContInit(): ADC offset for output 1 (full) = %d\n", offset );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the default ADC offset for output 0 - binning */
+
+   if ( (fscanf (pFile, "%d\n", &offset)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the ADC offset0 (bin) from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *(pOffsetBinVect + 0) = offset;
+
+#ifdef DEBUG
+   printf ( "detContInit(): ADC offset for output 0 (bin) = %d\n", offset );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the ADC offset for output 1 - binning */
+
+   if ( (fscanf (pFile, "%d\n", &offset)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the ADC offset1 (bin) from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *(pOffsetBinVect + 1) = offset;
+
+#ifdef DEBUG
+   printf ( "detContInit(): ADC offset for output 1 (bin) = %d\n", offset );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the CCD serial number from the file */
+
+   if ( fgets (pCcdSn, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the CCD SN from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( pCcdSn[strlen(pCcdSn) - 1] == '\n' )
+   {
+      pCcdSn[strlen(pCcdSn) - 1] = '\0';
+#ifdef DEBUG
+      printf ( "detControlInit(): last character of %s was return\n",
+               pCcdSn );
+#endif
+
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): CCD serial number: %s\n", pCcdSn );
+#endif
+
+   return (OK);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detGetSirContext
+ *
+ *   INVOCATION:
+ *   detGetSirContext (pRecordPrefix, obsId)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) pRecordPrefix (const char *)    Record Name Prefix
+ *   (!) obsId         (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Get the context structures for the SIR records.
+ *
+ *   DESCRIPTION:
+ *   Get the context structures for the SIR records. 
+ *   Each SIR is referenced by its name: first get the name of each SIR,
+ *   then call epToVxRecContextGet() in order to look-up the context structure
+ *   that has previously been assigned to the SIR during initialisation of the
+ *   local record data-base. 
+ *
+ *   EXTERNAL VARIABLES:
+ *
+ *   PRIOR REQUIREMENTS:
+ *   obsId has to be allocated before calling this function.
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *-
+ */
+
+uint32 detGetSirContext
+   (
+   const char * pRecordPrefix,       /* Record Name Prefix.                   */
+   OBS_ID       obsId                /* Observation context structure.        */
+   )
+{
+
+   uint32       errorNumber;         /* Error number reported by task.        */
+
+   char         pRecordName [EPICS_MAX_BYTES_RECORD_NAME + 1];
+                                     /* String to store record names.         */
+
+   /* Initialize the erroNumber */
+
+   errorNumber = OK;
+
+   /* Get the context of the wfs control "state" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, DET_CONTROL_STATE_SIR_NAME );
+   if (epToVxRecContextGet (pRecordName, & (obsId->pStateContext), NULL) == 
+       ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_STATE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "initialising" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix, DET_CONTROL_INIT_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetInitContext), NULL) == 
+       ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_INIT_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "detInitStatus" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_INIT_STATUS_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetInitStatusContext), 
+                            NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_INIT_STATUS SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "testResults" sir record */
+
+   sprintf (pRecordName, "%s", DET_CONTROL_TEST_RESULTS_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pTestResultsContext), 
+                            NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_TEST_RESULTS_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "testing" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_TESTING_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pTestingContext), NULL) 
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_TESTING_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /* Get the context of the "detPrimReply" sir record */
+   
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_PRIM_REPLY_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetPrimReplyContext), 
+                            NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_PRIM_REPLY_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "obsType" sir record */
+
+   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSTYPE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pObsTypeContext), NULL) 
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSTYPE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /* Get the context of the "detType" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DETTYPE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetTypeContext), NULL) == 
+       ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETTYPE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "detID" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DETID_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetIdContext), NULL) == 
+       ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETID_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "bunit" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_BUNIT_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pBunitContext), NULL) == 
+       ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_BUNIT_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "observing" sir record */
+
+   sprintf (pRecordName, "%s", DET_CONTROL_OBSERVING_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetObservingContext), 
+                            NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_OBSERVING_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "obsMode" sir record */
+
+   sprintf (pRecordName, "%s", SEQ_CONTROL_OBSMODE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pObsModeContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get SEQ_CONTROL_OBSMODE_SIR_NAME SIR context");
+      return (ERROR);
+   }
+
+   /* Get the context of the "dataLabel" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DATALABEL_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDataLabelContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DATALABEL_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "intTime" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_INTTIME_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pIntTimeContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_INTTIME_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "outputs" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_OUTPUTS_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pOutputsContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_OUTPUTS_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "detXsize" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DETXSIZE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetXsizeContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETXSIZE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "detYsize" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_DETYSIZE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pDetYsizeContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_DETYSIZE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "xsubap" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_XSUBAP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXsubapContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSUBAP_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "ysubap" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_YSUBAP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYsubapContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSUBAP_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "xstart" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_XSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXstartContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSTART_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "ystart" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_YSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYstartContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSTART_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "xras" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_XRASTER_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXrasterContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XRASTER_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "yras" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_YRASTER_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYrasterContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YRASTER_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "xspace" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_XSPACE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXspaceContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XSPACE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "yspace" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_YSPACE_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYspaceContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YSPACE_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "xbin" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_XBIN_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pXbinContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_XBIN_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "ybin" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_YBIN_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pYbinContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_YBIN_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "nexpRQ" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_NEXPRQ_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpRQContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NEXPRQ_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "nexp" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_NEXP_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNExpContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NEXP_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "nframes" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_NFRAMES_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pNFramesContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_NFRAMES_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "utstart" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_UTSTART_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTstartContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_UTSTART_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "utend" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_UTEND_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pUTendContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_UTEND_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "exposed" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_EXPOSED_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSED_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "exposedRQ" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_EXPOSEDRQ_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pExposedRQContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_EXPOSEDRQ_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Get the context of the "elapsed" sir record */
+
+   sprintf (pRecordName, "%s:%s", pRecordPrefix,
+            DET_CONTROL_ELAPSED_SIR_NAME);
+   if (epToVxRecContextGet (pRecordName, & (obsId->pElapsedContext), NULL)
+       == ERROR)
+   {
+      ERROR_LOG ("Failed to get DET_CONTROL_ELAPSED_SIR_NAME SIR context");
+      errorNumber = ERROR;
+   }
+
+   /* Return */
+
+   return ( errorNumber );
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detWriteDefSirContext
+ *
+ *   INVOCATION:
+ *   detWriteDefSirContext (obsId)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (!) obsId         (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Write Default values to the SIR records.
+ *
+ *   DESCRIPTION:
+ *   Write Default values to the SIR records.
+ *
+ *   EXTERNAL VARIABLES:
+ *
+ *   PRIOR REQUIREMENTS:
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *-
+ */
+
+uint32 detWriteDefSirContext
+   (
+   OBS_ID       obsId                /* Observation context structure.        */
+   )
+{
+
+   uint32       errorNumber;         /* Error number reported by task.        */
+
+   /* Initialize the erroNumber */
+
+   errorNumber = OK;
+
+   /* Init the "testResults" sir record */
+
+   if (epToVxPipeWrite (NULL, "Not tested", obsId->pTestResultsContext) 
+       == ERROR)
+   {
+      ERROR_LOG (
+      "Failed to initialise DET_CONTROL_TEST_RESULTS_SIR_NAME record");
+      errorNumber = ERROR;
+   }
+
+   /* Init the "obsType" sir record */
+
+   if (epToVxPipeWrite( NULL, "UNDEFINED", obsId->pObsTypeContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default observation type to UNDEFINED");
+      return (ERROR);
+   }
+
+
+   /* Init the "detType" sir record */
+
+   if (epToVxPipeWrite( NULL, DET_TYPE, obsId->pDetTypeContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default detector type");
+      errorNumber = ERROR;
+   }
+
+   /* Init the "bunit" sir record */
+
+   if (epToVxPipeWrite( NULL, DET_BUNIT, obsId->pBunitContext ) == ERROR)
+   {
+      ERROR_LOG ("Failed to set default detector type");
+      errorNumber = ERROR;
+   }
+
+   /* return */
+
+   return (errorNumber);
 }

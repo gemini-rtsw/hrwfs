@@ -41,15 +41,10 @@ DOCS	=
 
 # DATA are installed in INSTALL_DATA
 DATA	= \
-	$(wildcard ../*.pv*) \
 	$(wildcard ../*.par*) \
-	$(wildcard ../*.ini*) \
-	$(wildcard ../*.control*) \
-	$(wildcard ../*.fvars*) \
-	$(wildcard ../*.mult*) \
-	$(wildcard ../*.sub*) \
 	$(wildcard ../*.wcs*) \
 	$(wildcard ../*.dat*) \
+	$(wildcard ../*.ST*)  \
 	$(wildcard ../*.fits*)
 
 # Any extra targets can be placed in a TARGETS macro (the build target
