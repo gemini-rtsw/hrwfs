@@ -1,0 +1,68 @@
+#!/bin/csh -f
+#+
+# Module name:
+#    wfsPrint
+#
+# Purpose:
+#    Print one or more AGWPS source files to a Postscript printer
+#
+# Language:
+#    Unix C shell script
+#
+# Description:
+#    This C-shell script converts one or more AGWPS source files to Postscript
+#    using a2ps and sends that postscript to the printer defined in the PRINTER
+#    environment variable.
+#
+#    The AGWPS source code has been written in a style that assumes you have
+#    an editor or printer configured in a wide format with tab characters
+#    spaced at 4 character intervals. Attempting to edit or print the code
+#    using default settings results in a mess of wrapped lines. The a2ps
+#    parameters in this script have been defined as a compromise between
+#    making the output readable and saving paper. (The most readable option,
+#    "a2ps -w -nn -t4", leaves a lot of blank space on the right hand side).
+#
+# Invocation:
+#    wfsPrint *.c *.h     (for example)
+#
+# Prior requirements:
+#    Set the PRINTER environment variable to a printer which can understand
+#    Postscript.
+#
+# Status:
+#    $Id: wfsPrint,v 1.1.1.1 1999-03-17 03:14:23 cboyer Exp $
+#
+# History:
+#    $Log: not supported by cvs2svn $
+#    Revision 1.1  1997/12/03 16:23:31  smb
+#    Original version committed
+#
+#-
+
+   set files = "$*"
+   if ( "$files" != "" ) then
+
+      if ( $PRINTER != "" ) then
+
+         foreach file ( $files )
+
+            echo Printing $file on $PRINTER
+
+#           Print in landscape mode with two pages to a side and no line
+#           numbering. Reduce the font size to 6 and the tab spacing to 4.
+#           If the printer supports it, also print double sided.
+
+            a2ps -np -nn -f6 -t4 -d $file |  lp -d ${PRINTER}
+#
+#           This is a wasteful but more readable alternative (commented out).
+#           It prints in wide mode with the standard font size.
+
+#           a2ps -w -nn -t4 -d $file | lp -d ${PRINTER}
+         end
+      else
+
+         echo No printer specified. Please define PRINTER environment variable.
+      endif
+   else
+      echo Usage - wfsPrint file1 file2, file3...
+   endif

@@ -1,0 +1,33 @@
+#!/bin/csh -f
+#
+# This top level script runs a "makeDocumentation" script in the Capfast
+# and source code subdirectories.
+#
+# Invocation:
+#    makeDocumentation
+#
+# Make a list containing the names of all the capfast subdirectories, then
+# execute the "makeDocumentation" script in each one.
+#
+    set list = `find . -name capfast -print`
+#
+    foreach subdir ( $list )
+        echo Making documentation in $subdir
+        set olddir = $cwd
+        cd $subdir
+        ./makeDocumentation
+        cd $olddir
+    end
+#
+# Make a list containing the names of all the src subdirectories, then
+# execute the "makeDocumentation" script in each one.
+#
+    set list = `find . -name src -print`
+#
+    foreach subdir ( $list )
+        echo Making documentation in $subdir
+        set olddir = $cwd
+        cd $subdir
+        ./makeDocumentation
+        cd $olddir
+    end

@@ -1,0 +1,14 @@
+
+include Target.include
+include .applTop/config/CONFIG
+
+ADL2DL = $(EPICS_EXTENSIONS)/bin/$(HOST_ARCH)/adl2dl2.4
+
+# List of display (*.dl) files
+DATA    = colors.dl \
+          $(patsubst ../%.adl, %.dl, $(wildcard ../*.adl ../*.bit ../*.tk ../*.sh))
+
+#List of scripts
+SCRIPTS = wfsStart $(wildcard ../*.csh)
+
+include .applTop/config/RULES.Build

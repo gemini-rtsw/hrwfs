@@ -1,0 +1,6 @@
+
+(${APPLIC_INSTALL}/bin/${T_A}) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/bin/${T_A};
+
+(${APPLIC_INSTALL}/data) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/data;

@@ -1,0 +1,23 @@
+#!/bin/csh -f
+#
+# Description :
+#    C-shell script for converting one or more Capfast schematics (.sch) to
+#    Postscript (.ps) using "schplot" and "sch2ps". Wildcards may be 
+#    specified in the names of the .sch files.
+# Usage:
+#    makePostscript single_file.sch
+#    makePostscript file1.sch file2.sch etc...
+#    makePostscript *.sch
+#
+   set files = "$*"
+   if ( "$files" != "" ) then
+
+               foreach file ( $files )
+
+                  set base = `basename $file .sch`
+                  echo "Converting $base.sch into $base.ps"
+                  schplot -Nb $base.sch | schps -wc 26 -d >$base.ps
+               end
+   else
+      echo Usage - makePostscript file1 file2 file3...
+   endif

@@ -1,0 +1,76 @@
+#!/bin/csh -f
+#+
+#  Name:
+#    global_edit
+
+#  Purpose:
+#    Carry out a global edit on a whole set of files
+
+#  Language:
+#    Unix C shell script
+
+#  Invocation:
+#    global_edit old-string new-string file1 [file2, ...]
+
+#  Description:
+#    This C shell script applies the "sed" editor in turn to each of the
+#    files given in the list (which may contain wild cards). All occurences
+#    of "old-string" are replaced by "new-string". If either of these strings
+#    contain more than one word, enclose them in double quotes.
+
+#    To guard against mistakes, backup copies of the files are made, whose
+#    names have ".bak" appended. A journal is written to the file
+#    "global_edit.undo", which may be executed as a script to undo the edits
+#    if necessary.
+
+#  Deficiencies:
+#    Neither the old nor the new strings should contain a "|" character,
+#    as this is used as an arbitrary delimiter in the sed script.
+
+#  Authors:
+#    SMB: Steven Beard (ROE)
+
+#  History:
+#    28-Sep-1993 (SMB):
+#       Original version.
+#    30-Sep-1993 (SMB):
+#       Do not keep a backup of files that have not changed.
+#-
+#===============================================================================
+#
+# Remove any global_edit.undo script left over from a previous run.
+#
+   rm -f global_edit.undo
+#
+#  Store the old and new strings, and shift the remaining arguments so the
+#  whole argument list becomes the string of files to be operated on.
+#
+   set oldstring = "$1"
+   shift
+   set newstring = "$1"
+   shift
+#
+#  Apply the "sed" editor to each file in turn, keeping a backup copy
+#  in a ".bak" file. Use "cmp" to find out if any changes have been
+#  made to the file, and remove the backup if there are no changes.
+#  Keep a journal of all the changed files in global_edit.undo (in the
+#  form of a script which may be executed to undo the changes).
+#
+   echo Replacing \"$oldstring\" with \"$newstring\".
+ 
+   foreach file ( $* )
+      echo Editing ${file} ...
+      mv ${file} ${file}.bak
+      sed <${file}.bak >${file} -e "s|$oldstring|$newstring|g"
+      cmp -s ${file} ${file}.bak > /dev/null
+      if ( $status == 0 ) then
+         echo "    (No changes)"
+         \rm ${file}.bak
+      else
+         echo "    (Changed. Backup written to ${file}.bak)"
+         echo "mv ${file}.bak ${file}" >>global_edit.undo
+      endif
+   end
+
+   chmod +x global_edit.undo
+   echo Editing finished. Execute the global_edit.undo script to reverse.

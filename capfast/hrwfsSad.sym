@@ -1,0 +1,20 @@
+[symbol2]
+bbox -480 -160 480 192
+uniq 0
+[tools]
+[attributes]
+p -480 -208 100 0 1 set1:top PREFIX
+p -480 -240 100 0 1 set2:sadtop SADPREFIX
+[layers]
+<symbol>
+l 200 1 0 0 -48 Status Alarm Database
+l 100 1 0 0 -96 Gemini 8m Telescopes Project
+l 200 1 0 0 48 Gemini Wavefront Sensing System
+l 200 1 0 0 0 HRWFS/AC
+v 7 -480 192
+480 192
+_
+v 7 -480 -160
+480 -160
+_
+[comments]

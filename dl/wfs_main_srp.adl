@@ -1,0 +1,3914 @@
+file {
+	name="wfs_main.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="21"
+	npc="64"
+	nstr="192"
+	ndynamic="29"
+	nplot="0"
+	nrd="16"
+	nes="1"
+	nkd="1"
+	object {
+		x="0"
+		y="0"
+		width="802"
+		height="471"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="9736"
+	nwords_sta="2468"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="5644"
+	osta="3176"
+	odynamic="6756"
+	oplot="8670"
+	ord="8670"
+	oes="9662"
+	okd="9724"
+	opc="58"
+	ostr="872"
+	ocmap="3176"
+	ocrules="3176"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="285"
+		y="143"
+		width="55"
+		height="13"
+		groupid="0"
+	}
+	textix="PWFS1"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="11"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"line" {
+	object {
+		x="223"
+		y="209"
+		width="85"
+		height="72"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="308"
+		y="209"
+	}
+	point[1] {
+		x="223"
+		y="230"
+	}
+	point[2] {
+		x="223"
+		y="281"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="0"
+		y="295"
+	}
+	orgpoint[2] {
+		x="0"
+		y="1000"
+	}
+}
+"line" {
+	object {
+		x="369"
+		y="156"
+		width="0"
+		height="53"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="369"
+		y="156"
+	}
+	point[1] {
+		x="369"
+		y="209"
+	}
+	point[2] {
+		x="369"
+		y="206"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="0"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="-1"
+		y="962"
+	}
+}
+"line" {
+	object {
+		x="308"
+		y="209"
+		width="61"
+		height="73"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="368"
+		y="209"
+	}
+	point[1] {
+		x="308"
+		y="228"
+	}
+	point[2] {
+		x="308"
+		y="282"
+	}
+	orgpoint[0] {
+		x="999"
+		y="0"
+	}
+	orgpoint[1] {
+		x="0"
+		y="267"
+	}
+	orgpoint[2] {
+		x="0"
+		y="1000"
+	}
+}
+"line" {
+	object {
+		x="427"
+		y="156"
+		width="0"
+		height="53"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="427"
+		y="156"
+	}
+	point[1] {
+		x="427"
+		y="209"
+	}
+	point[2] {
+		x="427"
+		y="206"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="0"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="-1"
+		y="962"
+	}
+}
+"line" {
+	object {
+		x="387"
+		y="209"
+		width="41"
+		height="73"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="428"
+		y="209"
+	}
+	point[1] {
+		x="387"
+		y="229"
+	}
+	point[2] {
+		x="387"
+		y="282"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="0"
+		y="281"
+	}
+	orgpoint[2] {
+		x="0"
+		y="1000"
+	}
+}
+"line" {
+	object {
+		x="484"
+		y="156"
+		width="0"
+		height="53"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="484"
+		y="156"
+	}
+	point[1] {
+		x="484"
+		y="209"
+	}
+	point[2] {
+		x="484"
+		y="206"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="0"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="-1"
+		y="962"
+	}
+}
+"line" {
+	object {
+		x="467"
+		y="208"
+		width="17"
+		height="73"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="484"
+		y="208"
+	}
+	point[1] {
+		x="467"
+		y="228"
+	}
+	point[2] {
+		x="467"
+		y="281"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="0"
+		y="277"
+	}
+	orgpoint[2] {
+		x="0"
+		y="1000"
+	}
+}
+"line" {
+	object {
+		x="308"
+		y="156"
+		width="0"
+		height="53"
+		groupid="0"
+	}
+	npoints="3"
+	point[0] {
+		x="308"
+		y="156"
+	}
+	point[1] {
+		x="308"
+		y="209"
+	}
+	point[2] {
+		x="308"
+		y="206"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="0"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="-1"
+		y="962"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="10"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="106"
+		y="20"
+		width="525"
+		height="26"
+		groupid="0"
+	}
+	textix="WFS ENGINEERING USER INTERFACE"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="365"
+		y="54"
+		width="160"
+		height="22"
+		groupid="0"
+	}
+	textix="TOP LEVEL CAR:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="0"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"line" {
+	object {
+		x="21"
+		y="175"
+		width="0"
+		height="0"
+		groupid="0"
+	}
+	npoints="0"
+}
+"rectangle" {
+	object {
+		x="379"
+		y="132"
+		width="0"
+		height="0"
+		groupid="0"
+	}
+}
+"rectangle" {
+	object {
+		x="379"
+		y="132"
+		width="0"
+		height="0"
+		groupid="0"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="419"
+		y="296"
+		width="181"
+		height="22"
+		groupid="0"
+	}
+	textix="DIAGNOSTIC TOOLS"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="28"
+		y="296"
+		width="240"
+		height="22"
+		groupid="0"
+	}
+	textix="WFS-SPECIFIC CONTROLS"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"rectangle" {
+	object {
+		x="15"
+		y="48"
+		width="774"
+		height="64"
+		groupid="0"
+	}
+}
+"rectangle" {
+	object {
+		x="15"
+		y="290"
+		width="384"
+		height="170"
+		groupid="0"
+	}
+}
+"rectangle" {
+	object {
+		x="405"
+		y="290"
+		width="384"
+		height="170"
+		groupid="0"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="1"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"line" {
+	object {
+		x="330"
+		y="322"
+		width="0"
+		height="84"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="330"
+		y="406"
+	}
+	point[1] {
+		x="330"
+		y="322"
+	}
+	orgpoint[0] {
+		x="-1"
+		y="1000"
+	}
+	orgpoint[1] {
+		x="-1"
+		y="0"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="25"
+		y="55"
+		width="250"
+		height="22"
+		groupid="0"
+	}
+	textix="OVERALL SYSTEM HEALTH:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="169"
+		y="161"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="169"
+		y="184"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="1"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="169"
+		y="208"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="169"
+		y="231"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="169"
+		y="255"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="21"
+		y="124"
+		width="458"
+		height="22"
+		groupid="0"
+	}
+	textix="WFS CONTROLLER GENERAL CONTROLS"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"rectangle" {
+	object {
+		x="16"
+		y="119"
+		width="773"
+		height="165"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="502"
+		y="124"
+		width="250"
+		height="22"
+		groupid="0"
+	}
+	textix="WFS CONTROLLER HEALTH:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="527"
+		y="155"
+		width="220"
+		height="22"
+		groupid="0"
+	}
+	textix="WFS CONTROLLER CAR:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="603"
+		y="381"
+		width="65"
+		height="18"
+		groupid="0"
+	}
+	textix="SIMUL:"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="603"
+		y="406"
+		width="65"
+		height="18"
+		groupid="0"
+	}
+	textix="DEBUG:"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="26"
+		y="80"
+		width="200"
+		height="22"
+		groupid="0"
+	}
+	textix="OVERALL HEARTBEAT:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="603"
+		y="316"
+		width="58"
+		height="13"
+		groupid="0"
+	}
+	textix="CPU 0"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="664"
+		y="316"
+		width="58"
+		height="13"
+		groupid="0"
+	}
+	textix="CPU 1"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="725"
+		y="316"
+		width="58"
+		height="13"
+		groupid="0"
+	}
+	textix="CPU 2"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="21"
+		y="418"
+		width="152"
+		height="13"
+		groupid="0"
+	}
+	textix="Temporary display:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="270"
+		y="182"
+		width="18"
+		height="27"
+		groupid="0"
+	}
+	textix=":"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="343"
+		y="143"
+		width="55"
+		height="13"
+		groupid="0"
+	}
+	textix="PWFS2"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="401"
+		y="143"
+		width="55"
+		height="13"
+		groupid="0"
+	}
+	textix="OIWFS"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="460"
+		y="143"
+		width="55"
+		height="13"
+		groupid="0"
+	}
+	textix="HRWFS"
+	align="horiz. centered"
+	RISC_pad="0"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="1"
+		style="solid"
+		fill="solid"
+		width="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)health.VAL"
+			rulechan[1] = "$(top)health.VAL"
+			rulechan[2] = "$(top)health.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)health"
+		}
+	}
+}
+"oval" {
+	object {
+		x="277"
+		y="55"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)p1:detC.VAL"
+			rulechan[1] = "$(top)p1:detC.VAL"
+			rulechan[2] = "$(top)p1:detC.VAL"
+			rulechan[3] = "$(top)p1:detC.VAL"
+			rulechan[4] = "$(top)p1:detC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)p1:detC"
+		}
+	}
+}
+"oval" {
+	object {
+		x="30"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)controlHealth.VAL"
+			rulechan[1] = "$(top)controlHealth.VAL"
+			rulechan[2] = "$(top)controlHealth.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)controlHealth"
+		}
+	}
+}
+"oval" {
+	object {
+		x="760"
+		y="124"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)pr:health.VAL"
+			rulechan[1] = "$(top)pr:health.VAL"
+			rulechan[2] = "$(top)pr:health.VAL"
+			rulechan[3] = "$(top)pr:detC.VAL"
+			rulechan[4] = "$(top)pr:health.VAL"
+			rulechan[5] = "$(top)pr:detC.VAL"
+			rulechan[6] = "$(top)pr:health.VAL"
+			rulechan[7] = "$(top)pr:detC.VAL"
+			rulechan[8] = "$(top)pr:health.VAL"
+			rulechan[9] = "$(top)pr:detC.VAL"
+			rulechan[10] = "$(top)pr:health.VAL"
+			rulechan[11] = "$(top)pr:detC.VAL"
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="healthbusy"
+			clrargs="C=$(top)pr:health, D=$(top)pr:detC"
+		}
+	}
+}
+"oval" {
+	object {
+		x="275"
+		y="433"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="if not zero"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan="$(top)p2:observing"
+			rulechan[0] = "$(top)p2:observeC.VAL"
+			rulechan[1] = "$(top)p2:observeC.VAL"
+			rulechan[2] = "$(top)p2:observeC.VAL"
+			rulechan[3] = "$(top)p2:observeC.VAL"
+			rulechan[4] = "$(top)p2:observeC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)p2:observeC"
+		}
+	}
+}
+"text" {
+	object {
+		x="200"
+		y="379"
+		width="70"
+		height="14"
+		groupid="0"
+	}
+	textix="Observing"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="if not zero"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan="$(top)p1:observing"
+			rulechan[0] = "$(top)p1:observeC.VAL"
+			rulechan[1] = "$(top)p1:observeC.VAL"
+			rulechan[2] = "$(top)p1:observeC.VAL"
+			rulechan[3] = "$(top)p1:observeC.VAL"
+			rulechan[4] = "$(top)p1:observeC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)p1:observeC"
+		}
+	}
+}
+"text" {
+	object {
+		x="73"
+		y="379"
+		width="70"
+		height="14"
+		groupid="0"
+	}
+	textix="Observing"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="if not zero"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan="$(top)oi:observing"
+			rulechan[0] = "$(top)oi:observeC.VAL"
+			rulechan[1] = "$(top)oi:observeC.VAL"
+			rulechan[2] = "$(top)oi:observeC.VAL"
+			rulechan[3] = "$(top)oi:observeC.VAL"
+			rulechan[4] = "$(top)oi:observeC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)oi:observeC"
+		}
+	}
+}
+"text" {
+	object {
+		x="321"
+		y="379"
+		width="70"
+		height="14"
+		groupid="0"
+	}
+	textix="Observing"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)cpuUsed00.SEVR"
+			rulechan[1] = "$(top)cpuUsed00.SEVR"
+			rulechan[2] = "$(top)cpuUsed00.SEVR"
+			rulechan[3] = "$(top)cpuUsed00.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)cpuUsed00"
+		}
+	}
+}
+"oval" {
+	object {
+		x="608"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)ramUsed00.SEVR"
+			rulechan[1] = "$(top)ramUsed00.SEVR"
+			rulechan[2] = "$(top)ramUsed00.SEVR"
+			rulechan[3] = "$(top)ramUsed00.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)ramUsed00"
+		}
+	}
+}
+"oval" {
+	object {
+		x="632"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)ramUsed01.SEVR"
+			rulechan[1] = "$(top)ramUsed01.SEVR"
+			rulechan[2] = "$(top)ramUsed01.SEVR"
+			rulechan[3] = "$(top)ramUsed01.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)ramUsed01"
+		}
+	}
+}
+"oval" {
+	object {
+		x="695"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)cpuUsed01.SEVR"
+			rulechan[1] = "$(top)cpuUsed01.SEVR"
+			rulechan[2] = "$(top)cpuUsed01.SEVR"
+			rulechan[3] = "$(top)cpuUsed01.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)cpuUsed01"
+		}
+	}
+}
+"oval" {
+	object {
+		x="671"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)ramUsed02.SEVR"
+			rulechan[1] = "$(top)ramUsed02.SEVR"
+			rulechan[2] = "$(top)ramUsed02.SEVR"
+			rulechan[3] = "$(top)ramUsed02.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)ramUsed02"
+		}
+	}
+}
+"oval" {
+	object {
+		x="755"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)cpuUsed02.SEVR"
+			rulechan[1] = "$(top)cpuUsed02.SEVR"
+			rulechan[2] = "$(top)cpuUsed02.SEVR"
+			rulechan[3] = "$(top)cpuUsed02.SEVR"
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="alarm"
+			clrargs="C=$(top)cpuUsed02"
+		}
+	}
+}
+"oval" {
+	object {
+		x="731"
+		y="331"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="if not zero"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan="$(top)hr:observing"
+			rulechan[0] = "$(top)hr:observeC.VAL"
+			rulechan[1] = "$(top)hr:observeC.VAL"
+			rulechan[2] = "$(top)hr:observeC.VAL"
+			rulechan[3] = "$(top)hr:observeC.VAL"
+			rulechan[4] = "$(top)hr:observeC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)hr:observeC"
+		}
+	}
+}
+"text" {
+	object {
+		x="319"
+		y="328"
+		width="70"
+		height="14"
+		groupid="0"
+	}
+	textix="Observing"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)p1:health.VAL"
+			rulechan[1] = "$(top)p1:health.VAL"
+			rulechan[2] = "$(top)p1:health.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)p1:health"
+		}
+	}
+}
+"oval" {
+	object {
+		x="51"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)p2:health.VAL"
+			rulechan[1] = "$(top)p2:health.VAL"
+			rulechan[2] = "$(top)p2:health.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)p2:health"
+		}
+	}
+}
+"oval" {
+	object {
+		x="173"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)p2:detC.VAL"
+			rulechan[1] = "$(top)p2:detC.VAL"
+			rulechan[2] = "$(top)p2:detC.VAL"
+			rulechan[3] = "$(top)p2:detC.VAL"
+			rulechan[4] = "$(top)p2:detC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)p2:detC"
+		}
+	}
+}
+"oval" {
+	object {
+		x="152"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)oi:health.VAL"
+			rulechan[1] = "$(top)oi:health.VAL"
+			rulechan[2] = "$(top)oi:health.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)oi:health"
+		}
+	}
+}
+"oval" {
+	object {
+		x="293"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)oi:detC.VAL"
+			rulechan[1] = "$(top)oi:detC.VAL"
+			rulechan[2] = "$(top)oi:detC.VAL"
+			rulechan[3] = "$(top)oi:detC.VAL"
+			rulechan[4] = "$(top)oi:detC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)oi:detC"
+		}
+	}
+}
+"oval" {
+	object {
+		x="273"
+		y="377"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)hr:health.VAL"
+			rulechan[1] = "$(top)hr:health.VAL"
+			rulechan[2] = "$(top)hr:health.VAL"
+			rulechan[3] = ""
+			rulechan[4] = ""
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="health"
+			clrargs="C=$(top)hr:health"
+		}
+	}
+}
+"oval" {
+	object {
+		x="292"
+		y="326"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"<<dynamic attribute>>" {
+	attr {
+		mod {
+			clrmod="rule"
+			vis="static"
+		}
+		param {
+			rulecolorfg="1"
+			rulecolorbg="1"
+			chan=""
+			rulechan[0] = "$(top)hr:detC.VAL"
+			rulechan[1] = "$(top)hr:detC.VAL"
+			rulechan[2] = "$(top)hr:detC.VAL"
+			rulechan[3] = "$(top)hr:detC.VAL"
+			rulechan[4] = "$(top)hr:detC.VAL"
+			rulechan[5] = ""
+			rulechan[6] = ""
+			rulechan[7] = ""
+			rulechan[8] = ""
+			rulechan[9] = ""
+			rulechan[10] = ""
+			rulechan[11] = ""
+			rulechan[12] = ""
+			rulechan[13] = ""
+			rulechan[14] = ""
+			rulechan[15] = ""
+			clrrule="flashifbusy"
+			clrargs="C=$(top)hr:detC"
+		}
+	}
+}
+"oval" {
+	object {
+		x="272"
+		y="326"
+		width="19"
+		height="19"
+		groupid="0"
+	}
+}
+"text update" {
+	object {
+		x="186"
+		y="164"
+		width="330"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)state"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="187"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)initC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)initC.VAL"
+		rulechan[1] = "$(top)initC.VAL"
+		rulechan[2] = "$(top)initC.VAL"
+		rulechan[3] = "$(top)initC.VAL"
+		rulechan[4] = "$(top)initC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)initC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="674"
+		y="378"
+		width="110"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)simMode"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="674"
+		y="403"
+		width="110"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)debugMode"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="258"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p1:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="532"
+		y="56"
+		width="250"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)activeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)activeC.VAL"
+		rulechan[1] = "$(top)activeC.VAL"
+		rulechan[2] = "$(top)activeC.VAL"
+		rulechan[3] = "$(top)activeC.VAL"
+		rulechan[4] = "$(top)activeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)activeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="527"
+		y="178"
+		width="250"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)controlC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)controlC.VAL"
+		rulechan[1] = "$(top)controlC.VAL"
+		rulechan[2] = "$(top)controlC.VAL"
+		rulechan[3] = "$(top)controlC.VAL"
+		rulechan[4] = "$(top)controlC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)controlC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="527"
+		y="204"
+		width="250"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)controlC.OMSS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="532"
+		y="78"
+		width="250"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)activeC.OMSS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="603"
+		y="355"
+		width="60"
+		height="18"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)errorCount00"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="664"
+		y="355"
+		width="60"
+		height="18"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)errorCount01"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="725"
+		y="354"
+		width="60"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)errorCount02"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="211"
+		width="330"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)measureC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)measureC.VAL"
+		rulechan[1] = "$(top)measureC.VAL"
+		rulechan[2] = "$(top)measureC.VAL"
+		rulechan[3] = "$(top)measureC.VAL"
+		rulechan[4] = "$(top)measureC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)measureC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="234"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p1:observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p1:observeC.VAL"
+		rulechan[1] = "$(top)p1:observeC.VAL"
+		rulechan[2] = "$(top)p1:observeC.VAL"
+		rulechan[3] = "$(top)p1:observeC.VAL"
+		rulechan[4] = "$(top)p1:observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p1:observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="269"
+		y="234"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p2:observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p2:observeC.VAL"
+		rulechan[1] = "$(top)p2:observeC.VAL"
+		rulechan[2] = "$(top)p2:observeC.VAL"
+		rulechan[3] = "$(top)p2:observeC.VAL"
+		rulechan[4] = "$(top)p2:observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p2:observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="435"
+		y="234"
+		width="81"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)hr:observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)hr:observeC.VAL"
+		rulechan[1] = "$(top)hr:observeC.VAL"
+		rulechan[2] = "$(top)hr:observeC.VAL"
+		rulechan[3] = "$(top)hr:observeC.VAL"
+		rulechan[4] = "$(top)hr:observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)hr:observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="236"
+		y="81"
+		width="120"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)present"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="17"
+		y="437"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p1:detC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p1:detC.VAL"
+		rulechan[1] = "$(top)p1:detC.VAL"
+		rulechan[2] = "$(top)p1:detC.VAL"
+		rulechan[3] = "$(top)p1:detC.VAL"
+		rulechan[4] = "$(top)p1:detC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p1:detC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="101"
+		y="437"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p2:detC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p2:detC.VAL"
+		rulechan[1] = "$(top)p2:detC.VAL"
+		rulechan[2] = "$(top)p2:detC.VAL"
+		rulechan[3] = "$(top)p2:detC.VAL"
+		rulechan[4] = "$(top)p2:detC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p2:detC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="437"
+		width="81"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)oi:detC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)oi:detC.VAL"
+		rulechan[1] = "$(top)oi:detC.VAL"
+		rulechan[2] = "$(top)oi:detC.VAL"
+		rulechan[3] = "$(top)oi:detC.VAL"
+		rulechan[4] = "$(top)oi:detC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)oi:detC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="186"
+		y="414"
+		width="81"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)hr:detC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)hr:detC.VAL"
+		rulechan[1] = "$(top)hr:detC.VAL"
+		rulechan[2] = "$(top)hr:detC.VAL"
+		rulechan[3] = "$(top)hr:detC.VAL"
+		rulechan[4] = "$(top)hr:detC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)hr:detC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="352"
+		y="234"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)oi:observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)oi:observeC.VAL"
+		rulechan[1] = "$(top)oi:observeC.VAL"
+		rulechan[2] = "$(top)oi:observeC.VAL"
+		rulechan[3] = "$(top)oi:observeC.VAL"
+		rulechan[4] = "$(top)oi:observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)oi:observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="285"
+		y="188"
+		width="55"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p1:detInitC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p1:detInitC.VAL"
+		rulechan[1] = "$(top)p1:detInitC.VAL"
+		rulechan[2] = "$(top)p1:detInitC.VAL"
+		rulechan[3] = "$(top)p1:detInitC.VAL"
+		rulechan[4] = "$(top)p1:detInitC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p1:detInitC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="343"
+		y="188"
+		width="55"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p2:detInitC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)p2:detInitC.VAL"
+		rulechan[1] = "$(top)p2:detInitC.VAL"
+		rulechan[2] = "$(top)p2:detInitC.VAL"
+		rulechan[3] = "$(top)p2:detInitC.VAL"
+		rulechan[4] = "$(top)p2:detInitC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)p2:detInitC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="401"
+		y="188"
+		width="55"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)oi:detInitC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)oi:detInitC.VAL"
+		rulechan[1] = "$(top)oi:detInitC.VAL"
+		rulechan[2] = "$(top)oi:detInitC.VAL"
+		rulechan[3] = "$(top)oi:detInitC.VAL"
+		rulechan[4] = "$(top)oi:detInitC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)oi:detInitC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="460"
+		y="188"
+		width="55"
+		height="19"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)hr:detInitC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)hr:detInitC.VAL"
+		rulechan[1] = "$(top)hr:detInitC.VAL"
+		rulechan[2] = "$(top)hr:detInitC.VAL"
+		rulechan[3] = "$(top)hr:detInitC.VAL"
+		rulechan[4] = "$(top)hr:detInitC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)hr:detInitC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="269"
+		y="258"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)p2:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="352"
+		y="258"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)oi:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="436"
+		y="258"
+		width="80"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)hr:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"related display" {
+	object {
+		x="419"
+		y="330"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="CPU #0"
+		name="wfs_resUsage.dl"
+		args="cpu=00,top=$(top)"
+	}
+	display[1] {
+		label="CPU #1"
+		name="wfs_resUsage.dl"
+		args="cpu=01,top=$(top)"
+	}
+	display[2] {
+		label="CPU #2"
+		name="wfs_resUsage.dl"
+		args="cpu=02,top=$(top)"
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="RESOURCE USAGE"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="30"
+		y="350"
+		width="118"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="PWFS-1 Detector Controller"
+		name="det_main.dl"
+		args="top=$(top)p1:,sensor=PWFS-1"
+	}
+	display[1] {
+		label="PWFS-1 Signal Processor"
+		name="sig_main.dl"
+		args="top=$(top)p1:,sensor=PWFS-1"
+	}
+	display[2] {
+		label="PWFS-1 Optics"
+		name="optics_main.dl"
+		args="top=$(top)p1:,sensor=PWFS-1"
+	}
+	display[3] {
+		label="PWFS-1 OSP Diagnostics"
+		name="showDiag.dl"
+		args="top=$(top)p1:,sensor=PWFS-1"
+	}
+	display[4] {
+		label="PWFS-1 Guide"
+		name="showFg.dl"
+		args="top=$(top)p1:,sensor=PWFS1"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="PWFS-1"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="152"
+		y="350"
+		width="118"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="PWFS-2 Detector Controller"
+		name="det_main.dl"
+		args="top=$(top)p2:,sensor=PWFS-2"
+	}
+	display[1] {
+		label="PWFS-2 Signal Processor"
+		name="sig_main.dl"
+		args="top=$(top)p2:,sensor=PWFS-2"
+	}
+	display[2] {
+		label="PWFS-2 Optics"
+		name="optics_main.dl"
+		args="top=$(top)p2:,sensor=PWFS-2"
+	}
+	display[3] {
+		label="PWFS-2 OSP Diagnostics"
+		name="showDiag.dl"
+		args="top=$(top)p2:,sensor=PWFS2"
+	}
+	display[4] {
+		label="PWFS-2 Guide"
+		name="showFg.dl"
+		args="top=$(top)p2:,sensor=PWFS2"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="PWFS-2"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="273"
+		y="350"
+		width="118"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="OIWFS Detector Controller"
+		name="det_main.dl"
+		args="top=$(top)oi:,sensor=OIWFS"
+	}
+	display[1] {
+		label="OIWFS Signal Processor"
+		name="sig_main.dl"
+		args="top=$(top)oi:,sensor=OIWFS"
+	}
+	display[2] {
+		label="OIWFS Optics"
+		name="optics_main.dl"
+		args="top=$(top)oi:,sensor=OIWFS"
+	}
+	display[3] {
+		label="OIWFS OSP Diagnostics"
+		name="showDiag.dl"
+		args="top=$(top)oi:,sensor=OIWFS"
+	}
+	display[4] {
+		label="OIWFS Guide"
+		name="showFg.dl"
+		args="top=$(top)oi:,sensor=OIWFS"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="OIWFS"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="636"
+		y="21"
+		width="67"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HELP"
+		name="help1.dl"
+		args=""
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"related display" {
+	object {
+		x="17"
+		y="21"
+		width="81"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="VERSION"
+		name="wfs_version.dl"
+		args="top=$(top)"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"related display" {
+	object {
+		x="21"
+		y="187"
+		width="143"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="INIT"
+		name="cad0.dl"
+		args="top=$(top),label=WFS,cad=init,car=init"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="INITIALIZE"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="419"
+		y="380"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SET SIMULATION MODE"
+		name="wfs_simulate.dl"
+		args="top=$(top),cad=simulate,car=control"
+	}
+	display[1] {
+		label="SET DEBUGGING LEVEL"
+		name="wfs_debug.dl"
+		args="top=$(top),cad=debug,car=control"
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SET MODES"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="21"
+		y="258"
+		width="143"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="TEST"
+		name="wfs_test.dl"
+		args="top=$(top),cad=test,car=controlC"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SELF-TEST"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="21"
+		y="164"
+		width="143"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="REBOOT"
+		name="wfs_reboot.dl"
+		args="top=$(top),cad=reboot,car=control"
+	}
+	display[1] {
+		label="PARK"
+		name="cad0.dl"
+		args="top=$(top),label=WFS,cad=park,car=control"
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SYSTEM STATE"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="419"
+		y="355"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="ERROR LOG"
+		name="wfs_errorLog.dl"
+		args="top=$(top),cad=errorLog,car=errorLog"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="ERROR LOG"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="273"
+		y="407"
+		width="118"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="PIXEL ROUTER"
+		name="pixel_router.dl"
+		args="top=$(top),cad=setRouter,car=control"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"related display" {
+	object {
+		x="21"
+		y="211"
+		width="143"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="START MEASURE"
+		name="wfs_startMeasure.dl"
+		args="top=$(top),cad=startMeasure,car=measure"
+	}
+	display[1] {
+		label="STOP MEASURE"
+		name="cad0.dl"
+		args="top=$(top),label=WFS,cad=stopMeasure,car=measure"
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="MEASUREMENT"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="21"
+		y="234"
+		width="143"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="OBSERVE"
+		name="wfs_gbdObserve.dl"
+		args="top=$(top),cad=gbdObserve,car=observe"
+	}
+	display[1] {
+		label="CALIBRATE"
+		name="wfs_calibrate.dl"
+		args="top=$(top),cad=calibrate,car=observe"
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="OBSERVE"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="419"
+		y="405"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="TEST PWFS1"
+		name="testHarness.dl"
+		args="top=$(top)th:p1:, sensor=PWFS1"
+	}
+	display[1] {
+		label="TEST PWFS2"
+		name="testHarness.dl"
+		args="top=$(top)th:p2:, sensor=PWFS2"
+	}
+	display[2] {
+		label="TEST OIWFS"
+		name="testHarness.dl"
+		args="top=$(top)th:oi:, sensor=OIWFS"
+	}
+	display[3] {
+		label="TEST WCS CONTEXT"
+		name="simulateTcs.dl"
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="TEST HARNESS"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="272"
+		y="300"
+		width="118"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HRWFS Detector Controller"
+		name="det_main.dl"
+		args="top=$(top)hr:,sensor=HRWFS"
+	}
+	display[1] {
+		label="HRWFS Signal Processor"
+		name="sig_main.dl"
+		args="top=$(top)hr:,sensor=HRWFS"
+	}
+	display[2] {
+		label="HRWFS Optics"
+		name="optics_main.dl"
+		args="top=$(top)hr:,sensor=HRWFS"
+	}
+	display[3] {
+		label="HRWFS OSP Diagnostics"
+		name="showDiag.dl"
+		args="top=$(top)hr:,sensor=HRWFS"
+	}
+	display[4] {
+		label="HRWFS Guide"
+		name="showFg.dl"
+		args="top=$(top)hr:,sensor=HRWFS"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="HRWFS"
+	decorate="none"
+}
+"execute script" {
+	object {
+		x="419"
+		y="430"
+		width="180"
+		height="21"
+		groupid="0"
+	}
+	script[0] {
+		label="cics1 (mv167 at ROE)"
+		path="rlogin.csh cics1.roe.ac.uk"
+		args="cics1.roe.ac.uk"
+	}
+	script[1] {
+		label="cics1 console (at ROE)"
+		path="console.csh reds07 3018"
+		args="reds07 3018"
+	}
+	script[2] {
+		label="cics2 (hkbaja47 at ROE)"
+		path="rlogin.csh cics2.roe.ac.uk"
+		args="cics2.roe.ac.uk"
+	}
+	script[3] {
+		label="cics2 console (at ROE)"
+		path="console.csh reds07 3017"
+		args="reds07 3017"
+	}
+	script[4] {
+		label="unst (mv167 at ROE)"
+		path="rlogin.csh unst.roe.ac.uk"
+		args="unst.roe.ac.uk"
+	}
+	script[5] {
+		label="unst console (at ROE)"
+		path="rlogin.csh unst.roe.ac.uk"
+		args="unst.roe.ac.uk"
+	}
+	script[6] {
+		label=""
+		path=""
+		args=""
+	}
+	script[7] {
+		label=""
+		path=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="REMOTE LOGIN"
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="716"
+		y="21"
+		width="72"
+		height="22"
+		groupid="0"
+	}
+	RISCpad="0"
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

@@ -1,0 +1,33 @@
+
+include Target.include
+include .applTop/config/CONFIG
+
+#  The following define the files to use for cat_ascii and replace_ascii
+#  You can play around with them if you wish, or use the default values.
+
+REPLACE_ASCII  = $(strip $(wildcard ../cvt*.data)                      \
+			 $(wildcard ../*.ascii)                        \
+			 $(wildcard ../*.h)                            \
+			 $(wildcard ../replace_ascii/*.ascii)          \
+			 $(wildcard ../replace_ascii/cvt*.data)        \
+			 $(wildcard ../replace_ascii/*.h)              \
+			 $(wildcard .applTop/replace_ascii/*.ascii)    \
+			 $(wildcard .applTop/replace_ascii/cvt*.data)  \
+			 $(wildcard .applTop/replace_ascii/*.h)      )
+
+
+CAT_ASCII = $(strip $(wildcard ../cat_ascii/*.ascii)                       \
+		    $(wildcard ../cat_ascii/cvt*.data)                     \
+		    $(wildcard ../cat_ascii/*.h)                           \
+		    $(wildcard .applTop/cat_ascii/*.ascii)                 \
+		    $(wildcard .applTop/cat_ascii/cvt*.data)               \
+		    $(wildcard .applTop/cat_ascii/*.h)                     \
+		    $(shell if [ -d .applTop/src ] ; then                  \
+				find .applTop/src -name "*.ascii" -print;  \
+				find .applTop/src -name "cvt*.data" -print;\
+			    fi ) )
+
+DATA = $(APPLIC_DCTSDR).dctsdr $(APPLIC_DCTSDR).sdrSum
+
+include .applTop/config/RULES.Build
+

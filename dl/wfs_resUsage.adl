@@ -1,0 +1,748 @@
+file {
+	name="wfs_resUsage.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="11"
+	nstr="43"
+	ndynamic="7"
+	nplot="0"
+	nrd="1"
+	nes="0"
+	nkd="1"
+	object {
+		x="226"
+		y="207"
+		width="516"
+		height="272"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="2274"
+	nwords_sta="1112"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="1730"
+	osta="618"
+	odynamic="1730"
+	oplot="2200"
+	ord="2200"
+	oes="2262"
+	okd="2262"
+	opc="58"
+	ostr="220"
+	ocmap="618"
+	ocrules="618"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="13"
+		y="41"
+		width="495"
+		height="224"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="14"
+		y="13"
+		width="404"
+		height="25"
+		groupid="0"
+	}
+	textix="CPU #$(cpu) RESOURCE USAGE"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="226"
+		y="123"
+		width="270"
+		height="21"
+		groupid="0"
+	}
+	textix="THRESHOLDS: WARN  SEVERE"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="51"
+		width="94"
+		height="21"
+		groupid="0"
+	}
+	textix="CPU (%):"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"line" {
+	object {
+		x="350"
+		y="83"
+		width="30"
+		height="39"
+		groupid="0"
+	}
+	npoints="5"
+	point[0] {
+		x="350"
+		y="83"
+	}
+	point[1] {
+		x="380"
+		y="83"
+	}
+	point[2] {
+		x="380"
+		y="120"
+	}
+	point[3] {
+		x="380"
+		y="122"
+	}
+	point[4] {
+		x="380"
+		y="120"
+	}
+	orgpoint[0] {
+		x="0"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[2] {
+		x="1000"
+		y="972"
+	}
+	orgpoint[3] {
+		x="1000"
+		y="1000"
+	}
+	orgpoint[4] {
+		x="1000"
+		y="972"
+	}
+}
+"line" {
+	object {
+		x="386"
+		y="98"
+		width="66"
+		height="25"
+		groupid="0"
+	}
+	npoints="5"
+	point[0] {
+		x="386"
+		y="98"
+	}
+	point[1] {
+		x="452"
+		y="98"
+	}
+	point[2] {
+		x="452"
+		y="122"
+	}
+	point[3] {
+		x="452"
+		y="123"
+	}
+	point[4] {
+		x="452"
+		y="122"
+	}
+	orgpoint[0] {
+		x="0"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[2] {
+		x="1000"
+		y="972"
+	}
+	orgpoint[3] {
+		x="1000"
+		y="1000"
+	}
+	orgpoint[4] {
+		x="1000"
+		y="972"
+	}
+}
+"text" {
+	object {
+		x="24"
+		y="235"
+		width="256"
+		height="21"
+		groupid="0"
+	}
+	textix="LARGEST FREE RAM BLOCK:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="24"
+		y="160"
+		width="91"
+		height="21"
+		groupid="0"
+	}
+	textix="RAM (%):"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"line" {
+	object {
+		x="350"
+		y="143"
+		width="102"
+		height="65"
+		groupid="0"
+	}
+	npoints="5"
+	point[0] {
+		x="350"
+		y="208"
+	}
+	point[1] {
+		x="452"
+		y="208"
+	}
+	point[2] {
+		x="452"
+		y="144"
+	}
+	point[3] {
+		x="452"
+		y="143"
+	}
+	point[4] {
+		x="452"
+		y="144"
+	}
+	orgpoint[0] {
+		x="0"
+		y="1000"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="1000"
+		y="28"
+	}
+	orgpoint[3] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[4] {
+		x="1000"
+		y="28"
+	}
+}
+"line" {
+	object {
+		x="351"
+		y="146"
+		width="30"
+		height="47"
+		groupid="0"
+	}
+	npoints="5"
+	point[0] {
+		x="351"
+		y="193"
+	}
+	point[1] {
+		x="381"
+		y="193"
+	}
+	point[2] {
+		x="381"
+		y="146"
+	}
+	point[3] {
+		x="381"
+		y="182"
+	}
+	point[4] {
+		x="381"
+		y="182"
+	}
+	orgpoint[0] {
+		x="0"
+		y="1000"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="1000"
+	}
+	orgpoint[2] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[3] {
+		x="1000"
+		y="787"
+	}
+	orgpoint[4] {
+		x="1000"
+		y="787"
+	}
+}
+"line" {
+	object {
+		x="350"
+		y="98"
+		width="23"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="373"
+		y="98"
+	}
+	point[1] {
+		x="350"
+		y="98"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="0"
+		y="0"
+	}
+}
+"valuator" {
+	object {
+		x="114"
+		y="72"
+		width="235"
+		height="18"
+		groupid="0"
+	}
+	control {
+		chan="$(top)cpuUsed$(cpu).HIGH"
+		clr="0"
+		bclr="6"
+		label="limits"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule=""
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="append"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="up"
+	gain="coarse"
+	sendMode="send on release"
+	increment="0"
+}
+"valuator" {
+	object {
+		x="114"
+		y="90"
+		width="235"
+		height="18"
+		groupid="0"
+	}
+	control {
+		chan="$(top)cpuUsed$(cpu).HIHI"
+		clr="0"
+		bclr="6"
+		label="limits"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule=""
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="up"
+	gain="coarse"
+	sendMode="send on release"
+	increment="0"
+}
+"bar" {
+	object {
+		x="115"
+		y="53"
+		width="235"
+		height="17"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)cpuUsed$(cpu)"
+		clr="1"
+		bclr="13"
+		label="outline"
+		clrmod="rule"
+		rulechan[0] = "$(top)cpuUsed$(cpu).SEVR"
+		rulechan[1] = "$(top)cpuUsed$(cpu).SEVR"
+		rulechan[2] = "$(top)cpuUsed$(cpu).SEVR"
+		rulechan[3] = "$(top)cpuUsed$(cpu).SEVR"
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs="C=$(top)cpuUsed$(cpu)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="right"
+	fillmod="from edge"
+}
+"bar" {
+	object {
+		x="114"
+		y="162"
+		width="235"
+		height="17"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)ramUsed$(cpu)"
+		clr="1"
+		bclr="13"
+		label="outline"
+		clrmod="rule"
+		rulechan[0] = "$(top)ramUsed$(cpu).SEVR"
+		rulechan[1] = "$(top)ramUsed$(cpu).SEVR"
+		rulechan[2] = "$(top)ramUsed$(cpu).SEVR"
+		rulechan[3] = "$(top)ramUsed$(cpu).SEVR"
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs="C=$(top)ramUsed$(cpu)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="right"
+	fillmod="from edge"
+}
+"text update" {
+	object {
+		x="296"
+		y="235"
+		width="200"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)ramFreeblk$(cpu)"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)ramFreeblk$(cpu).SEVR"
+		rulechan[1] = "$(top)ramFreeblk$(cpu).SEVR"
+		rulechan[2] = "$(top)ramFreeblk$(cpu).SEVR"
+		rulechan[3] = "$(top)ramFreeblk$(cpu).SEVR"
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs="C=$(top)ramFreeblk$(cpu)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="append"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"valuator" {
+	object {
+		x="114"
+		y="182"
+		width="235"
+		height="18"
+		groupid="0"
+	}
+	control {
+		chan="$(top)ramUsed$(cpu).HIGH"
+		clr="0"
+		bclr="6"
+		label="limits"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule=""
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="append"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="up"
+	gain="coarse"
+	sendMode="send on release"
+	increment="0"
+}
+"valuator" {
+	object {
+		x="114"
+		y="200"
+		width="235"
+		height="18"
+		groupid="0"
+	}
+	control {
+		chan="$(top)ramUsed$(cpu).HIHI"
+		clr="0"
+		bclr="6"
+		label="limits"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule=""
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="100"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	direction="up"
+	gain="coarse"
+	sendMode="send on release"
+	increment="0"
+}
+"related display" {
+	object {
+		x="365"
+		y="15"
+		width="67"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HELP"
+		name="help1.dl"
+		args=""
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="438"
+		y="14"
+		width="72"
+		height="23"
+		groupid="0"
+	}
+	RISCpad="0"
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

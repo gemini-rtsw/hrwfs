@@ -1,0 +1,18 @@
+[symbol2]
+bbox -416 96 -224 384
+port -240 352 100 2048 VAL symbol 2 -224 352 0
+port -240 224 100 2048 OERR symbol 2 -224 224 0
+port -240 256 100 2048 OMSS symbol 2 -224 256 0
+port -240 320 100 2048 OVAL symbol 2 -224 320 0
+port -240 288 100 2048 CLID symbol 2 -224 288 0
+port -240 192 100 2048 FLNK symbol 2 -224 192 0
+uniq 6
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 75 0 0 -400 144 CAR records)
+l 75 0 0 -400 160 (System
+l 100 7 0 -352 112 systemCar
+r 0 -416 96 -224 384
+[comments]

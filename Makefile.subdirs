@@ -1,0 +1,7 @@
+DIRS += ascii
+DIRS += capfast
+DIRS += dl
+DIRS += src
+DIRS += dspsrc
+DIRS += par
+DIRS += startup

@@ -1,0 +1,24 @@
+[symbol2]
+bbox -416 96 -224 352
+port -240 224 100 2048 OERR symbol 2 -224 224 0
+port -240 256 100 2048 OMSS symbol 2 -224 256 0
+port -400 224 100 1536 IERR symbol 1 -416 224 0
+port -400 256 100 1536 IMSS symbol 1 -416 256 0
+port -240 192 100 2048 FLNK symbol 2 -224 192 0
+port -240 288 100 2048 CLID symbol 2 -224 288 0
+port -240 320 100 2048 VAL symbol 2 -224 320 0
+port -400 288 100 1536 ICID symbol 1 -416 288 0
+port -400 192 100 1536 SLNK symbol 1 -416 192 0
+port -400 320 100 1536 IVAL symbol 1 -416 320 0
+uniq 9
+[tools]
+[attributes]
+p -416 64 100 0 1 set1:car ACTIONNAME
+p -416 32 100 0 1 set2:pv $(top)$(wfs)ACTIONNAME
+[layers]
+<symbol>
+l 100 6 0 -400 112 carID
+l 75 0 0 -400 160 (CAR record plus
+l 75 0 0 -400 144 client ID)
+r 0 -416 96 -224 352
+[comments]

@@ -1,0 +1,31 @@
+#!/bin/csh
+#
+# Destroys all the files and soft links created by wfsSetup, so that
+# wfsSetup may be repeated, for example when a new version of EPICS is
+# installed.
+#
+# WARNING: Be careful which directory you execute this script in.
+#
+
+# Check that the current directory is the top level wavefront sensing directory
+# (by checking for the presence of capfast, dl and src subdirectories).
+
+if ( !( -e ./capfast ) || !( -e ./dl ) || !( -e ./src ) ) then
+
+   echo "This script can only be executed in a top level UAE directory." 
+   exit
+endif
+
+echo Destroying configuration files...
+/usr/bin/rm -rf config
+
+echo Destroying bin and data directories and all built files...
+/usr/bin/rm -rf data
+/usr/bin/rm -rf bin
+/usr/bin/rm -rf `find . -name "O.*" -print`
+
+echo Removing EPICS links...
+/usr/bin/rm -rf epics
+/usr/bin/rm -rf `find . -name ".epics" -print`
+/usr/bin/rm -rf `find . -name ".version" -print`
+/usr/bin/rm -rf `find . -name ".applTop" -print`

@@ -1,0 +1,8 @@
+	HELP FILE DEMO
+	--------------
+Insert help information
+in this file.
+
+Can put anything here.
+
+Use "more" to view file.

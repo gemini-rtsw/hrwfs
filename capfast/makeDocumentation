@@ -1,0 +1,12 @@
+#!/bin/csh -f
+#
+# Description :
+#    C-shell script for generating documentation from all the Capfast
+#    schematics (.sch) in the current directory. The schematics are
+#    converted to postscript files, and those files installed in .applTop/docs.
+# Usage:
+#    makeDocumentation
+#
+    ./makePostscript `find . -name "*.sch" -type f -print | grep -v notes | grep -v template`
+    echo Installing Capfast documentation in .applTop/docs
+    mv -f *.ps .applTop/docs

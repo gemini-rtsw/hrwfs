@@ -1,0 +1,17 @@
+#!/bin/csh
+#
+# Tidies up a WFS appication directory prior to release by giving the
+# user the option of removing certain files.
+#
+/usr/bin/rm -i XtermLog*
+/usr/bin/rm -i capfast/*.ps
+/usr/bin/rm -i docs/*.descr.mif docs/*.intro.mif docs/*.summary.mif docs/*.tables.mif
+/usr/bin/rm -i `find * -name "*.xwd" -print`
+/usr/bin/rm -i `find * -name "*.tmp" -print`
+/usr/bin/rm -i `find * -name "*.bak" -print`
+/usr/bin/rm -i `find * -name "*.backup" -print`
+/usr/bin/rm -i `find * -name "*.undo" -print`
+/usr/bin/rm -i `find * -name "*%" -print`
+/usr/bin/rm -i `find * -name "*~" -print`
+/usr/bin/rm -i `find * -name "textedit.*" -print`
+/usr/bin/rm -i `find * -name "*.*_*" -print`

@@ -1,0 +1,13 @@
+[symbol2]
+bbox -416 160 -224 352
+uniq 2
+[tools]
+[attributes]
+p -416 128 100 0 1 set1:wfs WFSNAME
+[layers]
+<symbol>
+l 75 0 0 -400 208 CAD records)
+l 75 0 0 -400 224 (Wavefront sensor
+l 100 7 0 -352 176 wfsCad
+r 0 -416 160 -224 352
+[comments]

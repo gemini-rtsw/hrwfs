@@ -1,0 +1,20 @@
+[symbol2]
+bbox -416 160 -224 352
+uniq 2
+[tools]
+[attributes]
+[layers]
+<symbol>
+a 0 -336 304 -304 288 360
+l 100 7 0 -352 176 wfsTimSad
+l 75 0 0 -400 224 timing info
+l 75 0 0 -400 208 SIR records)
+l 75 0 0 -400 240 (Wavefront sensor
+r 0 -416 160 -224 352
+v 0 -336 304
+-352 288
+_
+v 0 -336 304
+-304 304
+_
+[comments]

@@ -1,0 +1,35 @@
+#---- Vxworks startup script -------
+# First, vxWorks startup issues:
+
+# Make delete key work for backspace
+tyBackspaceSet 0177
+
+# cd to application install directory (beware automounter problems)
+cd "$(install)"
+pwd
+
+# The local file contains site-specific information
+# such as the default router and the vxWorks password file.
+# This file also performs NFS mounts.
+
+< $(version)/bin/$(arch)/local
+
+# At the moment I think you may need to be dhs on the crate, same as the
+# username running the server - but I'll check this sometime soon.
+iam "dhs"
+
+# Load application software
+# dhs Libraries and startup
+ld < $(version)/bin/$(arch)/strcasecmp
+ld < /net/alba/sw3/gemini_DHS/dhs-0.13/external/lib/vw68k/libers.o
+ld < /net/alba/sw3/gemini_DHS/dhs-0.13/external/lib/vw68k/libimp.o
+ld < /net/alba/sw3/gemini_DHS/dhs-0.13/external/lib/vw68k/libsds.o
+ld < /net/alba/sw3/gemini_DHS/dhs-0.13/lib/vw68k/libgen.a
+ld < /net/alba/sw3/gemini_DHS/dhs-0.13/lib/vw68k/libdhs.a
+#ld < /net/alba/sw3/gemini_DHS/dhs-0.13/vxworks/client.o
+
+# dhstest Library
+ld < $(version)/bin/$(arch)/dhstests
+
+# start the impmaster 
+sp ImpMaster

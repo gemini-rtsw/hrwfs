@@ -1,0 +1,1278 @@
+file {
+	name="cad8.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="18"
+	nstr="60"
+	ndynamic="18"
+	nplot="0"
+	nrd="2"
+	nes="0"
+	nkd="1"
+	object {
+		x="0"
+		y="0"
+		width="676"
+		height="466"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="2718"
+	nwords_sta="632"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="1370"
+	osta="738"
+	odynamic="1370"
+	oplot="2582"
+	ord="2582"
+	oes="2706"
+	okd="2706"
+	opc="58"
+	ostr="270"
+	ocmap="738"
+	ocrules="738"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="23"
+		y="148"
+		width="115"
+		height="21"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"rectangle" {
+	object {
+		x="15"
+		y="80"
+		width="643"
+		height="365"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="337"
+		y="109"
+		width="145"
+		height="21"
+		groupid="0"
+	}
+	textix="CLIENT ID:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="337"
+		y="149"
+		width="145"
+		height="21"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="337"
+		y="130"
+		width="145"
+		height="21"
+		groupid="0"
+	}
+	textix="ERROR NUMBER:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="199"
+		width="125"
+		height="24"
+		groupid="0"
+	}
+	textix="PARAMETERS:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="89"
+		width="115"
+		height="24"
+		groupid="0"
+	}
+	textix="DIRECTIVE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="336"
+		y="86"
+		width="145"
+		height="24"
+		groupid="0"
+	}
+	textix="CAR STATE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"line" {
+	object {
+		x="15"
+		y="196"
+		width="642"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="15"
+		y="196"
+	}
+	point[1] {
+		x="657"
+		y="196"
+	}
+	orgpoint[0] {
+		x="0"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="0"
+	}
+}
+"line" {
+	object {
+		x="329"
+		y="81"
+		width="0"
+		height="115"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="329"
+		y="81"
+	}
+	point[1] {
+		x="329"
+		y="195"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="999"
+	}
+}
+"text" {
+	object {
+		x="23"
+		y="231"
+		width="26"
+		height="16"
+		groupid="0"
+	}
+	textix="A:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="256"
+		width="25"
+		height="16"
+		groupid="0"
+	}
+	textix="B:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="282"
+		width="26"
+		height="16"
+		groupid="0"
+	}
+	textix="C:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="308"
+		width="25"
+		height="16"
+		groupid="0"
+	}
+	textix="D:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="333"
+		width="26"
+		height="16"
+		groupid="0"
+	}
+	textix="E:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="359"
+		width="25"
+		height="16"
+		groupid="0"
+	}
+	textix="F:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="385"
+		width="26"
+		height="16"
+		groupid="0"
+	}
+	textix="G:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="23"
+		y="411"
+		width="25"
+		height="16"
+		groupid="0"
+	}
+	textix="H:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="15"
+		y="8"
+		width="490"
+		height="25"
+		groupid="0"
+	}
+	textix="$(label): $(cad)"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="514"
+		y="42"
+		width="145"
+		height="24"
+		groupid="0"
+	}
+	textix="$(car)C"
+	align="horiz. right"
+	RISC_pad="0"
+}
+"message button" {
+	object {
+		x="146"
+		y="89"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="START"
+	pressed_label="START"
+	press_msg="MARK"
+	release_msg="START"
+}
+"text update" {
+	object {
+		x="485"
+		y="88"
+		width="165"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(car)C.VAL"
+		rulechan[1] = "$(top)$(car)C.VAL"
+		rulechan[2] = "$(top)$(car)C.VAL"
+		rulechan[3] = "$(top)$(car)C.VAL"
+		rulechan[4] = "$(top)$(car)C.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)$(car)C"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="23"
+		y="168"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(cad).MESS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="485"
+		y="109"
+		width="165"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.CLID"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="hexadecimal"
+}
+"text update" {
+	object {
+		x="336"
+		y="168"
+		width="315"
+		height="22"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.OMSS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="485"
+		y="130"
+		width="165"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.OERR"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"message button" {
+	object {
+		x="146"
+		y="120"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="PRESET"
+	pressed_label="PRESET"
+	press_msg="MARK"
+	release_msg="PRESET"
+}
+"message button" {
+	object {
+		x="233"
+		y="120"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="DEFAULT"
+	pressed_label="(CLEAR)"
+	press_msg="MARK"
+	release_msg="CLEAR"
+}
+"text entry" {
+	object {
+		x="49"
+		y="230"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).A"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="255"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).B"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="281"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).C"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="307"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).D"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="332"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).E"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="358"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).F"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="384"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).G"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text entry" {
+	object {
+		x="49"
+		y="410"
+		width="600"
+		height="19"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).H"
+		clr="0"
+		bclr="6"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(cad).VAL"
+		rulechan[1] = "$(top)$(cad).VAL"
+		rulechan[2] = "$(top)$(cad).VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="acceptReject"
+		clrargs="C=$(top)$(cad)"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	format="decimal"
+	RISC_pad="0"
+}
+"text update" {
+	object {
+		x="15"
+		y="42"
+		width="490"
+		height="24"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(cad).DESC"
+		clr="12"
+		bclr="13"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"message button" {
+	object {
+		x="233"
+		y="89"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="STOP"
+	pressed_label="STOP"
+	press_msg="MARK"
+	release_msg="STOP"
+}
+"related display" {
+	object {
+		x="514"
+		y="9"
+		width="67"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HELP"
+		name="help1.dl"
+		args=""
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"related display" {
+	object {
+		x="23"
+		y="120"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="Details"
+		name="cad_details8.dl"
+		args="top=$(top),cad=$(cad)"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="587"
+		y="9"
+		width="72"
+		height="22"
+		groupid="0"
+	}
+	RISCpad="0"
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

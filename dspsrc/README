@@ -1,0 +1,23 @@
+This directory contains the DSP source (*.asm)  files for the SDSU2
+controller when used with the version 2 VME interface card.
+The makefile assembles and links these and places the OMF output
+into the ".applTop/bin/asm56000"  directory.
+
+The following DSP code is available:
+
+timappl-39-full.asm	Timing board application code
+			Full function version for CCD39 chip.
+timappl-39.asm		Timing board application code
+			Fast cut down version for CCD39 chip.
+timappl-47-full.asm	Timing board application code
+			Full function version for CCD47 chip.
+timappl-47.asm		Timing board application code
+			Fast cut down version for CCD47 chip.
+timboot.asm		Timing board boot code (used to build a boot ROM image)
+timhead.asm		Timing code header file
+utilappl.asm		Utility board application code
+utilboot.asm		Utility board boot code (used to build a boot ROM image)
+utilhead.asm		Utility code header file
+vmeappl.asm		VME board application code
+vmeboot.asm		VME board boot code (used to build a boot ROM image)
+vmehead.asm		VME code header file

@@ -1,0 +1,72 @@
+[symbol2]
+bbox 64 96 576 416
+port 226 102 100 0 p#100 symbol 0 256 96 0
+port 258 102 100 0 p#101 symbol 0 288 96 0
+port 290 102 100 0 p#102 symbol 0 320 96 0
+port 322 102 100 0 p#103 symbol 0 352 96 0
+port 354 102 100 0 p#104 symbol 0 384 96 0
+port 386 102 100 0 p#105 symbol 0 416 96 0
+port 418 102 100 0 p#106 symbol 0 448 96 0
+port 450 102 100 0 p#107 symbol 0 480 96 0
+port 482 102 100 0 p#108 symbol 0 512 96 0
+port 514 102 100 0 p#109 symbol 0 544 96 0
+port 514 422 100 0 p#121 symbol 0 544 416 0
+port 482 422 100 0 p#122 symbol 0 512 416 0
+port 450 422 100 0 p#123 symbol 0 480 416 0
+port 418 422 100 0 p#124 symbol 0 448 416 0
+port 386 422 100 0 p#125 symbol 0 416 416 0
+port 354 422 100 0 p#126 symbol 0 384 416 0
+port 322 422 100 0 p#127 symbol 0 352 416 0
+port 290 422 100 0 p#128 symbol 0 320 416 0
+port 258 422 100 0 p#129 symbol 0 288 416 0
+port 226 422 100 0 p#130 symbol 0 256 416 0
+port 194 422 100 0 p#131 symbol 0 224 416 0
+port 162 422 100 0 p#132 symbol 0 192 416 0
+port 130 422 100 0 p#133 symbol 0 160 416 0
+port 98 422 100 0 p#134 symbol 0 128 416 0
+port 66 422 100 0 p#135 symbol 0 96 416 0
+port 40 390 100 0 p#85 symbol 0 64 384 0
+port 40 358 100 0 p#86 symbol 0 64 352 0
+port 40 326 100 0 p#87 symbol 0 64 320 0
+port 40 294 100 0 p#88 symbol 0 64 288 0
+port 40 262 100 0 p#89 symbol 0 64 256 0
+port 40 230 100 0 p#90 symbol 0 64 224 0
+port 40 198 100 0 p#91 symbol 0 64 192 0
+port 40 166 100 0 p#92 symbol 0 64 160 0
+port 40 134 100 0 p#93 symbol 0 64 128 0
+port 72 102 100 0 p#95 symbol 0 96 96 0
+port 104 102 100 0 p#96 symbol 0 128 96 0
+port 136 102 100 0 p#97 symbol 0 160 96 0
+port 168 102 100 0 p#98 symbol 0 192 96 0
+port 200 102 100 0 p#99 symbol 0 224 96 0
+uniq 136
+[tools]
+[attributes]
+p 592 222 100 0 0 AUTHOR:AUTHOR
+p 92 382 100 0 -1 COMMENT1:.
+p 92 350 100 0 -1 COMMENT2:.
+p 92 320 100 0 -1 COMMENT3:.
+p 92 288 100 0 -1 COMMENT4:.
+p 92 256 100 0 -1 COMMENT5:.
+p 92 224 100 0 -1 COMMENT6:.
+p 92 192 100 0 -1 COMMENT7:.
+p 92 160 100 0 -1 COMMENT8:.
+p 92 128 100 0 -1 COMMENT9:.
+p 592 190 100 0 0 DUE_DATE:DUE
+p 592 126 100 0 0 EXEC_TIME:0
+p 592 318 100 0 0 FILENAME:FILE
+p 592 158 100 0 0 LAST_UPDATE:UPDATE
+p 592 254 100 0 0 LINE_NO:LINE
+p 592 350 100 0 0 MODULENAME:MODULE
+p 592 286 100 0 0 ROUTINE_ID:NAME
+[layers]
+<symbol>
+v 0 576 416
+64 416
+64 96
+576 96
+_
+v 0 576 416
+576 96
+_
+[comments]

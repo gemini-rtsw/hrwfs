@@ -1,0 +1,841 @@
+file {
+	name="det_main.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="12"
+	nstr="107"
+	ndynamic="7"
+	nplot="0"
+	nrd="6"
+	nes="0"
+	nkd="1"
+	object {
+		x="328"
+		y="298"
+		width="706"
+		height="370"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="2610"
+	nwords_sta="128"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="1764"
+	osta="1636"
+	odynamic="1764"
+	oplot="2226"
+	ord="2226"
+	oes="2598"
+	okd="2598"
+	opc="58"
+	ostr="196"
+	ocmap="1636"
+	ocrules="1636"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="10"
+		y="226"
+		width="681"
+		height="130"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="11"
+		y="10"
+		width="530"
+		height="28"
+		groupid="0"
+	}
+	textix="$(sensor) - DETECTOR CONTROLLER"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="17"
+		y="48"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	textix="STATUS INFORMATION:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"rectangle" {
+	object {
+		x="10"
+		y="45"
+		width="680"
+		height="175"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="410"
+		y="105"
+		width="110"
+		height="20"
+		groupid="0"
+	}
+	textix="HEALTH:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="18"
+		y="163"
+		width="135"
+		height="20"
+		groupid="0"
+	}
+	textix="SDSU STATUS:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="19"
+		y="76"
+		width="210"
+		height="20"
+		groupid="0"
+	}
+	textix="CONTROLLER STATE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="19"
+		y="105"
+		width="210"
+		height="20"
+		groupid="0"
+	}
+	textix="OBSERVATION STATE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="16"
+		y="229"
+		width="240"
+		height="22"
+		groupid="0"
+	}
+	textix="COMMANDS BY CATEGORY:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="410"
+		y="134"
+		width="110"
+		height="20"
+		groupid="0"
+	}
+	textix="HEARTBEAT:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text" {
+	object {
+		x="19"
+		y="134"
+		width="210"
+		height="20"
+		groupid="0"
+	}
+	textix="INIT STATE:"
+	align="horiz. left"
+	RISC_pad="0"
+}
+"text update" {
+	object {
+		x="522"
+		y="105"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)health"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)health.VAL"
+		rulechan[1] = "$(top)health.VAL"
+		rulechan[2] = "$(top)health.VAL"
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="health"
+		clrargs="C=$(top)health"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="154"
+		y="163"
+		width="529"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)detInitStatus"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="236"
+		y="76"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)detC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)detC.VAL"
+		rulechan[1] = "$(top)detC.VAL"
+		rulechan[2] = "$(top)detC.VAL"
+		rulechan[3] = "$(top)detC.VAL"
+		rulechan[4] = "$(top)detC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)detC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="236"
+		y="105"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)observeC.VAL"
+		rulechan[1] = "$(top)observeC.VAL"
+		rulechan[2] = "$(top)observeC.VAL"
+		rulechan[3] = "$(top)observeC.VAL"
+		rulechan[4] = "$(top)observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="523"
+		y="134"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)heartBeat"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="236"
+		y="134"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)detInitC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)detInitC.VAL"
+		rulechan[1] = "$(top)detInitC.VAL"
+		rulechan[2] = "$(top)detInitC.VAL"
+		rulechan[3] = "$(top)detInitC.VAL"
+		rulechan[4] = "$(top)detInitC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)detInitC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="154"
+		y="190"
+		width="529"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"related display" {
+	object {
+		x="545"
+		y="13"
+		width="70"
+		height="23"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HELP"
+		name="$help1.dl"
+		args=""
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"related display" {
+	object {
+		x="17"
+		y="257"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SET EXPOSURE PARAMETERS"
+		name="det_exposure.dl"
+		args="top=$(top),sensor=$(sensor),cad=detExposure,car=det"
+	}
+	display[1] {
+		label="SET OBSERVATION TYPE"
+		name="det_obstype.dl"
+		args="top=$(top),sensor=$(sensor),cad=detObstype,car=det"
+	}
+	display[2] {
+		label="SET WCS CALIBRATION"
+		name="det_setwcs.dl"
+		args="top=$(top),sensor=$(sensor),cad=detSetWcs,car=det"
+	}
+	display[3] {
+		label="SET CHOP MASK"
+		name="det_chop.dl"
+		args="top=$(top),sensor=$(sensor),cad=detChop,car=det"
+	}
+	display[4] {
+		label="LOAD PARAMETERS"
+		name="det_setup.dl"
+		args="top=$(top),sensor=$(sensor),cad=detSetup,car=det"
+	}
+	display[5] {
+		label="SAVE PARAMETERS"
+		name="det_save.dl"
+		args="top=$(top),sensor=$(sensor),cad=detSave,car=det"
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="HIGH LEVEL"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="16"
+		y="290"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="START OBSERVATION"
+		name="det_observe.dl"
+		args="top=$(top),sensor=$(sensor),cad=observe,car=det"
+	}
+	display[1] {
+		label="PAUSE OBSERVATION"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=pause,car=observe"
+	}
+	display[2] {
+		label="CONTINUE OBSERVATION"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=continue,car=observe"
+	}
+	display[3] {
+		label="STOP OBSERVATION"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=stop,car=observe"
+	}
+	display[4] {
+		label="ABORT OBSERVATION"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=abort,car=observe"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="OBSERVATION CONTROL"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="18"
+		y="322"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="READOUT GEOMETRY"
+		name="det_setGeom.dl"
+		args="top=$(top),sensor=$(sensor),cad=detGeometry,car=det"
+	}
+	display[1] {
+		label="READOUT MODE"
+		name="det_setMode.dl"
+		args="top=$(top),sensor=$(sensor),cad=detMode,car=det"
+	}
+	display[2] {
+		label="ADC OFFSETS"
+		name="det_setOffsets.dl"
+		args="top=$(top),sensor=$(sensor),cad=detOffset,car=det"
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="LOW LEVEL"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="347"
+		y="257"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="INITIALIZE"
+		name="det_init.dl"
+		args="top=$(top),sensor=$(sensor),cad=detInit,car=det"
+	}
+	display[1] {
+		label="RESET"
+		name="det_reset.dl"
+		args="top=$(top),sensor=$(sensor),cad=detReset,car=det"
+	}
+	display[2] {
+		label="PRIMITIVE COMMAND"
+		name="det_primitive.dl"
+		args="top=$(top),sensor=$(sensor),cad=detPrim,car=det"
+	}
+	display[3] {
+		label="TEST"
+		name="det_test.dl"
+		args="top=$(top),sensor=$(sensor),cad=detTest,car=det"
+	}
+	display[4] {
+		label="GIVE UP CONTROL"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=detGiveUp,car=det"
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="ENGINEERING"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="349"
+		y="290"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SET TEMPERATURE"
+		name="det_setTemp.dl"
+		args="top=$(top),sensor=$(sensor),cad=detTemp,car=det"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="TEMPERATURE CONTROL"
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="622"
+		y="13"
+		width="70"
+		height="23"
+		groupid="0"
+	}
+	RISCpad="0"
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

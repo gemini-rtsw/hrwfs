@@ -1,0 +1,23 @@
+[symbol2]
+bbox -608 32 -384 288
+port -592 128 100 1536 SPLK symbol 1 -608 128 0
+port -592 224 100 1536 CLNK symbol 1 -608 224 0
+port -592 256 100 1536 MLNK symbol 1 -608 256 0
+port -592 192 100 1536 PLNK symbol 1 -608 192 0
+port -592 160 100 1536 STLK symbol 1 -608 160 0
+port -400 256 100 2048 OUTA symbol 2 -384 256 0
+port -400 224 100 2048 OUTB symbol 2 -384 224 0
+port -400 192 100 2048 OUTC symbol 2 -384 192 0
+port -400 160 100 2048 OUTD symbol 2 -384 160 0
+port -400 128 100 2048 OUTE symbol 2 -384 128 0
+uniq 18
+[tools]
+[attributes]
+p -608 0 100 0 1 set1:cad CADNAME
+[layers]
+<symbol>
+l 100 0 0 -592 48 cadSequenceWfs
+l 75 0 0 -592 96 (Sequence control
+l 75 0 0 -592 80 from WFS CAD record)
+r 0 -608 32 -384 288
+[comments]

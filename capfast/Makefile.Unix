@@ -1,0 +1,22 @@
+
+include Target.include
+include .applTop/config/CONFIG
+
+# You can change the way the sf2db and sch2edif tools work by adding to
+# the following flags
+# SF2DB_FLAGS    =
+# SCH2EDIF_FLAGS =
+#
+
+E2SR_SYSFLAGS = -aetc -d $(EPICS_EXTENSIONS)/src/edif/lib/edb.def
+SF2DB         = $(EPICS_BASE)/bin/$(HOST_ARCH)/sf2db
+SCH2EDIF      = $(CAPDIR)/sch2edif
+
+# List of ASCII database (*.db) files 
+# DEPSCHS is a list of schematics they depend on
+
+DEPSCHS = $(wildcard ../*.sch)
+#DATA	= $(patsubst ../%.sch, %.db, $(wildcard ../*.sch))
+DATA =	hrwfsTop.db hrwfsSadTop.db
+
+include .applTop/config/RULES.Build

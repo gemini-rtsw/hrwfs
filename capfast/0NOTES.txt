@@ -1,0 +1,2 @@
+An older version (1.1) of observeCad.sch has been extracted from
+the CVS repository. This one retains the gbsObserve command (not peek).
