@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="12"
-	nstr="61"
+	nstr="59"
 	ndynamic="15"
 	nplot="0"
-	nrd="2"
+	nrd="1"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2424"
+	nwords_dspy="2450"
 	nwords_sta="560"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1256"
-	osta="696"
-	odynamic="1256"
-	oplot="2288"
-	ord="2288"
-	oes="2412"
-	okd="2412"
-	opc="58"
-	ostr="198"
-	ocmap="696"
-	ocrules="696"
+	odyng="1246"
+	osta="686"
+	odynamic="1246"
+	oplot="2278"
+	ord="2278"
+	oes="2438"
+	okd="2438"
+	opd="2450"
+	opo="2450"
+	opc="68"
+	ostr="208"
+	ocmap="686"
+	ocrules="686"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -57,25 +66,23 @@ display {
 	object {
 		x="14"
 		y="7"
-		width="495"
+		width="556"
 		height="25"
 		groupid="0"
 	}
 	textix="$(sensor): DOWNLOAD SDSU PARAMETERS"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="106"
-		width="93"
+		width="112"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -90,13 +97,12 @@ display {
 	object {
 		x="336"
 		y="69"
-		width="119"
+		width="131"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -108,67 +114,61 @@ display {
 	}
 	textix="PAR FILE PATH:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="107"
-		width="91"
-		height="21"
+		width="106"
+		height="18"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
-		y="88"
+		y="89"
 		width="147"
-		height="21"
+		height="19"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="21"
 		y="157"
-		width="125"
+		width="215"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="49"
-		width="112"
-		height="24"
+		width="119"
+		height="20"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="48"
-		width="115"
-		height="24"
+		width="136"
+		height="21"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -232,7 +232,6 @@ display {
 	}
 	textix="PAR FILE NAME:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -244,7 +243,6 @@ display {
 	}
 	textix="DESTINATION DSP:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -384,7 +382,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text update" {
 	object {
@@ -710,7 +707,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -756,7 +752,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -952,60 +947,6 @@ display {
 }
 "related display" {
 	object {
-		x="515"
-		y="8"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
-"related display" {
-	object {
 		x="25"
 		y="81"
 		width="80"
@@ -1053,6 +994,86 @@ display {
 		name=""
 		args=""
 	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
 	clr="0"
 	bclr="6"
 	menu_title=""
@@ -1066,7 +1087,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

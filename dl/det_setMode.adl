@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="13"
-	nstr="104"
+	nstr="97"
 	ndynamic="35"
 	nplot="0"
-	nrd="1"
+	nrd="0"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4388"
+	nwords_dspy="4142"
 	nwords_sta="596"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1848"
-	osta="1252"
-	odynamic="1848"
-	oplot="4314"
-	ord="4314"
-	oes="4376"
-	okd="4376"
-	opc="58"
-	ostr="210"
-	ocmap="1252"
-	ocrules="1252"
+	odyng="1664"
+	osta="1068"
+	odynamic="1664"
+	oplot="4130"
+	ord="4130"
+	oes="4130"
+	okd="4130"
+	opd="4142"
+	opo="4142"
+	opc="68"
+	ostr="220"
+	ocmap="1068"
+	ocrules="1068"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -66,13 +75,12 @@ display {
 	object {
 		x="10"
 		y="156"
-		width="125"
+		width="172"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -136,91 +144,83 @@ display {
 	}
 	textix="$(sensor): SET READOUT MODE"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="10"
 		y="523"
-		width="450"
-		height="16"
+		width="452"
+		height="15"
 		groupid="0"
 	}
 	textix="D: Number of samples per frame (t_samples)  ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="10"
 		y="406"
 		width="450"
-		height="16"
+		height="14"
 		groupid="0"
 	}
 	textix="C: Combined gain and speed parameter (t_gain_sp):"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="10"
 		y="345"
-		width="451"
-		height="16"
+		width="452"
+		height="13"
 		groupid="0"
 	}
 	textix="B: CDI integration time (t_int_tim) ... ... ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="10"
 		y="185"
-		width="451"
-		height="16"
+		width="473"
+		height="15"
 		groupid="0"
 	}
 	textix="A: Readout mode parameter (t_mode)  ... ... ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="13"
 		y="105"
-		width="93"
+		width="114"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="13"
 		y="48"
-		width="112"
-		height="24"
+		width="121"
+		height="21"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="327"
 		y="68"
-		width="119"
+		width="136"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -232,31 +232,28 @@ display {
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="327"
 		y="87"
-		width="147"
-		height="21"
+		width="154"
+		height="20"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="327"
-		y="47"
-		width="115"
-		height="24"
+		y="50"
+		width="145"
+		height="21"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -268,7 +265,6 @@ display {
 	}
 	textix="(CCD only)"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -280,7 +276,6 @@ display {
 	}
 	textix="(IR only)"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -700,7 +695,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -746,7 +740,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -792,7 +785,6 @@ display {
 		convertParams=""
 	}
 	format="hexadecimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -838,7 +830,6 @@ display {
 		convertParams=""
 	}
 	format="hexadecimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -1944,60 +1935,6 @@ display {
 	press_msg="1"
 	release_msg=""
 }
-"related display" {
-	object {
-		x="499"
-		y="6"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
 "kill display" {
 	object {
 		x="572"
@@ -2006,7 +1943,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

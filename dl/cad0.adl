@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="9"
-	nstr="50"
+	nstr="47"
 	ndynamic="10"
 	nplot="0"
-	nrd="2"
+	nrd="1"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="1932"
+	nwords_dspy="1948"
 	nwords_sta="548"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1112"
-	osta="564"
-	odynamic="1112"
-	oplot="1796"
-	ord="1796"
-	oes="1920"
-	okd="1920"
-	opc="58"
-	ostr="162"
-	ocmap="564"
-	ocrules="564"
+	odyng="1092"
+	osta="544"
+	odynamic="1092"
+	oplot="1776"
+	ord="1776"
+	oes="1936"
+	okd="1936"
+	opd="1948"
+	opo="1948"
+	opc="68"
+	ostr="172"
+	ocmap="544"
+	ocrules="544"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -63,7 +72,6 @@ display {
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -84,7 +92,6 @@ display {
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -96,55 +103,50 @@ display {
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="337"
 		y="131"
 		width="145"
-		height="21"
+		height="18"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="200"
-		width="125"
+		width="189"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="91"
-		width="115"
-		height="24"
+		width="116"
+		height="20"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="86"
-		width="145"
-		height="24"
+		width="147"
+		height="23"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -208,7 +210,6 @@ display {
 	}
 	textix="(NONE)"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -220,7 +221,6 @@ display {
 	}
 	textix="$(label): $(cad)"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -232,7 +232,6 @@ display {
 	}
 	textix="$(car)C"
 	align="horiz. right"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -612,7 +611,7 @@ display {
 	object {
 		x="16"
 		y="45"
-		width="490"
+		width="535"
 		height="24"
 		groupid="0"
 	}
@@ -751,56 +750,82 @@ display {
 		name=""
 		args=""
 	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
-"related display" {
-	object {
-		x="511"
-		y="13"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="$(cad)Help.dl"
-		args=""
-	}
-	display[1] {
+	display[8] {
 		label=""
 		name=""
 		args=""
 	}
-	display[2] {
+	display[9] {
 		label=""
 		name=""
 		args=""
 	}
-	display[3] {
+	display[10] {
 		label=""
 		name=""
 		args=""
 	}
-	display[4] {
+	display[11] {
 		label=""
 		name=""
 		args=""
 	}
-	display[5] {
+	display[12] {
 		label=""
 		name=""
 		args=""
 	}
-	display[6] {
+	display[13] {
 		label=""
 		name=""
 		args=""
 	}
-	display[7] {
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
 		label=""
 		name=""
 		args=""
@@ -818,7 +843,6 @@ display {
 		height="22"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="10"
-	nstr="67"
+	nstr="65"
 	ndynamic="17"
 	nplot="0"
-	nrd="2"
+	nrd="1"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2562"
+	nwords_dspy="2588"
 	nwords_sta="548"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1238"
-	osta="690"
-	odynamic="1238"
-	oplot="2426"
-	ord="2426"
-	oes="2550"
-	okd="2550"
-	opc="58"
-	ostr="174"
-	ocmap="690"
-	ocrules="690"
+	odyng="1228"
+	osta="680"
+	odynamic="1228"
+	oplot="2416"
+	ord="2416"
+	oes="2576"
+	okd="2576"
+	opd="2588"
+	opo="2588"
+	opc="68"
+	ostr="184"
+	ocmap="680"
+	ocrules="680"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -57,25 +66,23 @@ display {
 	object {
 		x="14"
 		y="7"
-		width="495"
+		width="551"
 		height="25"
 		groupid="0"
 	}
 	textix="$(sensor) : SPECIFY CHOP PARAMETERS"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="106"
-		width="93"
+		width="108"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -90,85 +97,78 @@ display {
 	object {
 		x="336"
 		y="69"
-		width="119"
-		height="21"
+		width="141"
+		height="22"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="22"
 		y="183"
-		width="104"
-		height="16"
+		width="126"
+		height="20"
 		groupid="0"
 	}
 	textix="CHOP BEAMS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="107"
-		width="91"
-		height="21"
+		width="113"
+		height="19"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="88"
-		width="147"
-		height="21"
+		width="152"
+		height="20"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="22"
 		y="157"
-		width="125"
+		width="199"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="49"
-		width="112"
-		height="24"
+		width="122"
+		height="21"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
-		x="336"
-		y="48"
-		width="115"
-		height="24"
+		x="335"
+		y="49"
+		width="150"
+		height="23"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -657,7 +657,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -1045,60 +1044,6 @@ display {
 }
 "related display" {
 	object {
-		x="512"
-		y="8"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
-"related display" {
-	object {
 		x="25"
 		y="79"
 		width="80"
@@ -1146,6 +1091,86 @@ display {
 		name=""
 		args=""
 	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
 	clr="0"
 	bclr="6"
 	menu_title=""
@@ -1159,7 +1184,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

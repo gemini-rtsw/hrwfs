@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="19"
-	nstr="59"
+	nstr="57"
 	ndynamic="18"
 	nplot="0"
-	nrd="1"
+	nrd="0"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2966"
+	nwords_dspy="2894"
 	nwords_sta="668"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1686"
-	osta="1018"
-	odynamic="1686"
-	oplot="2892"
-	ord="2892"
-	oes="2954"
-	okd="2954"
-	opc="58"
-	ostr="282"
-	ocmap="1018"
-	ocrules="1018"
+	odyng="1676"
+	osta="1008"
+	odynamic="1676"
+	oplot="2882"
+	ord="2882"
+	oes="2882"
+	okd="2882"
+	opd="2894"
+	opo="2894"
+	opc="68"
+	ostr="292"
+	ocmap="1008"
+	ocrules="1008"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -66,49 +75,45 @@ display {
 	object {
 		x="363"
 		y="66"
-		width="119"
+		width="143"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="363"
 		y="104"
-		width="91"
+		width="136"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="363"
 		y="85"
-		width="147"
+		width="170"
 		height="21"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="363"
 		y="45"
-		width="115"
+		width="153"
 		height="24"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -166,97 +171,89 @@ display {
 	object {
 		x="12"
 		y="183"
-		width="525"
-		height="16"
+		width="617"
+		height="15"
 		groupid="0"
 	}
 	textix="A: Number of subapertures in X per output (T_XSUBAP) ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="205"
-		width="525"
-		height="16"
+		width="610"
+		height="14"
 		groupid="0"
 	}
 	textix="B: Number of subapertures in Y per output (T_YSUBAP) ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="319"
 		width="525"
-		height="16"
+		height="15"
 		groupid="0"
 	}
 	textix="G: Offset from edge to first column in pixels (T_XSTART) :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="341"
 		width="525"
-		height="16"
+		height="15"
 		groupid="0"
 	}
 	textix="H: Offset from edge to first row in pixels (T_YSTART) .. :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="364"
-		width="525"
-		height="16"
+		width="524"
+		height="13"
 		groupid="0"
 	}
 	textix="I: Spacing between subapertures in X pixels (T_XSPACE) . :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="387"
-		width="525"
-		height="16"
+		width="524"
+		height="14"
 		groupid="0"
 	}
 	textix="J: Spacing between subapertures in Y pixels (T_YSPACE) . :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="273"
 		width="525"
-		height="16"
+		height="14"
 		groupid="0"
 	}
 	textix="E: Binning factor in X (pixels per superpixel) (T_XBIN)  :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="296"
-		width="525"
-		height="16"
+		width="524"
+		height="14"
 		groupid="0"
 	}
 	textix="F: Binning factor in Y (pixels per superpixel) (T_YBIN)  :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -268,91 +265,83 @@ display {
 	}
 	textix="$(sensor): SET GEOMETRY"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="13"
 		y="105"
-		width="93"
+		width="141"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="13"
 		y="48"
-		width="112"
-		height="24"
+		width="121"
+		height="21"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="156"
-		width="125"
+		width="187"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="228"
-		width="525"
-		height="16"
+		width="524"
+		height="15"
 		groupid="0"
 	}
 	textix="C: Size of subapertures in X superpixels (T_XRAS) .. ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="12"
 		y="251"
-		width="525"
-		height="16"
+		width="595"
+		height="15"
 		groupid="0"
 	}
 	textix="D: Size of subapertures in Y superpixels (T_YRAS) .. ... :"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="222"
 		y="48"
-		width="80"
+		width="109"
 		height="14"
 		groupid="0"
 	}
 	textix="(DEFAULT ="
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="227"
 		y="61"
-		width="80"
+		width="112"
 		height="14"
 		groupid="0"
 	}
 	textix="full frame)"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -772,7 +761,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -818,7 +806,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -864,7 +851,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -910,7 +896,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -956,7 +941,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1002,7 +986,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1048,7 +1031,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1094,7 +1076,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1140,7 +1121,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1186,61 +1166,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
-}
-"related display" {
-	object {
-		x="568"
-		y="8"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
 }
 "kill display" {
 	object {
@@ -1250,7 +1175,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

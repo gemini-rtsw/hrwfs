@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="16"
-	nstr="61"
+	nstr="60"
 	ndynamic="20"
 	nplot="0"
-	nrd="2"
+	nrd="1"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="0"
 		y="0"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2902"
+	nwords_dspy="2932"
 	nwords_sta="616"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1398"
-	osta="782"
-	odynamic="1398"
-	oplot="2766"
-	ord="2766"
-	oes="2890"
-	okd="2890"
-	opc="58"
-	ostr="248"
-	ocmap="782"
-	ocrules="782"
+	odyng="1392"
+	osta="776"
+	odynamic="1392"
+	oplot="2760"
+	ord="2760"
+	oes="2920"
+	okd="2920"
+	opd="2932"
+	opo="2932"
+	opc="68"
+	ostr="258"
+	ocmap="776"
+	ocrules="776"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -63,19 +72,17 @@ display {
 	}
 	textix="$(sensor) - INITIALIZE CONTROLLER"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="106"
-		width="93"
+		width="131"
 		height="21"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -90,13 +97,12 @@ display {
 	object {
 		x="336"
 		y="69"
-		width="119"
+		width="145"
 		height="21"
 		groupid="0"
 	}
 	textix="CLIENT ID:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -108,67 +114,61 @@ display {
 	}
 	textix="A: VME bus address (hex):"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="107"
-		width="91"
-		height="21"
+		width="136"
+		height="19"
 		groupid="0"
 	}
 	textix="MESSAGE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="88"
-		width="147"
-		height="21"
+		width="150"
+		height="19"
 		groupid="0"
 	}
 	textix="ERROR NUMBER:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="20"
 		y="157"
-		width="125"
+		width="194"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="49"
-		width="112"
-		height="24"
+		width="123"
+		height="21"
 		groupid="0"
 	}
 	textix="DIRECTIVE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="336"
 		y="48"
-		width="115"
-		height="24"
+		width="144"
+		height="22"
 		groupid="0"
 	}
 	textix="CAR STATE:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -224,15 +224,14 @@ display {
 }
 "text" {
 	object {
-		x="20"
-		y="365"
-		width="80"
-		height="24"
+		x="21"
+		y="371"
+		width="83"
+		height="18"
 		groupid="0"
 	}
 	textix="STATUS:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "rectangle" {
 	object {
@@ -253,19 +252,17 @@ display {
 	}
 	textix="B: OMF file path:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="20"
 		y="267"
-		width="180"
-		height="16"
+		width="193"
+		height="14"
 		groupid="0"
 	}
 	textix="D: TIMING OMF file:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
@@ -277,31 +274,28 @@ display {
 	}
 	textix="C: VME OMF file:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="20"
 		y="296"
-		width="180"
-		height="16"
+		width="185"
+		height="15"
 		groupid="0"
 	}
 	textix="E: UTILITY OMF file:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="20"
 		y="325"
-		width="270"
+		width="285"
 		height="16"
 		groupid="0"
 	}
 	textix="F: Maximum number of frames:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -721,7 +715,6 @@ display {
 		convertParams=""
 	}
 	format="hexadecimal"
-	RISC_pad="0"
 }
 "text update" {
 	object {
@@ -861,7 +854,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -907,7 +899,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -953,7 +944,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -999,7 +989,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "text entry" {
 	object {
@@ -1045,7 +1034,6 @@ display {
 		convertParams=""
 	}
 	format="decimal"
-	RISC_pad="0"
 }
 "message button" {
 	object {
@@ -1241,60 +1229,6 @@ display {
 }
 "related display" {
 	object {
-		x="512"
-		y="8"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
-"related display" {
-	object {
 		x="24"
 		y="79"
 		width="80"
@@ -1342,6 +1276,86 @@ display {
 		name=""
 		args=""
 	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
 	clr="0"
 	bclr="6"
 	menu_title=""
@@ -1355,7 +1369,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"

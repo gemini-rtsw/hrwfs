@@ -7,10 +7,10 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="12"
-	nstr="103"
+	nstr="97"
 	ndynamic="7"
 	nplot="0"
-	nrd="6"
+	nrd="5"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="3160"
+	nwords_dspy="2908"
 	nwords_sta="128"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1726"
-	osta="1598"
-	odynamic="1726"
-	oplot="2188"
-	ord="2188"
-	oes="3148"
-	okd="3148"
-	opd="3160"
-	opo="3160"
+	odyng="1634"
+	osta="1506"
+	odynamic="1634"
+	oplot="2096"
+	ord="2096"
+	oes="2896"
+	okd="2896"
+	opd="2908"
+	opo="2908"
 	opc="68"
 	ostr="206"
-	ocmap="1598"
-	ocrules="1598"
+	ocmap="1506"
+	ocrules="1506"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -503,141 +503,7 @@ display {
 }
 "related display" {
 	object {
-		x="545"
-		y="13"
-		width="70"
-		height="23"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="$help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	display[8] {
-		label=""
-		name=""
-		args=""
-	}
-	display[9] {
-		label=""
-		name=""
-		args=""
-	}
-	display[10] {
-		label=""
-		name=""
-		args=""
-	}
-	display[11] {
-		label=""
-		name=""
-		args=""
-	}
-	display[12] {
-		label=""
-		name=""
-		args=""
-	}
-	display[13] {
-		label=""
-		name=""
-		args=""
-	}
-	display[14] {
-		label=""
-		name=""
-		args=""
-	}
-	display[15] {
-		label=""
-		name=""
-		args=""
-	}
-	display[16] {
-		label=""
-		name=""
-		args=""
-	}
-	display[17] {
-		label=""
-		name=""
-		args=""
-	}
-	display[18] {
-		label=""
-		name=""
-		args=""
-	}
-	display[19] {
-		label=""
-		name=""
-		args=""
-	}
-	display[20] {
-		label=""
-		name=""
-		args=""
-	}
-	display[21] {
-		label=""
-		name=""
-		args=""
-	}
-	display[22] {
-		label=""
-		name=""
-		args=""
-	}
-	display[23] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
-"related display" {
-	object {
-		x="17"
+		x="16"
 		y="257"
 		width="300"
 		height="22"
@@ -645,9 +511,9 @@ display {
 	}
 	selfkill="off"
 	display[0] {
-		label="SET EXPOSURE PARAMETERS"
-		name="det_exposure.dl"
-		args="top=$(top),sensor=$(sensor),cad=detExposure,car=det"
+		label="SET FRAME SIZE"
+		name="det_frameSize.dl"
+		args="top=$(top),sensor=$(sensor),cad=detFrameSize,car=det"
 	}
 	display[1] {
 		label="SET OBSERVATION TYPE"
@@ -660,19 +526,19 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detSetWcs,car=det"
 	}
 	display[3] {
-		label="SET CHOP MASK"
-		name="det_chop.dl"
-		args="top=$(top),sensor=$(sensor),cad=detChop,car=det"
+		label=""
+		name=""
+		args=""
 	}
 	display[4] {
-		label="LOAD PARAMETERS"
-		name="det_setup.dl"
-		args="top=$(top),sensor=$(sensor),cad=detSetup,car=det"
+		label=""
+		name=""
+		args=""
 	}
 	display[5] {
-		label="SAVE PARAMETERS"
-		name="det_save.dl"
-		args="top=$(top),sensor=$(sensor),cad=detSave,car=det"
+		label=""
+		name=""
+		args=""
 	}
 	display[6] {
 		label=""
@@ -766,7 +632,7 @@ display {
 	}
 	clr="0"
 	bclr="6"
-	menu_title="HIGH LEVEL"
+	menu_title="WFS PARAMETERS"
 	decorate="none"
 }
 "related display" {
@@ -905,7 +771,7 @@ display {
 }
 "related display" {
 	object {
-		x="18"
+		x="16"
 		y="322"
 		width="300"
 		height="22"
@@ -928,14 +794,14 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detOffset,car=det"
 	}
 	display[3] {
-		label=""
-		name=""
-		args=""
+		label="LOAD PARAMETERS"
+		name="det_setup.dl"
+		args="top=$(top),sensor=$(sensor),cad=detSetup,car=det"
 	}
 	display[4] {
-		label=""
-		name=""
-		args=""
+		label="SAVE PARAMETERS"
+		name="det_save.dl"
+		args="top=$(top),sensor=$(sensor),cad=detSave,car=det"
 	}
 	display[5] {
 		label=""
@@ -1034,7 +900,7 @@ display {
 	}
 	clr="0"
 	bclr="6"
-	menu_title="LOW LEVEL"
+	menu_title="DSP CODE PARAMETERS"
 	decorate="none"
 }
 "related display" {
@@ -1067,9 +933,9 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detTest,car=det"
 	}
 	display[4] {
-		label="GIVE UP CONTROL"
-		name="cad0.dl"
-		args="top=$(top),label=$(sensor),cad=detGiveUp,car=det"
+		label=""
+		name=""
+		args=""
 	}
 	display[5] {
 		label=""
@@ -1173,7 +1039,7 @@ display {
 }
 "related display" {
 	object {
-		x="349"
+		x="347"
 		y="290"
 		width="300"
 		height="22"

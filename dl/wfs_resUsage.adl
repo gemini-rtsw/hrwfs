@@ -7,12 +7,14 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="11"
-	nstr="43"
+	nstr="37"
 	ndynamic="7"
 	nplot="0"
-	nrd="1"
+	nrd="0"
 	nes="0"
 	nkd="1"
+	npd="0"
+	npo="0"
 	object {
 		x="226"
 		y="207"
@@ -21,29 +23,36 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2274"
+	nwords_dspy="2140"
 	nwords_sta="1112"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1730"
-	osta="618"
-	odynamic="1730"
-	oplot="2200"
-	ord="2200"
-	oes="2262"
-	okd="2262"
-	opc="58"
-	ostr="220"
-	ocmap="618"
-	ocrules="618"
+	odyng="1658"
+	osta="546"
+	odynamic="1658"
+	oplot="2128"
+	ord="2128"
+	oes="2128"
+	okd="2128"
+	opd="2140"
+	opo="2140"
+	opc="68"
+	ostr="230"
+	ocmap="546"
+	ocrules="546"
 	style="solid"
 	fill="outline"
 	width="0"
 	clrmod="static"
 	vismod="static"
+	precision="-1"
 	clrrule="alarm"
 	pv=""
 	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
 }
 "<<basic attribute>>" {
 	attr {
@@ -72,31 +81,28 @@ display {
 	}
 	textix="CPU #$(cpu) RESOURCE USAGE"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="226"
 		y="123"
 		width="270"
-		height="21"
+		height="18"
 		groupid="0"
 	}
 	textix="THRESHOLDS: WARN  SEVERE"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="23"
 		y="51"
-		width="94"
-		height="21"
+		width="92"
+		height="19"
 		groupid="0"
 	}
 	textix="CPU (%):"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -202,25 +208,23 @@ display {
 	object {
 		x="24"
 		y="235"
-		width="256"
-		height="21"
+		width="253"
+		height="18"
 		groupid="0"
 	}
 	textix="LARGEST FREE RAM BLOCK:"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "text" {
 	object {
 		x="24"
 		y="160"
-		width="91"
-		height="21"
+		width="89"
+		height="19"
 		groupid="0"
 	}
 	textix="RAM (%):"
 	align="horiz. left"
-	RISC_pad="0"
 }
 "line" {
 	object {
@@ -678,60 +682,6 @@ display {
 	sendMode="send on release"
 	increment="0"
 }
-"related display" {
-	object {
-		x="365"
-		y="15"
-		width="67"
-		height="22"
-		groupid="0"
-	}
-	selfkill="off"
-	display[0] {
-		label="HELP"
-		name="help1.dl"
-		args=""
-	}
-	display[1] {
-		label=""
-		name=""
-		args=""
-	}
-	display[2] {
-		label=""
-		name=""
-		args=""
-	}
-	display[3] {
-		label=""
-		name=""
-		args=""
-	}
-	display[4] {
-		label=""
-		name=""
-		args=""
-	}
-	display[5] {
-		label=""
-		name=""
-		args=""
-	}
-	display[6] {
-		label=""
-		name=""
-		args=""
-	}
-	display[7] {
-		label=""
-		name=""
-		args=""
-	}
-	clr="0"
-	bclr="6"
-	menu_title=""
-	decorate="none"
-}
 "kill display" {
 	object {
 		x="438"
@@ -740,7 +690,6 @@ display {
 		height="23"
 		groupid="0"
 	}
-	RISCpad="0"
 	label="EXIT"
 	clr="1"
 	bclr="9"
