@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.6 2001-06-07 04:47:13 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.7 2001-06-13 00:39:12 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -881,11 +881,16 @@ STATUS   wfs_errorLogPipeSet (void)
 
 STATUS   wfsInitTelName (struct genSubRecord *pgensub)
 {
-
+ 
     strcpy ( tcsTelName , (char *)pgensub->a ) ; 
     if ( (strcmp ( tcsTelName , "Gemini-North" ) != 0) && 
          ( strcmp ( tcsTelName , "Gemini-South" ) != 0) )
+#if (MK)
        strcpy ( tcsTelName , "Gemini-North" ) ;
+#else
+       strcpy ( tcsTelName , "Gemini-South" ) ;
+#endif
+
     return (OK) ;
 }
 
