@@ -200,3 +200,10 @@ V3-2 24 October 2003 - CB
   - small bug fix in setObserve command
   - update defDetContHRCP.dat
   - startupCP.vws: change IP address of reggie
+
+V3-2-1 11 November 2003 - PG
+----------------------------
+  - Fixed FITS keyword problem in detControl.c
+  - Fixed reggie's ip number in startupCP.vws
+  - Removed .applTop in all subdirectories from the repository
+  - Changed DHS path name in hrwfsInstall
