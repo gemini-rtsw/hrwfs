@@ -638,14 +638,15 @@ IMPORT SDSU_ID     detSdsuIdHr;     /* SDSU context structure for HRWFS.      */
 
    /* Public functions */
 
-IMPORT void         detShow (const char * pWfsName, const BOOL verbose);
-IMPORT void         detStatusShow (const char * pWfsName);
-IMPORT void         detTempShow (const char * pWfsName);
-IMPORT STATUS       detObsShow (OBS_ID obsId, const BOOL verbose);
-IMPORT void         detDhsErrorCallback (DHS_CONNECT connect,
-                                         DHS_STATUS errorNum,
-                                         DHS_ERR_LEVEL errorLev, char * msg,
-                                         DHS_TAG tag, void * userData);
-IMPORT STATUS      detDhsInit (const char * pClientName, const int numConnect,
-                               const char * pHostName,
-                               const char * pServerName);
+IMPORT void        detShow (const char * pWfsName, const BOOL verbose);
+IMPORT void        detStatusShow (const char * pWfsName);
+IMPORT void        detTempShow (const char * pWfsName);
+IMPORT STATUS      detObsShow (OBS_ID obsId, const BOOL verbose);
+IMPORT void        detDhsErrorCallback (DHS_CONNECT connect,
+                                        DHS_STATUS errorNum,
+                                        DHS_ERR_LEVEL errorLev, char * msg,
+                                        DHS_TAG tag, void * userData);
+IMPORT STATUS      detDhsParamInit (const char * pClientName, 
+                                    const int numConnect,
+                                    const char * pHostName,
+                                    const char * pServerName);

@@ -152,7 +152,7 @@ V1-6 05 Oct 2001 - CB
   - Minor changes for the seqexec (do not init the lifetime and contrib).
     Also some keywords are no more in low case
 
-V2-0 25 Oct 2001 - CB
+V2-0 20 Dec 2001 - CB
 ---------------------
   - Port to epics3.13.4
     . hrwfsInstall modified
@@ -162,3 +162,10 @@ V2-0 25 Oct 2001 - CB
     . startup: startup files modified
     . dspsrc: Makefile rewrited
     . db 
+  - detObstype now accepts not only the 5 predefined observe types but 
+    everything
+  - Reject detObserveStart and observeStart if dhs output option is selected 
+    and dhs is not connected 
+  - detDhsInit is now started by detControl.c
+  - Minor changes for seqexec (do not init OBSTYPE, telescope and OBSERVAT)
+  - Replace some ifdef DEBUG by MESSAGE_LOG into detControl.c

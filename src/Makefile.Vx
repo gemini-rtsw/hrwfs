@@ -67,7 +67,7 @@ SCRIPTS	=
 LIBNAME	= wfsLibrariesHrwfs
 
 # INC is installed in INSTALL_INCLUDE
-INC	= ../wfsHrwfsDb.h
+INC	= ./wfsHrwfsDb.h
 
 # MAN1 is installed in INSTALL_MAN/man1
 MAN1	=

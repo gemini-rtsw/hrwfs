@@ -1,4 +1,4 @@
-# $Id: startupMK_dhs.vws,v 1.2 2001-10-26 03:28:11 cboyer Exp $
+# $Id: startupMK_dhs.vws,v 1.3 2001-12-21 02:42:12 cboyer Exp $
 #
 # VxWorks startup script to init dhs after startupMK_nodhs.vws has been loaded
 #
@@ -8,9 +8,14 @@
 # start the impmaster
 taskSpawn ( "ImpMaster", 100, 0x8, 20000, ImpMaster)
 
+taskDelay (10*sysClkRateGet())
+
 # Initialise the DHS for the detector controllers 
 # (clientName, numConnect, hostName, serverName)
-detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+detDhsParamInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+
+# Init the DHS
+detDhsInit() 
 
 # Init the detDhsConnected variable to NOT_CONNECTED
 detDhsConnected=2

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.22 2001-10-26 03:28:09 cboyer Exp $"};
+   "$Id: detControl.c,v 1.23 2001-12-21 02:42:11 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,11 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   20 Dec 2001 - cb reject detObserveStart and observeStart if dhs output 
+ *                 option selected and dhs NOT_CONNECTED
+ *                 detDhsInit started from detControl now
+ *                 For observe comment do not init OBSTYPE, telescope and 
+ *                 OBSERVAT if dhsOutOptions = 3 (sequencer)
  *   05 oct 2001 - cb For observe command, comment DHS_BD_CTL_LIFETIME and
  *                 DHS_BD_VTL_CONTRIB if dhsOutOptions = 3
  *                 change keywords: OBSERVAT, OBSTYPE, CTYPE1, CTYPE2, EQUINOX,
@@ -157,6 +162,7 @@ char    pDetDhsServerName [EPICS_MAX_BYTES_STRING_ATTRIB + 1] = "NONE";
                                    /* Name of DHS data server.                */
                                    /* Assumed the same for all WFSs.          */
 
+int     detDhsNumConnect;          /* Maximum number of DHS connections       */
 
 BOOL    detDhsInitialised = FALSE; /* Flag to determine whether the DHS       */
                                    /* library has been initialised.           */
@@ -180,21 +186,6 @@ uint32  detControlStop = 0x0;      /* This bit mask provides a way of aborting*/
 int     readTempReadyFlag=FALSE;   /* Flag used by detHeadTempGet() to check  */
                                    /* if we are ready to read temperature from*/
                                    /* SDSU controller                         */
-
-/* Modif 23 sept to measure time for readout and DHS */
-
-#ifdef DEBUG
-int flagFirstTime ;
-int flagSecondTime ;
-
-int readTime1 ;
-int unscrambleTime1 ;
-int dhsTime1 ;
-
-int readTime2 ;
-int unscrambleTime2 ;
-int dhsTime2 ;
-#endif
 
 /***************************************************** External global data ***/
 
@@ -310,6 +301,7 @@ void   detFrameCallback (SDSU_ID sdsuId, void * obsIdIn, SDSU_FRAME * pFrame );
 void   detObserveEnd (SDSU_ID sdsuId, void * obsIdIn, SDSU_FRAME * pFrame );
 void   detObserveTimeout (timer_t timeId, int obsIdInt);
 STATUS detDhsConnect ();
+STATUS detDhsInit ();
 void   detDhsCheckErrno (const DHS_STATUS dhsErrno, const int line,
                          const char * filename);
 STATUS detDhsCheckCmdStatus (const DHS_TAG dhsTag);
@@ -452,10 +444,9 @@ STATUS   detControl
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ("detControl:%s: Alarm timer initialised. Timer ID = %d\n", 
-           pWfsName, (int) timeId);
-#endif
+   MESSAGE_LOG2 (MSG_MINDEBUG, 
+                 "detControl:%s: Alarm timer initialised. Timer ID = %d", 
+                 pWfsName, (int) timeId);
 
    /*
     * Get the CAD command context structure (using the appropriate pipe driver)
@@ -1042,6 +1033,22 @@ STATUS   detControl
    {
       ERROR_LOG ("Failed to init oscan sad record");
       return (ERROR);
+   }
+
+   /*
+    * If the DHS parameters have been initialised successfully, attempt to 
+    * init the DHS.
+    */
+
+   if ( (strcmp (pDetDhsClientName,"NONE") != 0) && 
+        (strcmp (pDetDhsHostName,"NONE") != 0) &&
+        (strcmp (pDetDhsServerName,"NONE") != 0) )
+   {
+      if (detDhsInit() == ERROR)
+      {
+         ERROR_LOG ("Failed to init to DHS");
+         initWarning = TRUE;
+      }
    }
 
    /*
@@ -1998,9 +2005,9 @@ uint32 detExposure
     * timing DSP Also define the total number of frames in the observation
     * context structure. */
 
-#ifdef DEBUG
-   printf ("detExposure: Setting T_NFRAME parameter to %lu\n", sdsuNframe);
-#endif /* DEBUG */
+   MESSAGE_LOG1 (MSG_MINDEBUG, 
+                 "Setting T_NFRAME parameter to %lu", 
+                 sdsuNframe);
 
    if ( sdsuParamWrite (sdsuId, SDSU_IDENT_TIM, "T_NFRAME", sdsuNframe ) 
         == ERROR )
@@ -2015,9 +2022,9 @@ uint32 detExposure
 
    sdsuTexp = (uint32) (exposure / SDSU_EXPOSURE_UNIT);
 
-#ifdef DEBUG
-   printf ("detExposure: Setting T_EXP_TIM parameter to %lu\n", sdsuTexp);
-#endif /* DEBUG */
+   MESSAGE_LOG1 (MSG_MINDEBUG, 
+                 "Setting T_EXP_TIM parameter to %lu", 
+                 sdsuTexp);
 
    if ( sdsuParamWrite (sdsuId, SDSU_IDENT_TIM, "T_EXP_TIM", sdsuTexp ) 
         == ERROR )
@@ -2478,6 +2485,7 @@ uint32 setObserve
 
    return (errorNumber);
 }
+
 /* -------------------------------------------------------------------------- */
 
 /*+
@@ -2650,10 +2658,10 @@ uint32 detSetWcs
 
       if ( nread > 0 )
       {
-#ifdef DEBUG
-         printf ("detSetWcs: Point %d: %f %f %f %f\n", p, obsId->pixij[p][0], 
-                 obsId->pixij[p][1], obsId->fpxy[p][0], obsId->fpxy[p][1]);
-#endif
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "Point %d:", p );
+         MESSAGE_LOG4 (MSG_FULLDEBUG, "%f %f %f %f", obsId->pixij[p][0], 
+                       obsId->pixij[p][1], obsId->fpxy[p][0], 
+                       obsId->fpxy[p][1]);
          p++;
       }
    }
@@ -3182,10 +3190,19 @@ uint32 observeStart
          }
       }
          
-/*#ifdef DEBUG*/
-      printf ( "observeStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
-               obsId->xPixelsDhs , obsId->yPixelsDhs) ;
-/*#endif*/
+      MESSAGE_LOG2 ( MSG_LOG, "observeStart: xPixelDhs=%d, yPixelDhs=%d" , 
+                     obsId->xPixelsDhs , obsId->yPixelsDhs) ;
+
+      /* Check if the dhs is connected in case of outOptions = 1 (dhs) */
+
+      if ( (obsId->outOptions == 1) && (detDhsConnected == NOT_CONNECTED) )
+      {
+         ERROR_SET (S_detControl_BAD_ATTRIBUTE,
+                    "Output option: DHS, but DHS not connected",
+                    ERROR_LOG_NOW);
+         errorNumber = S_detControl_BAD_ATTRIBUTE;
+         return (errorNumber);
+      }
 
       /*
        * If a request has been made to send data to the DHS, check that the 
@@ -3282,7 +3299,8 @@ uint32 observeStart
 
       strncpy( obsId->pDataLabel, pDataLabel, EPICS_MAX_BYTES_STRING_ATTRIB);
 
-      if (epToVxPipeWrite( NULL, obsId->pDataLabel, obsId->pDataLabelContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, obsId->pDataLabel, obsId->pDataLabelContext ) 
+          == ERROR)
       {
          ERROR_LOG ("Failed to init Data label SIR record");
       }
@@ -3381,10 +3399,8 @@ uint32 observeStart
                     ERROR_LOG_NOW);
       }
 
-#ifdef DEBUG
-      printf ("observeStart: Time at observation start: %f seconds.\n", 
-              obsId->rawtStart);
-#endif
+      MESSAGE_LOG1 (MSG_MINDEBUG, "Time at observation start: %f seconds.", 
+                    obsId->rawtStart);
 
       /*
        * Start the readout process. The observation should now start in 
@@ -3610,16 +3626,19 @@ uint32 observeStart
                ERROR_LOG_NOW, wcsStatus);
          }
 
-#ifdef DEBUG
-         printf ("Best fit scale is %f X units per i pixel and "
-                 "%f Y units per j pixel\n", pixis, pixjs);
-         printf ("i/j non-perpendicularity is %f radians.\n", perp);
-         printf ("i/j is rotated by %f radians with respect to x/y axis.\n",
-                 orient);
-         printf ("Cij matrix contains %f %f %f %f %f %f\n", obsId->cij[0], 
-                 obsId->cij[1],
-                 obsId->cij[2], obsId->cij[3], obsId->cij[4], obsId->cij[5]);
-#endif
+         MESSAGE_LOG2 (MSG_FULLDEBUG, 
+          "Best fit scale is %f X units per i pixel and %f Y units per j pixel",
+          pixis, pixjs);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, 
+                       "i/j non-perpendicularity is %f radians.", 
+                       perp);
+         MESSAGE_LOG1 (MSG_FULLDEBUG,
+                       "i/j is rotated by %f radians with respect to x/y axis.",
+                       orient);
+         MESSAGE_LOG3 (MSG_FULLDEBUG, "Cij matrix contains %f %f %f", 
+                       obsId->cij[0], obsId->cij[1], obsId->cij[2]); 
+         MESSAGE_LOG3 (MSG_FULLDEBUG, "Cij matrix contains %f %f %f", 
+                       obsId->cij[3], obsId->cij[4], obsId->cij[5]);
 
          /*
           * Obtain the current TCS context from the locally stored copy.
@@ -3665,11 +3684,9 @@ uint32 observeStart
             }
          }
 
-#ifdef DEBUG
-         printf (
-         "WCS information extracted from TCS context is valid at time %f\n",
-         rawTimeWcs);
-#endif
+         MESSAGE_LOG1 ( MSG_FULLDEBUG,
+              "WCS information extracted from TCS context is valid at time %f",
+              rawTimeWcs);
 
          /*
           * Combine the (i,j) to (x,y) model, cij, and (x,y) to (RA,Dec) model,
@@ -3709,29 +3726,27 @@ uint32 observeStart
          }
          obsId->wcsStatus = wcsStatus;
 
-#ifdef DEBUG
-         printf ("World Coordinate System Header\n");
-         printf ("------------------------------\n");
-         printf ("wcsStatus= %d\n", obsId->wcsStatus);
-         printf ("ctype1   = %s\n", obsId->ctype1);
-         printf ("crpix1   = %f pixels\n", obsId->crpix1);
-         printf ("crval1   = %f degrees = %f hours\n", obsId->crval1,
-                 (obsId->crval1 / (double) 15.0));
-         printf ("ctype2   = %s\n", obsId->ctype2);
-         printf ("crpix2   = %f pixels\n", obsId->crpix2);
-         printf ("crval2   = %f degrees\n", obsId->crval2);
-         printf ("cd1_1    = %f\n", obsId->cd1_1);
-         printf ("cd1_2    = %f\n", obsId->cd1_2);
-         printf ("cd2_1    = %f\n", obsId->cd2_1);
-         printf ("cd2_2    = %f\n", obsId->cd2_2);
-         printf ("RA       = %f hours\n", obsId->RA);
-         printf ("Dec      = %f degrees\n", obsId->Dec);
-         printf ("radecsys = %s\n", obsId->radecsys);
-         printf ("equinox  = %f\n", obsId->equinox);
-         printf ("epoch    = %f\n", obsId->epoch);
-         printf ("mjd-obs  = %f\n", obsId->mjdobs);
-         printf ("frame    = %s\n", obsId->frame);
-#endif
+         MESSAGE_LOG (MSG_FULLDEBUG, "World Coordinate System Header:");
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "wcsStatus= %d", obsId->wcsStatus);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "ctype1   = %s", obsId->ctype1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crpix1   = %f pixels", obsId->crpix1);
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "crval1   = %f degrees = %f hours", 
+                       obsId->crval1,
+                       (obsId->crval1 / (double) 15.0));
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "ctype2   = %s", obsId->ctype2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crpix2   = %f pixels", obsId->crpix2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crval2   = %f degrees", obsId->crval2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd1_1    = %f", obsId->cd1_1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd1_2    = %f", obsId->cd1_2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd2_1    = %f", obsId->cd2_1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd2_2    = %f", obsId->cd2_2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "RA       = %f hours", obsId->RA);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "Dec      = %f degrees", obsId->Dec);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "radecsys = %s", obsId->radecsys);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "equinox  = %f", obsId->equinox);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "epoch    = %f", obsId->epoch);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "mjd-obs  = %f", obsId->mjdobs);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "frame    = %s", obsId->frame);
       }
       else
       {
@@ -3781,10 +3796,8 @@ uint32 observeStart
                obsId->timeArrayStart[5],
                obsId->timeArrayStart[6]);
 
-#ifdef DEBUG
-      printf ( "obsId->utStartString = %s\n" , obsId->utStartString ) ;
-#endif
-
+      MESSAGE_LOG1 ( MSG_MINDEBUG, "obsId->utStartString = %s" , 
+                     obsId->utStartString ) ;
 
       /*
        * If the DHS is being used then create a dataset to hold the 
@@ -3801,13 +3814,15 @@ uint32 observeStart
          contrib[0] = pDetDhsClientName; 
                                 /* a global variable, set in detDhsInit */
 
-         qlStreams[0] = calloc ( EPICS_MAX_BYTES_STRING_ATTRIB+1, sizeof (char) ) ;
+         qlStreams[0] = calloc ( EPICS_MAX_BYTES_STRING_ATTRIB+1, 
+                                 sizeof (char) ) ;
 
          if ( strcmp (obsId->pQlStream , "" ) == 0 )
             strcpy ( qlStreams[0] , "hrwfsScience") ;
          else
          {
-            strncpy ( qlStreams[0] , obsId->pQlStream , EPICS_MAX_BYTES_STRING_ATTRIB ) ;
+            strncpy ( qlStreams[0] , obsId->pQlStream , 
+                      EPICS_MAX_BYTES_STRING_ATTRIB ) ;
          }
 
          printf ( "obsId->pQlStream=%s\n" , obsId->pQlStream ) ;
@@ -3872,12 +3887,16 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "instrument", 
                DHS_DT_STRING, 0, NULL, obsId->instName, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
-                            0, NULL, telName, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "OBSERVAT", DHS_DT_STRING, 
-                            0, NULL, telName, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            /* If sequencer (dhsOutOptions = 3) do not init tel and observat */
+            if ( obsId->dhsOutOptions != 3 )
+            {
+               dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
+                               0, NULL, telName, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "OBSERVAT", DHS_DT_STRING, 
+                               0, NULL, telName, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+            }
             dhsBdAttribAdd (obsId->dhsDataset, "FILTER1", DHS_DT_STRING, 
                             0, NULL, acCCId.clFilterName, &dhsErrno);
             CHECK_DHS (dhsErrno);
@@ -3902,9 +3921,13 @@ uint32 observeStart
             dhsBdAttribAdd (obsId->dhsDataset, "INPORT", DHS_DT_INT32, 
                             0, NULL, obsId->inport, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "OBSTYPE", DHS_DT_STRING, 0, 
-                            NULL, obsId->pObsType, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            /* If sequencer (dhsOutOptions = 3) do not init tel and observat */
+            if ( obsId->dhsOutOptions != 3 )
+            {
+               dhsBdAttribAdd (obsId->dhsDataset, "OBSTYPE", DHS_DT_STRING, 0, 
+                               NULL, obsId->pObsType, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+            }
             dhsBdAttribAdd (obsId->dhsDataset, "EXPTIME", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->exposed, &dhsErrno);
             CHECK_DHS (dhsErrno);
@@ -4143,16 +4166,15 @@ uint32 observeStart
             obsId->pCurFrame = (uint16 *) malloc (nPixels * sizeof(uint16));
             if ( obsId->pCurFrame == NULL )
             {
-               ERROR_LOG( "Failed to allocate image buffer for unscrambled data" );
+               ERROR_LOG( 
+                 "Failed to allocate image buffer for unscrambled data" );
                errorNumber = S_detControl_INTERNAL;
                return (errorNumber);
             }
-            /*printf ( "DHS option : malloc pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
          else
          {
             obsId->pCurFrame = obsId->pDispFrame ;
-            /*printf ( "DHS option : pDispFrame and pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
       }
       else
@@ -4166,10 +4188,9 @@ uint32 observeStart
          nPixels = obsId->xPixels * obsId->yPixels;
          nPixelsDhs = obsId->xPixelsDhs * obsId->yPixelsDhs;
 
-#ifdef DEBUG
-         printf ("observeStart: Allocating frame buffer to hold %d pixels "
-                 "of unscrambled data.\n", nPixels);
-#endif /* DEBUG */
+         MESSAGE_LOG1 (MSG_MINDEBUG, 
+              "Allocating frame buffer to hold %d pixels of unscrambled data.",
+              nPixels);
 
          obsId->pDispFrame = (uint16 *) malloc (nPixelsDhs * sizeof(uint16));
          if ( obsId->pDispFrame == NULL )
@@ -4179,22 +4200,20 @@ uint32 observeStart
             return (errorNumber);
          }
 
-         /*printf ( "File option : malloc pDispFrame=%p\n" , obsId->pDispFrame ) ;*/
          if ( obsId->windowingFlag == TRUE )
          {
             obsId->pCurFrame = (uint16 *) malloc (nPixels * sizeof(uint16));
             if ( obsId->pCurFrame == NULL )
             {
-               ERROR_LOG( "Failed to allocate image buffer for unscrambled data" );
+               ERROR_LOG( 
+                   "Failed to allocate image buffer for unscrambled data" );
                errorNumber = S_detControl_INTERNAL;
                return (errorNumber);
             }
-            /*printf ( "File option : malloc pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
          else
          {
             obsId->pCurFrame = obsId->pDispFrame ;
-            /*printf ( "DHS option : pDispFrame and pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
       }
 
@@ -4205,14 +4224,12 @@ uint32 observeStart
 
       semGive (obsId->syncSem);
 
-#ifdef DEBUG
-      printf ("observeStart: START directive finished.\n");
-#endif /* DEBUG */
-
+      MESSAGE_LOG (MSG_MINDEBUG, "START directive finished.");
    }
 
    return (errorNumber);
 }
+
 /* -------------------------------------------------------------------------- */
 
 /*+
@@ -4442,18 +4459,6 @@ uint32 detObserveStart
 
       obsId->dhsCounter = 0;
 
-#ifdef DEBUG
-      /* MODIF 23 SEPT */
-      flagFirstTime = FALSE ;
-      flagSecondTime = FALSE ;
-      readTime1=0;
-      readTime2=0;
-      unscrambleTime1=0;
-      unscrambleTime2=0;
-      dhsTime1=0;
-      dhsTime2=0;
-#endif
-
       /* Obtain the attributes */
 
       EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, 
@@ -4513,20 +4518,18 @@ uint32 detObserveStart
       sdsuId->readoutTime = (SDSU_FULL_READOUT * obsId->pixelsNb) /
                             (DET_CONTROL_HRWFS_XSIZE * DET_CONTROL_HRWFS_YSIZE);
 
-      /*if ( exposure < sdsuId->readoutTime )
-      {
-         sdsuId->readMethod = 0;
-         printf ( "exp < readoutTime (%f<%f) - pixelsNb = %d\n" , 
-                  exposure, sdsuId->readoutTime, obsId->pixelsNb);
-      }
-      else
-      {
-         sdsuId->readMethod = 1;
-         printf ( "exp > readoutTime (%f>%f) - pixelsNb = %d\n" , exposure, 
-                  sdsuId->readoutTime, obsId->pixelsNb);
-      }*/
-
       sdsuId->readMethod = 0;
+
+      /* Check if the dhs is connected in case of outOptions = 1 (dhs) */
+
+      if ( (outOptions == 1) && (detDhsConnected == NOT_CONNECTED) )
+      {
+         ERROR_SET (S_detControl_BAD_ATTRIBUTE,
+                    "Output option: DHS, but DHS not connected",
+                    ERROR_LOG_NOW);
+         errorNumber = S_detControl_BAD_ATTRIBUTE;
+         return (errorNumber);
+      }
 
       /* Check if the number of frames fits with the dhs output */
       /* Permanent storage should be used with nframe = 1 */
@@ -4855,10 +4858,8 @@ uint32 detObserveStart
          }
       }
          
-/*#ifdef DEBUG*/
-      printf ( "detObserveStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
-               obsId->xPixelsDhs , obsId->yPixelsDhs) ;
-/*#endif*/
+      MESSAGE_LOG2 (MSG_LOG, "xPixelDhs=%d, yPixelDhs=%d" , 
+                    obsId->xPixelsDhs , obsId->yPixelsDhs) ;
       /*
        * If a request has been made to send data to the DHS, check that the 
        * DHS is available, otherwise reject the command.
@@ -5055,10 +5056,8 @@ uint32 detObserveStart
           * timing DSP Also define the total number of frames in the observation
           * context structure. */
 
-#ifdef DEBUG
-         printf ("detExposure: Setting T_NFRAME parameter to %lu\n", 
-                 sdsuNframe);
-#endif /* DEBUG */
+         MESSAGE_LOG1 (MSG_MINDEBUG, "Setting T_NFRAME parameter to %lu", 
+                      sdsuNframe);
 
          if ( sdsuParamWrite (sdsuId, SDSU_IDENT_TIM, "T_NFRAME", sdsuNframe ) 
               == ERROR )
@@ -5073,9 +5072,8 @@ uint32 detObserveStart
 
          expTim = (uint32) (exposure / SDSU_EXPOSURE_UNIT);
 
-#ifdef DEBUG
-         printf ("detExposure: Setting T_EXP_TIM parameter to %lu\n", expTim);
-#endif /* DEBUG */
+         MESSAGE_LOG1 (MSG_MINDEBUG, 
+                       "Setting T_EXP_TIM parameter to %lu", expTim);
 
          if ( sdsuParamWrite (sdsuId, SDSU_IDENT_TIM, "T_EXP_TIM", expTim ) 
               == ERROR )
@@ -5235,10 +5233,8 @@ uint32 detObserveStart
                     ERROR_LOG_NOW);
       }
 
-#ifdef DEBUG
-      printf ("detObserveStart: Time at observation start: %f seconds.\n", 
-              obsId->rawtStart);
-#endif
+      MESSAGE_LOG1 (MSG_MINDEBUG, "Time at observation start: %f seconds.", 
+                    obsId->rawtStart);
 
       /*
        * Start the readout process. The observation should now start in 
@@ -5464,16 +5460,18 @@ uint32 detObserveStart
                ERROR_LOG_NOW, wcsStatus);
          }
 
-#ifdef DEBUG
-         printf ("Best fit scale is %f X units per i pixel and "
-                 "%f Y units per j pixel\n", pixis, pixjs);
-         printf ("i/j non-perpendicularity is %f radians.\n", perp);
-         printf ("i/j is rotated by %f radians with respect to x/y axis.\n",
-                 orient);
-         printf ("Cij matrix contains %f %f %f %f %f %f\n", obsId->cij[0], 
-                 obsId->cij[1],
-                 obsId->cij[2], obsId->cij[3], obsId->cij[4], obsId->cij[5]);
-#endif
+         MESSAGE_LOG2 (MSG_FULLDEBUG, 
+         "Best fit scale is %f X units per i pixel and %f Y units per j pixel",
+         pixis, pixjs);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, 
+                       "i/j non-perpendicularity is %f radians.", perp);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, 
+                       "i/j is rotated by %f radians with respect to x/y axis.",
+                       orient);
+         MESSAGE_LOG3 ( MSG_FULLDEBUG, "Cij matrix contains %f %f %f", 
+                        obsId->cij[0], obsId->cij[1], obsId->cij[2]);
+         MESSAGE_LOG3 ( MSG_FULLDEBUG, "Cij matrix contains %f %f %f", 
+                        obsId->cij[3], obsId->cij[4], obsId->cij[5]);
 
          /*
           * Obtain the current TCS context from the locally stored copy.
@@ -5519,11 +5517,9 @@ uint32 detObserveStart
             }
          }
 
-#ifdef DEBUG
-         printf (
-         "WCS information extracted from TCS context is valid at time %f\n",
+         MESSAGE_LOG1 ( MSG_FULLDEBUG,
+         "WCS information extracted from TCS context is valid at time %f",
          rawTimeWcs);
-#endif
 
          /*
           * Combine the (i,j) to (x,y) model, cij, and (x,y) to (RA,Dec) model,
@@ -5563,29 +5559,27 @@ uint32 detObserveStart
          }
          obsId->wcsStatus = wcsStatus;
 
-#ifdef DEBUG
-         printf ("World Coordinate System Header\n");
-         printf ("------------------------------\n");
-         printf ("wcsStatus= %d\n", obsId->wcsStatus);
-         printf ("ctype1   = %s\n", obsId->ctype1);
-         printf ("crpix1   = %f pixels\n", obsId->crpix1);
-         printf ("crval1   = %f degrees = %f hours\n", obsId->crval1,
+         MESSAGE_LOG (MSG_FULLDEBUG, "World Coordinate System Header");
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "wcsStatus= %d", obsId->wcsStatus);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "ctype1   = %s", obsId->ctype1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crpix1   = %f pixels", obsId->crpix1);
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "crval1   = %f degrees = %f hours", 
+                 obsId->crval1,
                  (obsId->crval1 / (double) 15.0));
-         printf ("ctype2   = %s\n", obsId->ctype2);
-         printf ("crpix2   = %f pixels\n", obsId->crpix2);
-         printf ("crval2   = %f degrees\n", obsId->crval2);
-         printf ("cd1_1    = %f\n", obsId->cd1_1);
-         printf ("cd1_2    = %f\n", obsId->cd1_2);
-         printf ("cd2_1    = %f\n", obsId->cd2_1);
-         printf ("cd2_2    = %f\n", obsId->cd2_2);
-         printf ("RA       = %f hours\n", obsId->RA);
-         printf ("Dec      = %f degrees\n", obsId->Dec);
-         printf ("radecsys = %s\n", obsId->radecsys);
-         printf ("equinox  = %f\n", obsId->equinox);
-         printf ("epoch    = %f\n", obsId->epoch);
-         printf ("mjd-obs  = %f\n", obsId->mjdobs);
-         printf ("frame    = %s\n", obsId->frame);
-#endif
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "ctype2   = %s", obsId->ctype2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crpix2   = %f pixels", obsId->crpix2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "crval2   = %f degrees", obsId->crval2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd1_1    = %f", obsId->cd1_1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd1_2    = %f", obsId->cd1_2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd2_1    = %f", obsId->cd2_1);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "cd2_2    = %f", obsId->cd2_2);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "RA       = %f hours", obsId->RA);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "Dec      = %f degrees", obsId->Dec);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "radecsys = %s", obsId->radecsys);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "equinox  = %f", obsId->equinox);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "epoch    = %f", obsId->epoch);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "mjd-obs  = %f", obsId->mjdobs);
+         MESSAGE_LOG1 (MSG_FULLDEBUG, "frame    = %s", obsId->frame);
       }
       else
       {
@@ -5635,10 +5629,8 @@ uint32 detObserveStart
          ERROR_LOG ("Failed to set UT at start of observation SIR record");
       }
 
-#ifdef DEBUG
-      printf ( "obsId->utStartString = %s\n" , obsId->utStartString ) ;
-#endif
-
+      MESSAGE_LOG1 ( MSG_MINDEBUG, "obsId->utStartString = %s" , 
+                    obsId->utStartString ) ;
 
       /*
        * If the DHS is being used then create a dataset to hold the 
@@ -5655,22 +5647,21 @@ uint32 detObserveStart
          contrib[0] = pDetDhsClientName; 
                                 /* a global variable, set in detDhsInit */
 
-         qlStreams[0] = calloc ( EPICS_MAX_BYTES_STRING_ATTRIB+1, sizeof (char) ) ;
+         qlStreams[0] = calloc ( EPICS_MAX_BYTES_STRING_ATTRIB+1, 
+                                 sizeof (char) ) ;
 
          if ( strcmp (obsId->pQlStream , "" ) == 0 )
             strcpy ( qlStreams[0] , "hrwfsScience") ;
          else
          {
-            strncpy ( qlStreams[0] , obsId->pQlStream , EPICS_MAX_BYTES_STRING_ATTRIB ) ;
+            strncpy ( qlStreams[0] , obsId->pQlStream , 
+                      EPICS_MAX_BYTES_STRING_ATTRIB ) ;
          }
 
-         printf ( "obsId->pQlStream=%s\n" , obsId->pQlStream ) ;
-         printf ( "qlStreams[0]=%s\n" , qlStreams[0] ) ;
-
-         /*qlStreams[0] = "hrwfsScience"; */
+         MESSAGE_LOG1 ( MSG_MINDEBUG, "qlStreams[0]=%s" , qlStreams[0] ) ;
 
          wfsGetTelName ( telName ) ;
-         printf ( "telName=%s\n" , telName ) ;
+         MESSAGE_LOG1 ( MSG_MINDEBUG, "telName=%s" , telName ) ;
 
          /* NOTE: Lifetime should be definable
           * PERMANENT for permanent data (e.g. calibrations)
@@ -5991,12 +5982,10 @@ uint32 detObserveStart
                errorNumber = S_detControl_INTERNAL;
                return (errorNumber);
             }
-            /*printf ( "DHS option : malloc pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
          else
          {
             obsId->pCurFrame = obsId->pDispFrame ;
-            /*printf ( "DHS option : pDispFrame and pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
       }
       else
@@ -6010,10 +5999,9 @@ uint32 detObserveStart
          nPixels = obsId->xPixels * obsId->yPixels;
          nPixelsDhs = obsId->xPixelsDhs * obsId->yPixelsDhs;
 
-#ifdef DEBUG
-         printf ("detObserveStart: Allocating frame buffer to hold %d pixels "
-                 "of unscrambled data.\n", nPixels);
-#endif /* DEBUG */
+         MESSAGE_LOG1 (MSG_FULLDEBUG, 
+         "Allocating frame buffer to hold %d pixels of unscrambled data.", 
+         nPixels);
 
          obsId->pDispFrame = (uint16 *) malloc (nPixelsDhs * sizeof(uint16));
          if ( obsId->pDispFrame == NULL )
@@ -6023,7 +6011,6 @@ uint32 detObserveStart
             return (errorNumber);
          }
 
-         /*printf ( "File option : malloc pDispFrame=%p\n" , obsId->pDispFrame ) ;*/
          if ( obsId->windowingFlag == TRUE )
          {
             obsId->pCurFrame = (uint16 *) malloc (nPixels * sizeof(uint16));
@@ -6033,12 +6020,10 @@ uint32 detObserveStart
                errorNumber = S_detControl_INTERNAL;
                return (errorNumber);
             }
-            /*printf ( "File option : malloc pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
          else
          {
             obsId->pCurFrame = obsId->pDispFrame ;
-            /*printf ( "DHS option : pDispFrame and pCurFrame=%p\n" , obsId->pCurFrame ) ;*/
          }
       }
 
@@ -6049,10 +6034,7 @@ uint32 detObserveStart
 
       semGive (obsId->syncSem);
 
-#ifdef DEBUG
-      printf ("detObserveStart: START directive finished.\n");
-#endif /* DEBUG */
-
+      MESSAGE_LOG (MSG_MINDEBUG, "START directive finished.");
    }
 
    return (errorNumber);
@@ -6150,9 +6132,8 @@ void detObserveEnd
 
    double       elapsed;
 
-#ifdef DEBUG
-   printf ("detObserveEnd: %p %p %p\n", sdsuId, obsIdIn, pRawFrame);
-#endif
+   MESSAGE_LOG3 (MSG_FULLDEBUG, "detObserveEnd: %p %p %p", 
+                 sdsuId, obsIdIn, pRawFrame);
 
    bufferReserved = FALSE;
    obsAlreadyAborted = FALSE;
@@ -6220,10 +6201,8 @@ void detObserveEnd
                  ERROR_LOG_NOW);
    }
 
-#ifdef DEBUG
-   printf ("detObserveEnd: Time at observation end: %f seconds.\n", 
-           obsId->rawtEnd);
-#endif
+   MESSAGE_LOG1 (MSG_FULLDEBUG, "Time at observation end: %f seconds.", 
+                 obsId->rawtEnd);
 
    /*
     * Compute the elapsed time
@@ -6266,8 +6245,8 @@ void detObserveEnd
       else if ( frameCount == 1 )
       {
          MESSAGE_LOG1 (MSG_MINDEBUG,
-            "... exposure complete and observation stopped. Frame count=%d (last frame)",
-            obsId->nframes);
+         "... exposure complete and observation stopped. Frame count=%d (last frame)",
+         obsId->nframes);
       }
       else
       {
@@ -6314,18 +6293,15 @@ void detObserveEnd
 
    if ( obsId->nframes <= 1 )
    {
-#ifdef DEBUG
-      printf ("detObserveEnd: Waiting for observation sync semaphore...");
-#endif
+      MESSAGE_LOG (MSG_FULLDEBUG, "Waiting for observation sync semaphore...");
+
       if ( semTake ( obsId->syncSem, OBS_WAIT_TIMEOUT ) == ERROR )
       {
          ERROR_SET (0, "Failed to take observation synchronisation semaphore", 
                  ERROR_LOG_NOW);
          goto ERROR_EXIT;
       }
-#ifdef DEBUG
-      printf (" ... got observation sync semaphore...\n");
-#endif
+      MESSAGE_LOG (MSG_FULLDEBUG, " ... got observation sync semaphore...");
    }
 
    /*
@@ -6378,29 +6354,6 @@ void detObserveEnd
        * detector outputs, obtained earlier.
        */
 
-#ifdef DEBUG
-      /* ADD 23 SEPT */
-      if ( flagFirstTime == FALSE )  
-      {
-         readTime1 = tickGet () ;
-         /*printf ( "flagFirstTime = FALSE, readTime1 = %d\n" , readTime1 ) ;*/
-      }
-      else
-      {
-         /*printf ( "flagFirstTime = TRUE \n" ) ;*/
-         if ( flagSecondTime == FALSE )
-         {
-            readTime2 = tickGet () ;
-            /*printf ( "flagSecondTime = FALSE, readTime2 = %d\n" , readTime2 ) ;*/
-         }
-      }
-#endif
-
-/*
-      if ( detFrameUnscrambleUint16( obsId->xPixels, obsId->yPixels, 
-                                     (int) obsId->outputsNb,
-                                     pRawFrame, obsId->pCurFrame ) == ERROR )
-*/
       if ( newDetFrameUnscrambleUint16( obsId->xPixels, obsId->yPixels, 
                                         (int) obsId->oscanNb,
                                         pRawFrame, obsId->pCurFrame ) == ERROR )
@@ -6451,26 +6404,6 @@ void detObserveEnd
             goto ERROR_EXIT;
          }
       }
-
-#ifdef DEBUG
-      /* ADD 23 SEPT */
-      if ( flagFirstTime == FALSE ) 
-      {
-         unscrambleTime1 = tickGet () ;
-         /*printf ( "flagFirstTime = FALSE, unscrambleTime1 = %d\n" , 
-                  unscrambleTime1 ) ;*/
-      }
-      else
-      {
-         /*printf ( "flagFirstTime = TRUE \n" ) ;*/
-         if ( flagSecondTime == FALSE )
-         {
-            unscrambleTime2 = tickGet () ;
-            /*printf ( "flagSecondTime = FALSE, unscrambleTime2 = %d\n" , 
-                      unscrambleTime2 ) ;*/
-         }
-      }
-#endif
 
       /*
        * Convert the time stamps from Gemini raw time into Universal Time
@@ -6527,11 +6460,9 @@ void detObserveEnd
 
          /* Send the data to the dhs */
 
-#ifdef DEBUG
-       printf (
-       "detObserveEnd: dhsBdPut, dhsConnection=%d, pDataLabel=%s, dataset=%d\n",
+       MESSAGE_LOG3 (MSG_FULLDEBUG ,
+       "detObserveEnd: dhsBdPut, dhsConnection=%d, pDataLabel=%s, dataset=%d",
        (int) detDhsConnection, obsId->pDataLabel, (int) obsId->dhsDataset);
-#endif /* DEBUG */
 
          if ( obsId->dhsOutOptions == 2 ) /* QL only */
          {
@@ -6588,9 +6519,8 @@ void detObserveEnd
 
          /* Wait for completion */
 
-#ifdef DEBUG
-         printf ("detObserveEnd: dhsWait putTag=%d ...\n", (int) putTag);
-#endif /* DEBUG */
+         MESSAGE_LOG1 (MSG_FULLDEBUG, 
+                       "detObserveEnd: dhsWait putTag=%d ...", (int) putTag);
          dhsWait (1, &putTag, &dhsErrno);
          CHECK_DHS (dhsErrno);
 
@@ -6658,27 +6588,6 @@ void detObserveEnd
                obsId->pCurFrame = NULL;
             }
          }
-#ifdef DEBUG
-         /* ADD 23 SEPT */
-         if ( flagFirstTime == FALSE ) 
-         {
-            dhsTime1 = tickGet () ;
-            flagFirstTime = TRUE ;
-         /*   printf ( "flagFirstTime = FALSE -> TRUE, dhsTime1 = %d\n" , 
-                     dhsTime1 ) ;*/
-         }
-         else
-         {
-            /*printf ( "flagFirstTime = TRUE\n" ) ;*/
-            if ( flagSecondTime == FALSE )
-            {
-               dhsTime2 = tickGet () ;
-               flagSecondTime = TRUE ;
-               /*printf ( "flagSecondTime = FALSE -> TRUE, dhsTime2 = %d\n" , 
-                     dhsTime2 ) ;*/
-            }
-         }
-#endif
       }
       else if ( obsId->outOptions == 2 )
       {
@@ -6724,11 +6633,10 @@ void detObserveEnd
       /* If obsId->totalFrames > 1 and obsId->outNFrames = obsId->totalFrames */
       /* stop the observation */
 
-#ifdef DEBUG
-      printf ( "detObserveEnd : ouNFrames = %d, totalFrames = %d\n" ,
-               obsId->outNFrames , obsId->totalFrames ) ;
-#endif
-      if ( (obsId->totalFrames > 1) && (obsId->outNFrames == obsId->totalFrames) )
+      MESSAGE_LOG2 ( MSG_FULLDEBUG, "ouNFrames = %d, totalFrames = %d" ,
+                     obsId->outNFrames , obsId->totalFrames ) ;
+      if ( (obsId->totalFrames > 1) && 
+           (obsId->outNFrames == obsId->totalFrames) )
          obsId->stopped = TRUE ;
 
    }
@@ -6799,26 +6707,12 @@ void detObserveEnd
       {
          MESSAGE_LOG1 (MSG_LOG, 
          "Observation completed successfully, frames lost: %d", sdsuFrameLost);
-#ifdef DEBUG
-         /* MODIF 23 SEPT */
-         printf ( "readTime1:%d, unscrambleTime1:%d, dhsTime1:%d\n" , 
-                  readTime1, unscrambleTime1, dhsTime1 ) ;
-         printf ( "readTime2:%d, unscrambleTime2:%d, dhsTime2:%d\n" , 
-                  readTime2, unscrambleTime2, dhsTime2 ) ;
-#endif
       }
       else if ( sdsuId->frameErrors < obsId->nframes )
       {
          MESSAGE_LOG2 (MSG_WARNING, 
          "Observation completed with %d frames lost and %d frames with error",
          sdsuFrameLost , sdsuId->frameErrors);
-#ifdef DEBUG
-         /* MODIF 23 SEPT */
-         printf ( "readTime1:%d, unscrambleTime1:%d, dhsTime1:%d\n" , 
-                  readTime1, unscrambleTime1, dhsTime1 ) ;
-         printf ( "readTime2:%d, unscrambleTime2:%d, dhsTime2:%d\n" , 
-                  readTime2, unscrambleTime2, dhsTime2 ) ;
-#endif
       }
       else
       {
@@ -6836,9 +6730,8 @@ void detObserveEnd
    }
    else
    {
-#ifdef DEBUG
-      printf ( "detObserveEnd: Further frames are anticipated - observation not finished.\n");
-#endif
+      MESSAGE_LOG ( MSG_FULLDEBUG, 
+             "Further frames are anticipated - observation not finished.");
 
       /*
        * Start an alarm timer which will trigger if the frame sync callback
@@ -6984,9 +6877,7 @@ void detObserveTimeout
    int         simOption;      /* Simulation option.                          */
 
 
-#ifdef DEBUG
-   printf ("detObserveTimeout: Observation timed out.\n");
-#endif
+   MESSAGE_LOG (MSG_MINDEBUG, "detObserveTimeout: Observation timed out.");
 
    /*
     * When sdsuLib is simulating this routine makes the frame look like it has
@@ -7569,9 +7460,8 @@ uint32 detInit
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, 
                           (char *) pVmeAddress);
 
-#ifdef DEBUG
-   printf ("detInit: VME address = %ld = %#lx\n", *pVmeAddress, *pVmeAddress);
-#endif /* DEBUG */
+   MESSAGE_LOG2 (MSG_MINDEBUG, "VME address = %ld = %#lx", 
+                 *pVmeAddress, *pVmeAddress);
 
    if ( *pVmeAddress == 0 )
    {
@@ -7910,11 +7800,9 @@ uint32 detInit
     * not be able to store data, so the health must be set WARNING.
     */
 
-#ifdef DEBUG
-   printf (
-   "detInit: Creating new data buffer to hold %d frames of (%d x %d) pixels.\n",
+   MESSAGE_LOG3 ( MSG_MINDEBUG,
+   "Creating new data buffer to hold %d frames of (%d x %d) pixels.",
    *pMaxFrames, obsId->xMax, obsId->yMax);
-#endif /* DEBUG */
 
    nPixels = (obsId->xMax) * (obsId->yMax);
    if (sdsuBufferCreate (*pSdsuId, nPixels, *pMaxFrames) == ERROR)
@@ -7933,9 +7821,8 @@ uint32 detInit
     * INTERRUPTS DISABLED. SIMPLE VERSION. HRWFS RUNS AT LOWER PRIORITY.
     */
    
-#ifdef DEBUG
-   printf ("detInit: Starting the readout task and frame sync callback.\n");
-#endif /* DEBUG */
+   MESSAGE_LOG (MSG_MINDEBUG, 
+                "Starting the readout task and frame sync callback.");
 
    if (sdsuSimpleReadoutOpen (*pSdsuId, NULL, detObserveEnd, 1, TRUE) == ERROR)
    {
@@ -10095,7 +9982,7 @@ uint32 detFrameSize
    obsId->y1 = reqY1 ;
    obsId->y2 = reqY2 ;
 
-/*#ifdef DEBUG*/
+#ifdef DEBUG
    /*
     * Show CCD Geometry information
     */
@@ -10146,9 +10033,7 @@ uint32 detFrameSize
       printf ( "windowingFlag : FALSE\n" ) ;
    printf ( "x1=%d, x2=%d\n" , obsId->x1, obsId->x2 ) ;
    printf ( "y1=%d, y2=%d\n" , obsId->y1, obsId->y2 ) ;
-/*
 #endif
-*/
 
    MESSAGE_LOG1 (MSG_LOG, "Setting new detector geometry (%s frame mode)",
       (obsId->fullImageFlag ? "full":"reduced"));
@@ -11518,11 +11403,9 @@ OBS_ID detObsContextCreate (void)
     * contents to zero.
     */
 
-#ifdef DEBUG
-   printf (
-   "detObsContextCreate: Allocating %d bytes of memory for OBS_ID struct.\n",
-   sizeof (OBS_ID_STRUCT));
-#endif /* DEBUG */
+   MESSAGE_LOG1 ( MSG_MINDEBUG,
+                  "Allocating %d bytes of memory for OBS_ID struct.",
+                  sizeof (OBS_ID_STRUCT));
 
    if ((obsId = (OBS_ID) calloc ((size_t) 1, sizeof (OBS_ID_STRUCT))) == NULL)
    {
@@ -11918,11 +11801,9 @@ STATUS detSimulateData
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "detSimulateData: Simulating %d x %d pixels of data to buffer at %p - option %d\n",
-   xPixels, yPixels, pFrame, option );
-#endif   /* DEBUG */
+   MESSAGE_LOG4 ( MSG_MINDEBUG,
+           "Simulating %d x %d pixels of data to buffer at %p - option %d",
+           xPixels, yPixels, pFrame, option );
 
    /* Switch according to the simulation option chosen. */
 
@@ -12162,11 +12043,11 @@ STATUS detFrameUnscramble
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "detFrameUnscramble: Unscrambling %d x %d pixels from frame at %p to %p\n",
-   xPixels, yPixels, inFrame, outBuffer);
+   MESSAGE_LOG4 (MSG_FULLDEBUG ,
+           "Unscrambling %d x %d pixels from frame at %p to %p",
+           xPixels, yPixels, inFrame, outBuffer);
 
+#ifdef DEBUG
    min = FLT_MAX;
    max = -FLT_MAX;
 #endif /* DEBUG */
@@ -12208,8 +12089,9 @@ STATUS detFrameUnscramble
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels;
 
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Two sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 #ifdef DEBUG
-         printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
          for ( i = 0 ; i < 300 ; i++ )
              printf ( "inPixel[%d]=%d\n", i , *(inDataPtr + i) ) ;
              
@@ -12257,10 +12139,8 @@ STATUS detFrameUnscramble
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels / 2;
 
-#ifdef DEBUG
-         printf ("Four sectors of size %d x %d\n", 
-                 xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Four sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12394,11 +12274,9 @@ STATUS detFrameScramble
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "detFrameUnscramble: Scrambling %d x %d pixels from frame at %p to %p\n",
-   xPixels, yPixels, inBuffer, outBuffer);
-#endif /* DEBUG */
+   MESSAGE_LOG4 ( MSG_FULLDEBUG,
+                  "Scrambling %d x %d pixels from frame at %p to %p",
+                  xPixels, yPixels, inBuffer, outBuffer);
 
    /*
     * The algorithm used to unscramble the data depends on the number of outputs
@@ -12430,9 +12308,9 @@ STATUS detFrameScramble
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels;
 
-#ifdef DEBUG
-         printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, 
+                       "Two sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12467,10 +12345,8 @@ STATUS detFrameScramble
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels / 2;
 
-#ifdef DEBUG
-         printf ("Four sectors of size %d x %d\n", xPixelsSector, 
-                 yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Four sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12599,11 +12475,11 @@ STATUS detFrameUnscrambleUint16
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "detFrameUnscramble: Unscrambling %d x %d pixels from frame at %p to %p\n",
-   xPixels, yPixels, inFrame, outBuffer);
+   MESSAGE_LOG4 ( MSG_FULLDEBUG,
+                  "Unscrambling %d x %d pixels from frame at %p to %p",
+                  xPixels, yPixels, inFrame, outBuffer);
 
+#ifdef DEBUG
    min = USHRT_MAX;
    max = 0;
 #endif /* DEBUG */
@@ -12645,9 +12521,8 @@ STATUS detFrameUnscrambleUint16
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels;
 
-#ifdef DEBUG
-         printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Two sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12691,10 +12566,8 @@ STATUS detFrameUnscrambleUint16
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels / 2;
 
-#ifdef DEBUG
-         printf ("Four sectors of size %d x %d\n", 
-                 xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Four sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12828,11 +12701,9 @@ STATUS detFrameScrambleUint16
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "detFrameUnscramble: Scrambling %d x %d pixels from frame at %p to %p\n",
-   xPixels, yPixels, inBuffer, outBuffer);
-#endif /* DEBUG */
+   MESSAGE_LOG4 ( MSG_FULLDEBUG,
+          "Scrambling %d x %d pixels from frame at %p to %p",
+          xPixels, yPixels, inBuffer, outBuffer);
 
    /*
     * The algorithm used to unscramble the data depends on the number of outputs
@@ -12864,9 +12735,8 @@ STATUS detFrameScrambleUint16
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels;
 
-#ifdef DEBUG
-         printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Two sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -12901,10 +12771,8 @@ STATUS detFrameScrambleUint16
          xPixelsSector = xPixels / 2;
          yPixelsSector = yPixels / 2;
 
-#ifdef DEBUG
-         printf ("Four sectors of size %d x %d\n", xPixelsSector, 
-                 yPixelsSector);
-#endif /* DEBUG */
+         MESSAGE_LOG2 (MSG_FULLDEBUG, "Four sectors of size %d x %d", 
+                       xPixelsSector, yPixelsSector);
 
          /* Initialise the starting position for each sector */
 
@@ -13093,7 +12961,8 @@ uint32 detFrameReduceUint16
             if ( obsId->xBin == 1 )
                offset = obsId->x1 - obsId->xStart + 16 - 1;
             else
-               offset = obsId->x1 - (DET_CONTROL_HRWFS_XSIZE/obsId->xBin - obsId->x2 + 1) ;
+               offset = obsId->x1 - 
+               (DET_CONTROL_HRWFS_XSIZE/obsId->xBin - obsId->x2 + 1) ;
             for ( row = 0 ; row < yWindowSize ; row ++)
             {
                 pd = pDisp + row*obsId->xPixelsDhs;
@@ -13464,16 +13333,77 @@ void detDhsErrorCallback         /* DHS error callback function.              */
 
 /*+
  *   FUNCTION NAME:
- *   detDhsInit
+ *   detDhsParamInit
  *
  *   INVOCATION:
- *   detDhsInit (pClientName, numConnect, pHostName, pSeverName)
+ *   detDhsParamInit (pClientName, numConnect, pHostName, pSeverName)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pClientName  (const char *)  Unique name for DHS client.
  *   (>) numConnect   (const int)     Maximum number of DHS connections.
  *   (>) pHostName    (const char *)  Name of DHS data server host.
  *   (>) pServerName  (const char *)  Name of DHS data server.
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if command successful, ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Initialise the parameters needed to init DHS library and define DHS 
+ *   server information
+ *
+ *   DESCRIPTION:
+ *   This function initialises the parameters needed to init the DHS library 
+ *   and sets up the DHS server information used by the detector controller.
+ *
+ *   EXTERNAL VARIABLES:
+ *   (<) pDetDhsClientName (char *) Current name of DHS client= Instrument name.
+ *   (<) pDetDhsHostName   (char *) Current name of DHS server host.
+ *   (<) pDetDhsServerName (char *) Current name of DHS server.
+ *   (<) detDhsNumConnect  (int)    Current number of DHS connections.
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *   dhs.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+STATUS detDhsParamInit
+   (
+   const char *   pClientName,      /* Unique name of DHS client.             */
+   const int      numConnect,       /* Maximum number of DHS connections.     */
+   const char *   pHostName,        /* Name of data server host.              */
+   const char *   pServerName       /* Name of server.                        */
+   )
+{
+
+   /* Store the given client name, host name and server name in global 
+    * variables. 
+    */
+
+   strncpy (pDetDhsClientName, pClientName, EPICS_MAX_BYTES_STRING_ATTRIB);
+   strncpy (pDetDhsHostName, pHostName, EPICS_MAX_BYTES_STRING_ATTRIB);
+   strncpy (pDetDhsServerName, pServerName, EPICS_MAX_BYTES_STRING_ATTRIB);
+   detDhsNumConnect = numConnect;
+
+   return (OK);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detDhsInit
+ *
+ *   INVOCATION:
+ *   detDhsInit ()
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
  *
  *   FUNCTION VALUE:
  *   (STATUS)   OK if command successful, ERROR if unsuccessful
@@ -13490,6 +13420,7 @@ void detDhsErrorCallback         /* DHS error callback function.              */
  *   (<) pDetDhsClientName (char *) Current name of DHS client= Instrument name.
  *   (<) pDetDhsHostName   (char *) Current name of DHS server host.
  *   (<) pDetDhsServerName (char *) Current name of DHS server.
+ *   (<) detDhsNumConnect  (int)    Current number of DHS connections
  *
  *   PRIOR REQUIREMENTS:
  *   None
@@ -13516,10 +13447,6 @@ void detDhsErrorCallback         /* DHS error callback function.              */
 
 STATUS detDhsInit
    (
-   const char *   pClientName,      /* Unique name of DHS client.             */
-   const int      numConnect,       /* Maximum number of DHS connections.     */
-   const char *   pHostName,        /* Name of data server host.              */
-   const char *   pServerName       /* Name of server.                        */
    )
 {
    DHS_STATUS      dhsErrno;         /* DHS error number.                  */
@@ -13545,12 +13472,11 @@ STATUS detDhsInit
     * of connections.
     */
 
-#ifdef DEBUG
-   printf ("detDhsInit: dhsInit pClientName=%s numConnect=%d\n", 
-           pClientName, numConnect);
-#endif /* DEBUG */
+   MESSAGE_LOG2 (MSG_MINDEBUG, 
+                 "dhsInit pDetDhsClientName=%s detDhsNumConnect=%d", 
+                 pDetDhsClientName, detDhsNumConnect);
 
-   dhsInit (pClientName, numConnect, &dhsErrno);
+   dhsInit (pDetDhsClientName, detDhsNumConnect, &dhsErrno);
    CHECK_DHS (dhsErrno);
 
    if (dhsErrno != DHS_S_SUCCESS)
@@ -13563,11 +13489,9 @@ STATUS detDhsInit
 
    /* Set up callbacks. */
 
-#ifdef DEBUG
-   printf (
-   "detDhsInit: dhsCallbackSet DHS_CBT_ERROR=%d detDhsErrorCallback=%p\n",
-   DHS_CBT_ERROR, detDhsErrorCallback);
-#endif /* DEBUG */
+   MESSAGE_LOG2 ( MSG_MINDEBUG, 
+                  "dhsCallbackSet DHS_CBT_ERROR=%d detDhsErrorCallback=%p",
+                  DHS_CBT_ERROR, detDhsErrorCallback);
 
    dhsCallbackSet (DHS_CBT_ERROR, detDhsErrorCallback, &dhsErrno);
    CHECK_DHS (dhsErrno);
@@ -13587,17 +13511,14 @@ STATUS detDhsInit
     * REINSTATED - SMB 16 NOV 98
     */
 
-#ifdef DEBUG
-   printf ("detDhsInit: dhsEventLoop DHS_ELT_THREADED=%d ... ", 
-           DHS_ELT_THREADED);
-#endif /* DEBUG */
+   MESSAGE_LOG1 (MSG_MINDEBUG, "dhsEventLoop DHS_ELT_THREADED=%d ... ", 
+                 DHS_ELT_THREADED);
 
    dhsEventLoop (DHS_ELT_THREADED, &dhsThreadId, &dhsErrno);
    CHECK_DHS (dhsErrno);
 
-#ifdef DEBUG
-   printf ("dhsThreadId=%d dhsErrno=%d\n", dhsThreadId, dhsErrno);
-#endif /* DEBUG */
+   MESSAGE_LOG2 (MSG_MINDEBUG, "dhsThreadId=%d dhsErrno=%d", 
+                 dhsThreadId, dhsErrno);
 
    if (dhsErrno != DHS_S_SUCCESS)
    {
@@ -13606,14 +13527,6 @@ STATUS detDhsInit
             ERROR_LOG_SAVE, dhsErrno);
       return (ERROR);
    }
-
-   /* Store the given client name, host name and server name in global 
-    * variables. 
-    */
-
-   strncpy (pDetDhsClientName, pClientName, EPICS_MAX_BYTES_STRING_ATTRIB);
-   strncpy (pDetDhsHostName, pHostName, EPICS_MAX_BYTES_STRING_ATTRIB);
-   strncpy (pDetDhsServerName, pServerName, EPICS_MAX_BYTES_STRING_ATTRIB);
 
    /* Finally, set the detDhsInitialised flag and return the semaphore. */
 
@@ -13693,10 +13606,8 @@ STATUS detDhsConnect
    dhsConnect (pDetDhsHostName, pDetDhsServerName, NULL, &dhsErrno);
    CHECK_DHS (dhsErrno);
 
-#ifdef DEBUG
-   printf ("dhsConnect: dhsConnection=%ld dhsErrno=%d\n", 
-           detDhsConnection, dhsErrno);
-#endif /* DEBUG */
+   MESSAGE_LOG2 (MSG_MINDEBUG, "dhsConnection=%ld dhsErrno=%d", 
+                 detDhsConnection, dhsErrno);
 
    if (dhsErrno != DHS_S_SUCCESS)
    {
@@ -13853,15 +13764,6 @@ STATUS detDhsCheckCmdStatus
     * Note that the DHS allocates a buffer to hold the command status message
     * and returns a pointer to this buffer in "msg".
     */
-
-#ifdef DEBUG
-   printf ("detDhsCheckCmdStatus: dhsStatus\n");
-#endif /* DEBUG */
-
-   /* dhsStatus() COMMENTED OUT */
-
-   /*sendStatus = dhsStatus (dhsTag, &msg, &dhsErrno);
-   CHECK_DHS (dhsErrno);*/
 
    sendStatus = DHS_CS_DONE ;      /* FUDGE */
 
@@ -15046,7 +14948,8 @@ STATUS detHeadTempGet
       meanValue6 = meanValue7 = 0.0;
       for ( sample=0; sample<1; sample++)
       {
-         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC6", &value) == ERROR)
+         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC6", &value) 
+             == ERROR)
          {
             ERROR_LOG ("Failed to read thermistor 1 temperature parameter");
             return (ERROR);
@@ -15056,7 +14959,8 @@ STATUS detHeadTempGet
             meanValue6 += (double) value;
          }
 
-         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC7", &value) == ERROR)
+         if (sdsuParamRead (detSdsuIdHr, SDSU_IDENT_UTL, "U_ADC7", &value) 
+             == ERROR)
          {
             ERROR_LOG ("Failed to read thermistor 2 temperature parameter");
             return (ERROR);
@@ -15067,26 +14971,22 @@ STATUS detHeadTempGet
          }
       }
 
-      /*meanValue6 /= 20.0;
-      meanValue7 /= 20.0;*/
-
-      sdsuTemp6 = meanValue6 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
-      sdsuTemp7 = meanValue7 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
+      sdsuTemp6 = 
+      meanValue6 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
+      sdsuTemp7 = 
+      meanValue7 * (-0.01545); /* 0.01545 is not quite SDSU_TEMP_UNIT*/
 
       sdsuTemp = (sdsuTemp6 + sdsuTemp7) / 2.0 ;
 
-#ifdef DEBUG
-      printf ( "detHeadTempGet() : not observing -> val = %f\n" , sdsuTemp ) ;
-#endif
+      MESSAGE_LOG1 ( MSG_MINDEBUG, 
+                     "not observing -> val = %f" , sdsuTemp ) ;
       *(double *)psir->val = sdsuTemp ;
       detObsIdHr->detTemp = sdsuTemp;
    }
-#ifdef DEBUG
    else
    {
-      printf ( "detHeadTempGet() observing then wait...\n" ) ;
+      MESSAGE_LOG ( MSG_FULLDEBUG, "observing then wait..." ) ;
    }
-#endif
 
    return (OK) ;
 }
@@ -15322,10 +15222,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): first line of comments:\n" );
-   printf ( "%s\n" , comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "First line of comments: %s" , comment );
 
    /* Skip the next line of comment */
 
@@ -15338,9 +15235,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the default target temperature */
 
@@ -15374,9 +15269,7 @@ uint32 detContInit
       *pTempCode = 0;
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): target temperature = %d\n", *pTempCode );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "target temperature = %d", (int)(*pTempCode) );
 
    /* Skip the next line of comment */
 
@@ -15389,9 +15282,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the default temperature coefficient */
 
@@ -15406,9 +15297,7 @@ uint32 detContInit
 
    *pTempCoeff = coeff;
 
-#ifdef DEBUG
-   printf ( "detContInit(): temperature coefficient = %d\n", coeff );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "temperature coefficient = %d", coeff );
 
    /* Skip the next line of comment */
 
@@ -15421,9 +15310,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the default ADC offset for output 0 - no binning */
 
@@ -15438,9 +15325,7 @@ uint32 detContInit
 
    *(pOffsetFullVect + 0) = offset;
 
-#ifdef DEBUG
-   printf ( "detContInit(): ADC offset for output 0 (full) = %d\n", offset );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "ADC offset for output 0 (full) = %d", offset );
 
    /* Skip the next line of comment */
 
@@ -15453,9 +15338,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the ADC offset for output 1 - no binning */
 
@@ -15470,9 +15353,7 @@ uint32 detContInit
 
    *(pOffsetFullVect + 1) = offset;
 
-#ifdef DEBUG
-   printf ( "detContInit(): ADC offset for output 1 (full) = %d\n", offset );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "ADC offset for output 1 (full) = %d", offset );
 
    /* Skip the next line of comment */
 
@@ -15485,9 +15366,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the default ADC offset for output 0 - binning */
 
@@ -15502,9 +15381,7 @@ uint32 detContInit
 
    *(pOffsetBinVect + 0) = offset;
 
-#ifdef DEBUG
-   printf ( "detContInit(): ADC offset for output 0 (bin) = %d\n", offset );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "ADC offset for output 0 (bin) = %d", offset );
 
    /* Skip the next line of comment */
 
@@ -15517,9 +15394,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the ADC offset for output 1 - binning */
 
@@ -15534,9 +15409,7 @@ uint32 detContInit
 
    *(pOffsetBinVect + 1) = offset;
 
-#ifdef DEBUG
-   printf ( "detContInit(): ADC offset for output 1 (bin) = %d\n", offset );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "ADC offset for output 1 (bin) = %d", offset );
 
    /* Skip the next line of comment */
 
@@ -15549,9 +15422,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the CCD serial number from the file */
 
@@ -15567,16 +15438,12 @@ uint32 detContInit
    if ( pCcdSn[strlen(pCcdSn) - 1] == '\n' )
    {
       pCcdSn[strlen(pCcdSn) - 1] = '\0';
-#ifdef DEBUG
-      printf ( "detControlInit(): last character of %s was return\n",
-               pCcdSn );
-#endif
+      MESSAGE_LOG1 ( MSG_MINDEBUG, "last character of %s was return",
+                     pCcdSn );
 
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): CCD serial number: %s\n", pCcdSn );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "CCD serial number: %s", pCcdSn );
 
    /* Skip the next line of comment */
 
@@ -15589,9 +15456,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the instrument name from the file */
 
@@ -15607,16 +15472,11 @@ uint32 detContInit
    if ( pInstName[strlen(pInstName) - 1] == '\n' )
    {
       pInstName[strlen(pInstName) - 1] = '\0';
-#ifdef DEBUG
-      printf ( "detControlInit(): last character of %s was return\n",
-               pInstName );
-#endif
-
+      MESSAGE_LOG1 ( MSG_MINDEBUG, "last character of %s was return",
+                     pInstName );
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): instrument name : %s\n", pInstName );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "instrument name : %s", pInstName );
 
    /* Skip the next line of comment */
 
@@ -15629,9 +15489,7 @@ uint32 detContInit
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf ( "detContInit(): %s\n", comment );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "%s", comment );
 
    /* Read the default ISS port from the file */
 
@@ -15646,9 +15504,7 @@ uint32 detContInit
 
    *pPort = coeff;
 
-#ifdef DEBUG
-   printf ( "detContInit(): ISS port number = %d\n", coeff );
-#endif
+   MESSAGE_LOG1 ( MSG_MINDEBUG, "ISS port number = %d", coeff );
 
    return (OK);
 }
@@ -16401,11 +16257,11 @@ STATUS newDetFrameUnscrambleUint16
       return (ERROR);
    }
 
-#ifdef DEBUG
-   printf (
-   "newDetFrameUnscrambleUint16: Unscrambling %d x %d pixels from frame at %p to %p\n",
-   xPixels, yPixels, inFrame, outBuffer);
+   MESSAGE_LOG4 ( MSG_FULLDEBUG, 
+      "Unscrambling %d x %d pixels from frame at %p to %p",
+      xPixels, yPixels, inFrame, outBuffer);
 
+#ifdef DEBUG
    min = USHRT_MAX;
    max = 0;
 #endif /* DEBUG */
@@ -16439,9 +16295,8 @@ STATUS newDetFrameUnscrambleUint16
 
    yPixelsSector = yPixels;
 
-#ifdef DEBUG
-   printf ("Two sectors of size %d x %d\n", xPixelsSector, yPixelsSector);
-#endif /* DEBUG */
+   MESSAGE_LOG2 (MSG_FULLDEBUG, "Two sectors of size %d x %d", 
+                 xPixelsSector, yPixelsSector);
 
    /* Initialise the starting position for each sector */
 

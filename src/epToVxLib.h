@@ -10,6 +10,9 @@
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2001/10/26 03:28:09  cboyer
+ * Port to epics3.13.4 version
+ *
  * Revision 1.2  2000/01/05 20:09:43  cboyer
  * Tidy up the directory src: remove all the not used files and tidy up
  *
@@ -118,7 +121,7 @@
 
 /* defines */
 
-#define EPTOVX_CAD_CAR_PIPES_NMSGS 4  /* Number of message slots in the pipes */
+#define EPTOVX_CAD_CAR_PIPES_NMSGS 8  /* Number of message slots in the pipes */
                                       /* used to transfer CAD command and     */
                                       /* response packets. These slots provide*/
                                       /* a FIFO buffer which should be enough */
