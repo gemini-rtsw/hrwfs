@@ -1,0 +1,128 @@
+[schematic2]
+uniq 165
+[tools]
+[detail]
+w 50 1291 100 0 n#164 eapply.apply2.MESS -96 1280 256 1280 256 1232 320 1232 outhier.MESS.p
+w 82 1323 100 0 n#163 eapply.apply2.VAL -96 1312 320 1312 outhier.VAL.p
+w -686 1291 100 0 n#162 inhier.ICID.P -880 1168 -832 1168 -832 1280 -480 1280 eapply.apply2.CLID
+w -710 1323 100 0 n#161 inhier.DIR.P -880 1312 -480 1312 eapply.apply2.DIR
+w 1058 -245 100 0 n#160 eapply.apply2.INME -480 928 -768 928 -768 -256 2944 -256 2944 608 2784 608 ecad2.continue.MESS
+w 1058 -277 100 0 n#159 ecad2.continue.VAL 2784 640 2976 640 2976 -288 -800 -288 -800 960 -480 960 eapply.apply2.INPE
+w 706 -181 100 0 n#158 ecad2.abort.MESS 2048 608 2176 608 2176 -192 -704 -192 -704 864 -480 864 eapply.apply2.INMF
+w 706 -213 100 0 n#157 ecad2.abort.VAL 2048 640 2208 640 2208 -224 -736 -224 -736 896 -480 896 eapply.apply2.INPF
+w 402 -117 100 0 n#156 ecad2.stop.MESS 1408 608 1504 608 1504 -128 -640 -128 -640 800 -480 800 eapply.apply2.INMG
+w 402 -149 100 0 n#155 ecad2.stop.VAL 1408 640 1536 640 1536 -160 -672 -160 -672 832 -480 832 eapply.apply2.INPG
+w 114 -53 100 0 n#154 ecad2.endObserve.MESS 784 608 864 608 864 -64 -576 -64 -576 736 -480 736 eapply.apply2.INMH
+w 114 -85 100 0 n#153 ecad2.endObserve.VAL 784 640 896 640 896 -96 -608 -96 -608 768 -480 768 eapply.apply2.INPH
+w 282 619 100 0 n#152 eapply.apply2.OCLH -96 736 160 736 160 608 464 608 ecad2.endObserve.ICID
+w 18 779 100 0 n#151 eapply.apply2.OUTH -96 768 192 768 192 640 464 640 ecad2.endObserve.DIR
+w 386 811 100 0 n#150 eapply.apply2.OCLG -96 800 928 800 928 608 1088 608 ecad2.stop.ICID
+w 402 843 100 0 n#149 eapply.apply2.OUTG -96 832 960 832 960 640 1088 640 ecad2.stop.DIR
+w 706 875 100 0 n#148 eapply.apply2.OCLF -96 864 1568 864 1568 608 1728 608 ecad2.abort.ICID
+w 722 907 100 0 n#147 eapply.apply2.OUTF -96 896 1600 896 1600 640 1728 640 ecad2.abort.DIR
+w 1058 939 100 0 n#146 eapply.apply2.OCLE -96 928 2272 928 2272 608 2464 608 ecad2.continue.ICID
+w 1074 971 100 0 n#145 eapply.apply2.OUTE -96 960 2304 960 2304 640 2464 640 ecad2.continue.DIR
+w 1010 2123 100 0 n#144 eapply.apply2.INMD -480 992 -800 992 -800 2112 2880 2112 2880 1792 2784 1792 ecad2.pause.MESS
+w 1010 2091 100 0 n#143 ecad2.pause.VAL 2784 1824 2848 1824 2848 2080 -768 2080 -768 1024 -480 1024 eapply.apply2.INPD
+w 674 2059 100 0 n#142 eapply.apply2.INMC -480 1056 -736 1056 -736 2048 2144 2048 2144 1792 2048 1792 ecad2.observe.MESS
+w 674 2027 100 0 n#141 ecad2.observe.VAL 2048 1824 2112 1824 2112 2016 -704 2016 -704 1088 -480 1088 eapply.apply2.INPC
+w 370 1995 100 0 n#140 ecad2.endGuide.MESS 1408 1792 1472 1792 1472 1984 -672 1984 -672 1120 -480 1120 eapply.apply2.INMB
+w 370 1963 100 0 n#139 ecad2.endGuide.VAL 1408 1824 1440 1824 1440 1952 -640 1952 -640 1152 -480 1152 eapply.apply2.INPB
+w 98 1931 100 0 n#138 ecad2.guide.MESS 784 1792 864 1792 864 1920 -608 1920 -608 1184 -480 1184 eapply.apply2.INMA
+w 98 1899 100 0 n#137 ecad2.guide.VAL 784 1824 832 1824 832 1888 -576 1888 -576 1216 -480 1216 eapply.apply2.INPA
+w 1074 1003 100 0 n#136 eapply.apply2.OCLD -96 992 2304 992 2304 1792 2464 1792 ecad2.pause.ICID
+w 1058 1035 100 0 n#135 eapply.apply2.OUTD -96 1024 2272 1024 2272 1824 2464 1824 ecad2.pause.DIR
+w 722 1067 100 0 n#134 eapply.apply2.OCLC -96 1056 1600 1056 1600 1792 1728 1792 ecad2.observe.ICID
+w 706 1099 100 0 n#133 eapply.apply2.OUTC -96 1088 1568 1088 1568 1824 1728 1824 ecad2.observe.DIR
+w 402 1131 100 0 n#132 eapply.apply2.OCLB -96 1120 960 1120 960 1792 1088 1792 ecad2.endGuide.ICID
+w 386 1163 100 0 n#131 eapply.apply2.OUTB -96 1152 928 1152 928 1824 1088 1824 ecad2.endGuide.DIR
+w 18 1195 100 0 n#130 eapply.apply2.OCLA -96 1184 192 1184 192 1792 464 1792 ecad2.guide.ICID
+w 282 1835 100 0 n#129 eapply.apply2.OUTA -96 1216 160 1216 160 1824 464 1824 ecad2.guide.DIR
+s 96 2240 500 0 Wavefront Sensing - Sequence CAD Records
+s 2464 -704 500 512 hrwfsSeqCommands2.sch
+[cell use]
+use outhier 288 1271 100 0 VAL
+xform 0 304 1312
+use outhier 288 1191 100 0 MESS
+xform 0 304 1232
+use inhier -896 1271 100 0 DIR
+xform 0 -880 1312
+use inhier -896 1127 100 0 ICID
+xform 0 -880 1168
+use eapply -480 679 100 0 apply2
+xform 0 -288 1040
+use ecad2 2464 1255 100 0 pause
+xform 0 2624 1568
+p 2528 1216 100 0 1 DESC:Pause observation
+p 2576 1632 100 0 0 FTVA:STRING
+p 2576 1568 100 0 0 FTVB:STRING
+p 2528 1184 100 0 1 INAM:
+p 2528 1120 100 0 1 PV:$(top)
+p 2528 1152 100 0 1 SNAM:epToVxCadReject
+use ecad2 2464 71 100 0 continue
+xform 0 2624 384
+p 2528 32 100 0 1 DESC:Continue observation
+p 2576 448 100 0 0 FTVA:STRING
+p 2576 384 100 0 0 FTVB:STRING
+p 2528 0 100 0 1 INAM:
+p 2528 -64 100 0 1 PV:$(top)
+p 2528 -32 100 0 1 SNAM:epToVxCadReject
+use ecad2 1088 71 100 0 stop
+xform 0 1248 384
+p 1152 32 100 0 1 DESC:Stop observation
+p 1200 448 100 0 0 FTVA:STRING
+p 1200 384 100 0 0 FTVB:STRING
+p 1152 0 100 0 1 INAM:epToVxCadInit
+p 1152 -64 100 0 1 PV:$(top)
+p 1152 -32 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1728 71 100 0 abort
+xform 0 1888 384
+p 1792 32 100 0 1 DESC:Abort observation
+p 1840 448 100 0 0 FTVA:STRING
+p 1840 384 100 0 0 FTVB:STRING
+p 1792 0 100 0 1 INAM:epToVxCadInit
+p 1792 -64 100 0 1 PV:$(top)
+p 1792 -32 100 0 1 SNAM:epToVxCadExecute
+use ecad2 464 1255 100 0 guide
+xform 0 624 1568
+p 576 1328 100 0 1 DESC:Guide
+p 576 1632 100 0 0 FTVA:STRING
+p 576 1568 100 0 0 FTVB:STRING
+p 528 1216 100 0 1 INAM:epToVxCadInit
+p 528 1120 100 0 0 PV:$(top)
+p 528 1184 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1088 1255 100 0 endGuide
+xform 0 1248 1568
+p 1152 1216 100 0 1 DESC:endGuide
+p 1200 1632 100 0 0 FTVA:STRING
+p 1200 1568 100 0 0 FTVB:STRING
+p 1152 1184 100 0 1 INAM:epToVxCadInit
+p 1152 1120 100 0 1 PV:$(top)
+p 1152 1152 100 0 1 SNAM:epToVxCadExecute
+use ecad2 464 71 100 0 endObserve
+xform 0 624 384
+p 528 32 100 0 1 DESC:endObserve
+p 576 448 100 0 0 FTVA:STRING
+p 576 384 100 0 0 FTVB:STRING
+p 528 0 100 0 1 INAM:epToVxCadInit
+p 528 -64 100 0 0 PV:$(top)
+p 528 -32 100 0 1 SNAM:epToVxCadExecute
+use ecad2 1728 1255 100 0 observe
+xform 0 1888 1568
+p 1792 1216 100 0 1 DESC:OCS Observe command
+p 1840 1632 100 0 1 FTVA:STRING
+p 1840 1568 100 0 0 FTVB:STRING
+p 1792 1184 100 0 1 INAM:epToVxCadInit
+p 1792 1120 100 0 1 PV:$(top)
+p 1792 1152 100 0 1 SNAM:epToVxCadExecute
+use bd200tr -1024 -920 -100 0 frame
+xform 0 1616 784
+p 2608 -688 200 0 1 author:C.J.Mayer
+p 3120 -720 100 0 0 border:D
+p 2608 -768 200 0 1 checked:
+p 3120 -784 200 0 -1 date:$Date: 2001-06-11 08:07:31 $
+p 2592 2304 200 0 -1 id:$Id: hrwfsSeqCommands2.sch,v 1.1 2001-06-11 08:07:31 cjm Exp $
+p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
+p 2592 -528 200 0 -1 revision:$Revision: 1.1 $
+p 3120 -560 200 0 -1 title:Wavefront Sensor Sequence CAD Records
+[comments]
