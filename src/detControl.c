@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.4 1999-11-04 19:51:21 cboyer Exp $"};
+   "$Id: detControl.c,v 1.5 1999-11-10 20:45:38 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -35,6 +35,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   9 Nov 1999 - cb TELSCOP and OBSERVAT are now updated from the TCS
+ *   8 Nov 1999 - cb Fix a bug for WCS when binning or windowing
  *   27 oct 1999 - cb dhs/fits add keywords, fix bug of WCS. 
  *                 Back to detWriteFitsUint16
  *   25 oct 1999 - cb modify detObserveStart and detObserveEnd because observe 
@@ -2089,6 +2091,7 @@ uint32 detObserveStart
    char          *qlStreams[1];
    char          *contrib[1];
    double        bzero ;
+   char          telName [40] ;
 
    /* Variables associated with the provision of WCS information. */
 
@@ -2834,12 +2837,12 @@ uint32 detObserveStart
             {
                obsId->detij[p][0] =
                ((obsId->pixij[p][0] - 0.5 - 
-                 (double) obsId->x1) /
+                 (double) (obsId->x1 - 1)) /
                 (double) obsId->xBin) + 0.5;
 
                obsId->detij[p][1] =
                ((obsId->pixij[p][1] - 0.5 - 
-                 (double) obsId->y1) /
+                 (double) (obsId->y1 - 1)) /
                 (double) obsId->yBin) + 0.5;
             }
 
@@ -3047,6 +3050,7 @@ uint32 detObserveStart
          qlStreams[0] = "hrwfsScience"; 
                                 /* THIS IS A FUDGE. DEFINE IN setDhs command. */
 
+         wfsGetTelName ( telName ) ;
 
          /* NOTE: Lifetime should be definable
           * PERMANENT for permanent data (e.g. calibrations)
@@ -3095,10 +3099,10 @@ uint32 detObserveStart
                DHS_DT_STRING, 0, NULL, pDetDhsClientName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
-                            0, NULL, "Gemini_North", &dhsErrno);
+                            0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "observatory", DHS_DT_STRING, 
-                            0, NULL, "Gemini_North", &dhsErrno);
+                            0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
 
@@ -9823,6 +9827,7 @@ STATUS detWriteFits
    int            nBlocks;
    int            block;
    int            extra;
+   char           telName [40];
 
    /*
     * Check the parameters provided.
@@ -9866,6 +9871,8 @@ STATUS detWriteFits
             obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
             obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5]);
 
+   wfsGetTelName ( telName ) ;
+
    fp = fopen (filename, "w");
 
    if (fp == NULL)
@@ -9900,9 +9907,9 @@ STATUS detWriteFits
    headerCount++;
    fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
    headerCount++;
-   fprintf (fp, "TELESCOP='%20s'/                                                ", "Gemini_North");
+   fprintf (fp, "TELESCOP='%20s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "OBSERVAT='%20s'/                                                ", "Gemini_North");
+   fprintf (fp, "OBSERVAT='%20s'/                                                ", telName);
    headerCount++;
    fprintf (fp, "BUNIT   ='%20s'/                                                ", "SDSU ADC units");
    headerCount++;
@@ -10091,6 +10098,8 @@ STATUS detWriteFitsUint16
    int            block;
    int            extra;
 
+   char           telName [40] ;
+
    /*
     * Check the parameters provided.
     */
@@ -10134,6 +10143,8 @@ STATUS detWriteFitsUint16
             obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
             obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5]);
 
+   wfsGetTelName ( telName ) ;
+
    fp = fopen (filename, "w");
 
    if (fp == NULL)
@@ -10171,11 +10182,11 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
    headerCount++;
-   fprintf (fp, "TELESCOP='%20s'/                                                ", "Gemini_North");
+   fprintf (fp, "TELESCOP='%20s'/                                                ", telName);
    headerCount++;
    fprintf (fp, "INSTRUME='%20s'/                                                ", obsId->pWfsName);
    headerCount++;
-   fprintf (fp, "OBSERVAT='%20s'/                                                ", "Gemini_North");
+   fprintf (fp, "OBSERVAT='%20s'/                                                ", telName);
    headerCount++;
    fprintf (fp, "BUNIT   ='%20s'/                                                ", "SDSU ADC units");
    headerCount++;

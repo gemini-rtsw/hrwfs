@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsWcs.c,v 1.2 1999-11-04 04:07:07 cboyer Exp $"};
+   "$Id: wfsWcs.c,v 1.3 1999-11-10 20:45:42 cboyer Exp $"};
 
 /*+
  * MODULE NAME:
@@ -33,6 +33,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  1999/11/04 04:07:07  cboyer
+ * Modifications in order to have binning and windowing, short integer for dhs,
+ * IT working for SDSU, observe which does everything, WCS, FITS header.
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:24  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -66,7 +70,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include  <recSup.h>
 #include  <alarm.h>
 
-/* #define DEBUG */    /* Define this macro to enable debugging. */
+/*#define DEBUG*/     /* Define this macro to enable debugging. */
 
 #include "timeLib.h"
 #include "slalib.h"

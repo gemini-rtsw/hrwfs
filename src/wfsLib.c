@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.1.1.1 1999-03-17 03:14:24 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.2 1999-11-10 20:45:41 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -46,8 +46,14 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Nick Dillon
  *   Steven Beard
  *
+ *   MODIFICATION
+ *   9 Nov 1999 - cb - add wfsInitTelName and wfsGetTelName
+ *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:24  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.25  1999/02/26 cboyer
  * Add wfsWriteName routine
  *
@@ -145,6 +151,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include "errorLib.h"
 
 #include <sirRecord.h>
+#include <genSubRecord.h>
 
 #ifndef NO_SYSEXTLIB                     /* Define this macro to remove sysextLib   */
 #include "sysextLib.h"
@@ -182,6 +189,10 @@ IMPORT BOOL     pWfsDbRecInitialised [N_RECORD_TYPES];
 
 IMPORT int      errorCount;                /* Current global error count.         */
                                            /* It is imported from "errorLib.c".   */
+
+/* Global variables */
+
+char tcsTelName [40] ;
 
 /* ------------------------------------------------------------------------------------------------ */
 
@@ -763,7 +774,7 @@ STATUS   wfsWriteVersion (void)
 #ifdef NO_RCS
    if (epToVxPipeWrite ("version", COMPILE_DATE_AND_TIME, 0) == ERROR)
 #else
-    if (epToVxPipeWrite ("version", "$Revision: 1.1.1.1 $", 0) == ERROR)
+    if (epToVxPipeWrite ("version", "$Revision: 1.2 $", 0) == ERROR)
 #endif
    {
       ERROR_LOG ("Failed to write version number");
@@ -1162,4 +1173,90 @@ STATUS   wfsWriteName (struct sirRecord *psir)
 
     strcpy ( (char *)psir->val , "High Resolution Wavefront Sensor" ) ;
     return (OK) ;
+}
+
+
+/* ------------------------------------------------------------------------------------------------ */
+
+/*+
+ *   FUNCTION NAME:
+ *   wfsInitTelName
+ *
+ *   INVOCATION:
+ *   wfsInitTelName (pgensub)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   None
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if successful, or ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Init the telescope name from the TCS
+ *
+ *   DESCRIPTION:
+ *   This routine is called ones during the initialization process and inits the
+ *   telescope name from the TCS
+ *
+ *   EXTERNAL VARIABLES:
+ *
+ *   PRIOR REQUIREMENTS:
+ *
+ *   INCLUDE FILES:
+ *
+ *   DEFICIENCIES:
+ *
+ *   BUGS:
+ *-
+ */
+
+STATUS   wfsInitTelName (struct genSubRecord *pgensub)
+{
+
+    strcpy ( tcsTelName , (char *)pgensub->a ) ; 
+    if ( (strcmp ( tcsTelName , "Gemini North" ) == 0) || ( strcmp ( tcsTelName , "Gemini South" ) == 0) )
+       strcpy ( tcsTelName , "Gemini North" ) ;
+    return (OK) ;
+}
+
+
+/* ------------------------------------------------------------------------------------------------ */
+
+/*+
+ *   FUNCTION NAME:
+ *   wfsGetTelName
+ *
+ *   INVOCATION:
+ *   wfsGetTelName (char *pTelName)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (<) pTelName (char *) Telescope name
+ *
+ *   FUNCTION VALUE:
+ *   None
+ *
+ *   PURPOSE:
+ *   Get the local copy of the TCS Telescope name
+ *
+ *   DESCRIPTION:
+ *   Update the telescope name with the data obtained from the TCS.
+ *
+ *   EXTERNAL VARIABLES:
+ *   (>)   tcsTelName
+ *
+ *   PRIOR REQUIREMENTS:
+ *
+ *   INCLUDE FILES:
+ *
+ *   DEFICIENCIES:
+ *
+ *   BUGS:
+ *-
+ */
+
+void   wfsGetTelName (char *pTelName)
+{
+    strcpy ( pTelName , tcsTelName ) ;
+
+    return;
 }
