@@ -1,7 +1,7 @@
        COMMENT *
 Gemini WFS VME Interface Board Boot Code
 Controller: SDSU2 
-Revision: 3.03  (must agree with status word V_FW_VER in P: memory)
+Revision: 3.05  (must agree with status word V_FW_VER in P: memory)
 (This code is adapted from vmeboot v3.00 written by Dr. Bob Leach at SDSU)
 
 98/05/22 TDH -removed common constant definitions to vmehead.asm
@@ -17,7 +17,19 @@ Revision: 3.03  (must agree with status word V_FW_VER in P: memory)
              -changed allotment of EEPROM application space
 
 98/07/03 TDH -reformatted source code (moved some code around) and added 
-              comments 
+              comments
+
+99/01/06 TDH -changed READ_FIFO subroutine to not keep reading on error,
+              changed the RCV_ERR code to only reset the relevant buffer
+              and reordered code at RCV_PR, all
+              to prevent hang up if timing board sends a continuous 
+              stream of bad commands
+             -removed two commented lines of code just after START
+             -removed the TIM response
+
+99/03/02 TDH -reduced wait states for P: memory to 1, except during
+              EEPROM access
+             -changed FW_ID comments (now board serial #)
 
         *
 
@@ -63,8 +75,8 @@ Revision: 3.03  (must agree with status word V_FW_VER in P: memory)
 ; Put the ID words for this version of the ROM code. It is placed at
 ;   the address of the SWI = software interrupt, which we never use. 
         ORG     P:ROM_ID,P:ROM_ID+ROM_OFF
-V_FW_ID		DC	$000000	; Institution | Location | Instrument
-V_FW_VER	DC      $030301	; Version 3.03, board #1 = VMEINF Rev. 7A
+V_FW_ID		DC	$000000	; board serial number
+V_FW_VER	DC      $030501	; Version 3.05, board #1 = VMEINF Rev. 7A
 
 
 
@@ -120,7 +132,7 @@ INIT				; Must define this address for all cases
 	CLR	A
 	MOVE	A,X:SELBLT	; Make sure BLT = block transfer line is cleared
 
-	MOVEP	#$1181,X:BCR	; Wait states for external memory accesses
+	MOVEP	#$1191,X:BCR	; Wait states for external memory accesses
 				;   Ext. X:, Ext. Y, Ext. P:, Ext. I/O
 	MOVEP   #$0007,X:IPR    ; IRQA = priority 2, VME command
 
@@ -135,6 +147,8 @@ INIT				; Must define this address for all cases
 XLOOP
 	MOVE    A1,X:(R1)+      ; Write 24-bit words to X: memory
 XMOVE
+
+	BCLR	#7,X:BCR	; Reduce P: wait states after X: init
 
 ; Initialize the permanent registers
 	MOVE	#FO_BUF,R1	; Starting address of FIFO buffer
@@ -173,8 +187,6 @@ XMOVE
 
 ; Return here after executing each command
 	MOVE	X0,X:RSTWDT	; Assert reset watch dog timer line
-;	MOVE	#COM_BUF,R3	; Starting address of command buffer
-;	MOVE	R3,R4		; Reset command buffer
 	JSET    #RD,X:STATUS,RDING ; See if we're reading out
 
 ; Test the VMEbus receiver buffer contents
@@ -197,23 +209,25 @@ CHK_HDR	MOVE	X:(R5),Y0	; Get candidate header
         AND     Y0,B  #7,A1	; Test for S.NE.0 or D.NE.0
        	JEQ     <RCV_ERR	; Test failed
         AND     Y0,A  		; Test for N.GE.1
-        JNE     <RCV_PR         ; Test suceeded - process command
+        JNE     <RCV_PR         ; Test succeeded - process command
 
 ; If a header value is wrong then reset the FIFO and buffer pointers
-RCV_ERR	MOVE	A,X:RSTFIFO	; Reset FIFO
+RCV_ERR	JCLR	#ST_ISR,X:STATUS,RST_VME
+	MOVE	A,X:RSTFIFO	; Reset FIFO
 	MOVE	#FO_BUF,R1	; Starting address of FIFO buffer
-	MOVE	#VME_BUF,R2	; Starting address of VMEbus buffer
 	MOVE	R1,X:<R1PROC
+	JMP	<START		; Wait for the next command
+RST_VME	MOVE	#VME_BUF,R2	; Starting address of VMEbus buffer
 	MOVE	R2,X:<R2PROC
 	JMP	<START		; Wait for the next command
 
 ; Get all the words of the command before processing it
 RCV_PR	MOVE	A,Y0		; Number of words in command header
 	DO	X:<TIMEOUT,TIM_OUT
+	MOVE	R2,A		
+	JCLR	#ST_ISR,X:STATUS,RCV_WT1
 	JSSET	#EF,X:PCD,READ_FIFO ; Read FIFO if there's anything there
 	MOVE	R1,A
-	JSET	#ST_ISR,X:STATUS,RCV_WT1
-	MOVE	R2,A		
 RCV_WT1	SUB	X0,A		; X0 = R#PROC from VME_TST or FO_TST
         JGE     <RCV_L1		; X1 = Destination mask $00FF00
         MOVE    X:<C32,X1	; Correct for circular buffer
@@ -223,10 +237,9 @@ RCV_L1	CMP	Y0,A  Y0,X:<NWORDS ; Y0 = NWORDS from above
 	ENDDO
 	JMP	<MV_COM
 RCV_L2	NOP
-TIM_OUT
-	MOVE	(R5)+		; Increment R5 past header
-	MOVE	X:<TIM,X0	; Reply will be Timeout
-	JMP	<FINISH1	; Send reply
+
+TIM_OUT	MOVE	(R5)+		; Increment R5 past header
+	JMP	<START		; Send reply
 
 ; We've got the complete command, so put it on the COM_BUF stack
 MV_COM	DO	X:<NWORDS,XFER
@@ -370,12 +383,12 @@ READ_FIFO
 	AND	X1,B  
 	MOVE	X:<RCV_HDR,X1	; RCV_HDR = $00AC00
 	CMP	X1,B  X:RDFIFO,X1
-	JNE	<FO_TST		; If byte does not equal $AC then re-read FIFO
-	REP	#16		;   if there's still anything there
+	JNE	<END_RF		; If byte does not equal $AC then skip to end 
+	REP	#16
 	LSL	A
 	OR	X1,A		; Add the two words together
 	MOVE	A1,X:(R1)+	; Put it onto the fiber optic stack
-	RTS
+END_RF	RTS
 
 
 ; *****  Test Data Link  *****
@@ -425,6 +438,7 @@ RDY     JCLR    #22,A,RDR	; Test address bit for Y: memory
         MOVE    Y:(R0),X0	; Read from Y data memory
 	JMP     <FINISH1	; Send out a header with the value
 RDR	JCLR	#23,A,ADDERR	; Test address bit for read from EEPROM memory
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
 	MOVE	X:<THREE,X0	; Convert to word address to a byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X0,Y0,A		; Multiply	
@@ -437,6 +451,7 @@ RDR	JCLR	#23,A,ADDERR	; Test address bit for read from EEPROM memory
 	ASR     A               ; Move right into A1
 L1RDR
 	MOVE    A1,X0           ; FINISH1 transmits X0 as its reply
+	BCLR	#7,X:BCR	; Restore P: speed to fast
 	JMP     <FINISH1
 
 
@@ -456,6 +471,7 @@ WRY     JCLR    #22,A,WRR	; Test address bit for Y: memory
         MOVE    X0,Y:(R0)	; Write to Y: memory
 	JMP	<FINISH
 WRR	JCLR	#23,A,ADDERR	; Test address bit for write to EEPROM
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
 	MOVE	X:<THREE,X1	; Convert to word address to a byte address
 	MOVE	R0,Y0		; Get 16-bit address in a data register
 	MPY	X1,Y0,A		; Multiply	
@@ -472,6 +488,7 @@ WRR	JCLR	#23,A,ADDERR	; Test address bit for write to EEPROM
 L2WRR
 	NOP                     ; DO loop nesting restriction
 L1WRR
+	BCLR	#7,X:BCR	; Restore P: accesses speed
 	JMP     <FINISH
 
 ; Send 'AFE' response if the RDM or WRM address is bad
@@ -488,6 +505,7 @@ LDAPPL	MOVE	X:(R4)+,X0	; Number of application program
 	ASR	A		; Correct for 24-bit multiply
 	MOVE	A0,R0		; EEPROM address = # x N_W_APL
 	BSET	#15,R0		; All EEPROM accesses are with A15=1
+	BSET	#7,X:BCR	; Slow down P: accesses to EEPROM speed
 	DO	#APL_LEN,LD_LA2	; Loop through application program
 	DO	#3,LD_LA1
 	MOVE	P:(R0)+,A2	; Read from EEPROM
@@ -519,6 +537,7 @@ LD_LA4
 LD_LA5
 	MOVE	A1,Y:(R7)+	; Write to DSP Y: memory
 LD_LA6
+	BCLR	#7,X:BCR	; Restore P: accesses speed
 	JMP	<FINISH
 
 
@@ -556,8 +575,8 @@ HRPLADR	DC      0	; High word of VME reply address
 LRPLADR	DC	0	; Low word of VMEbus reply address
 NWORDS  DC      0	; Number of words in destination command packet
 HDR	DC      0	; 24-bit header containing board's header
-R1PROC	DC	0	; Last processed value of VMEbus pointer R1
-R2PROC	DC	0	; Last processed value of fiber link pointer R2
+R1PROC	DC	0	; Last processed value of fiber link pointer R1
+R2PROC	DC	0	; Last processed value of VMEbus pointer R2
 
 ; Interrupt service routine register values
 SV_Y1	DC	0
@@ -588,7 +607,6 @@ VME_HDR	DC	$010002		; Header to host from VME on startup
 ERR     DC      'ERR'           ; Error message (unrecognized command)
 DON     DC      'DON'           ; Done message
 ABR	DC	'ABR'		; Abort readout command to timing board
-TIM	DC	'TIM'		; Complete command not received withing timeout
 AFE	DC	'AFE'		; Address format error message
 
 

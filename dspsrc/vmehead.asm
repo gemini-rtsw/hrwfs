@@ -1,7 +1,7 @@
 	COMMENT *
 Gemini WFS VME Interface Board Header
 Controller: SDSU2 (preproduction PALs)
-Revision: 3.03 (matches corresponding boot code version)
+Revision: 3.05 (matches corresponding boot code version)
 (This code is adapted from vmeboot v3.00 written by Dr. Bob Leach at SDSU)
 
 98/05/22 TDH -initial coding
@@ -12,6 +12,10 @@ Revision: 3.03 (matches corresponding boot code version)
              -increased APL_LEN to allow for longer applications
 
 98/10/23 TDH -no changes necessary for boot code version 3.03
+
+99/01/06 TDH -no changes necessary for boot code version 3.04
+
+99/03/02 TDH -no changes necessary for boot code version 3.05
 
 
 	*
