@@ -1,0 +1,211 @@
+file {
+	name="seq_sad.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="6"
+	nstr="64"
+	ndynamic="2"
+	nplot="0"
+	nrd="0"
+	nes="0"
+	nkd="1"
+	npd="0"
+	npo="0"
+	object {
+		x="328"
+		y="298"
+		width="700"
+		height="133"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="1092"
+	nwords_sta="48"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="948"
+	osta="900"
+	odynamic="948"
+	oplot="1080"
+	ord="1080"
+	oes="1080"
+	okd="1080"
+	opd="1092"
+	opo="1092"
+	opc="68"
+	ostr="130"
+	ocmap="900"
+	ocrules="900"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	precision="-1"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="10"
+		y="10"
+		width="530"
+		height="28"
+		groupid="0"
+	}
+	textix="$(sensor) - SEQUENCER SAD"
+	align="horiz. left"
+}
+"rectangle" {
+	object {
+		x="10"
+		y="45"
+		width="680"
+		height="76"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="16"
+		y="93"
+		width="198"
+		height="20"
+		groupid="0"
+	}
+	textix="OBSERVATION TYPE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="16"
+		y="55"
+		width="198"
+		height="20"
+		groupid="0"
+	}
+	textix="OBSERVATION MODE:"
+	align="horiz. left"
+}
+"text update" {
+	object {
+		x="205"
+		y="54"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)obsMode"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="205"
+		y="92"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)obsType"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"kill display" {
+	object {
+		x="621"
+		y="13"
+		width="70"
+		height="23"
+		groupid="0"
+	}
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

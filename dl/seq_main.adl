@@ -1,0 +1,510 @@
+file {
+	name="seq_main.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="4"
+	nstr="61"
+	ndynamic="2"
+	nplot="0"
+	nrd="2"
+	nes="0"
+	nkd="1"
+	npd="0"
+	npo="0"
+	object {
+		x="328"
+		y="298"
+		width="700"
+		height="253"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="1384"
+	nwords_sta="80"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="920"
+	osta="840"
+	odynamic="920"
+	oplot="1052"
+	ord="1052"
+	oes="1372"
+	okd="1372"
+	opd="1384"
+	opo="1384"
+	opc="68"
+	ostr="110"
+	ocmap="840"
+	ocrules="840"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	precision="-1"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="10"
+		y="167"
+		width="681"
+		height="77"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="11"
+		y="10"
+		width="530"
+		height="28"
+		groupid="0"
+	}
+	textix="$(sensor) - SEQUENCER"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="17"
+		y="48"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	textix="STATUS INFORMATION:"
+	align="horiz. left"
+}
+"rectangle" {
+	object {
+		x="10"
+		y="45"
+		width="680"
+		height="116"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="18"
+		y="124"
+		width="135"
+		height="20"
+		groupid="0"
+	}
+	textix="TEST STATUS:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="18"
+		y="85"
+		width="210"
+		height="20"
+		groupid="0"
+	}
+	textix="OBSERVATION STATE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="16"
+		y="170"
+		width="305"
+		height="22"
+		groupid="0"
+	}
+	textix="COMMANDS BY CATEGORY:"
+	align="horiz. left"
+}
+"text update" {
+	object {
+		x="217"
+		y="84"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="hrwfs:observeC"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "hrwfs:observeC.VAL"
+		rulechan[1] = "hrwfs:observeC.VAL"
+		rulechan[2] = "hrwfs:observeC.VAL"
+		rulechan[3] = "hrwfs:observeC.VAL"
+		rulechan[4] = "hrwfs:observeC.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=hrwfs:observeC"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="155"
+		y="122"
+		width="529"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="hrwfs:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"related display" {
+	object {
+		x="15"
+		y="198"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="INIT"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=init,car=init"
+	}
+	display[1] {
+		label="TEST"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=test,car=test"
+	}
+	display[2] {
+		label="REBOOT"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=reboot,car=reboot"
+	}
+	display[3] {
+		label="PARK"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=park,car=park"
+	}
+	display[4] {
+		label="DATUM"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=datum,car=datum"
+	}
+	display[5] {
+		label="VERIFY"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=verify,car=verify"
+	}
+	display[6] {
+		label="ENDVERIFY"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=endVerify,car=endVerify"
+	}
+	display[7] {
+		label="GUIDE"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=guide,car=guide"
+	}
+	display[8] {
+		label="ENDGUIDE"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=endGuide,car=endGuide"
+	}
+	display[9] {
+		label="ENDOBSERVE"
+		name="cad0.dl"
+		args="top=$(top),label=$(sensor),cad=endObserve,car=endObserve"
+	}
+	display[10] {
+		label="OBSERVE"
+		name="wfs_observe.dl"
+		args="top=$(top),sensor=$(sensor),cad=observe,car=det"
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SEQUENCER COMMANDS"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="379"
+		y="198"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SAD"
+		name="seq_sad.dl"
+		args="top=$(top),sensor=$(sensor)"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SAD"
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="621"
+		y="13"
+		width="70"
+		height="23"
+		groupid="0"
+	}
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

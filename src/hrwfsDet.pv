@@ -1,0 +1,22 @@
+# pvload parameter definition file for HRWFS Detector Controller
+
+#
+# Set up name of HRWFS/AC Detector Controller subsystem
+#
+string $(sadtop)$(wfs)name = "HRWFS/AC DC";
+
+#
+# Set up version of the software
+#
+string $(sadtop)$(wfs)version = "dev";
+
+#
+# Set default values for some SIR records
+#
+string $(sadtop)$(wfs)dataLabel = "NONE";
+
+int $(sadtop)$(wfs)nreads = "1";
+
+int $(sadtop)$(wfs)nresets = "0";
+
+

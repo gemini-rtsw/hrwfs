@@ -1,4 +1,4 @@
-# $Id: startup.vws,v 1.6 2000-01-05 20:10:30 cboyer Exp $
+# $Id: startup.vws,v 1.7 2000-02-03 01:19:42 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -30,6 +30,7 @@ ld < $(epics)/base/bin/$(arch)/iocCore
 ld < $(epics)/base/bin/$(arch)/drvSup
 ld < $(epics)/base/bin/$(arch)/recSup
 ld < $(epics)/base/bin/$(arch)/devSup
+ld < $(epics)/extensions/bin/$(arch)/pvload
 
 # If using state programs, load the sequencer
 ld < $(epics)/base/bin/$(arch)/seq
@@ -43,7 +44,6 @@ ld < /gemini/cfitsio/cfitsio/bin/$(arch)/cFitsIo
 ld < /gemini/timelib/bin/$(arch)/timeSeq
 
 # Load the Gemini data handling libraries
-ld < $(version)/bin/$(arch)/strcasecmp
 ld < /gemini/dhs/external/lib/$(arch)/libers.o
 ld < /gemini/dhs/external/lib/$(arch)/libimp.o
 ld < /gemini/dhs/external/lib/$(arch)/libsds.o
@@ -55,7 +55,7 @@ ld < $(version)/bin/$(arch)/wfsHrwfsDb
 ld < $(version)/bin/$(arch)/wfsSite
 ld < $(version)/bin/$(arch)/wfsLibrariesHrwfs
 ld < $(version)/bin/$(arch)/detControl
-ld < $(version)/bin/$(arch)/wfsControl
+ld < $(version)/bin/$(arch)/seqControl
 ld < $(version)/bin/$(arch)/wfsResourceMonitor
 ld < $(version)/bin/$(arch)/simpleLogHrwfs
 ld < $(version)/bin/$(arch)/fpscr
@@ -97,13 +97,13 @@ wfsSysInit (0, logErrorsToPipe)
 iocInit ("$(version)/data/resource.def")
 # IOC Initialisation done
 
-# Set all the "initialising" states to 2=BUSY directly (as it may take a while before
-# the AGWPS is ready to update EPICS records - a deficiency in epToVxLib).
-dbpf "hrwfs:initialising.VAL","2"
+#Configure the initial state of the system
+#dbpf "hrwfs:initialising.VAL","2"
+pvload "$(version)/data/hrwfsSeq.pv","top=hrwfs:, sadtop=hrwfs:"
+pvload "$(version)/data/hrwfsDet.pv","top=hrwfs:, sadtop=hrwfs:, wfs=dc:"
 
 # Initialise the database records not initialised by iocInit.
 epToVxCaInitRecords ()
-wfsWriteVersion ()
 
 # Enable console output from error library if required. This is sometimes
 # useful if error messages are being diverted to a log file and you wish to
@@ -114,8 +114,9 @@ wfsWriteVersion ()
 # (Uncomment this line to activate the DHS. Comment it to prevent the DHS from being used).
 #detDhsInit ("hrwfs", 16, "archie", "dataServerNT")
 #detDhsInit ("hrwfs", 16, "10.2.2.63", "dataServerNS")
-detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
 #detDhsInit ("hrwfs", 16, "10.1.5.71", "dataServerNB")
+
+detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
 
 # Spawn generic-record i/o Daemon task after querying the number of processors
 NProc = 1
@@ -133,12 +134,12 @@ taskSpawn ("simpleLog",       99, 0x8, 8000,  simpleLog, 0, 100)
 taskDelay(3 * sysClkRateGet())
 taskSpawn ("hr:detControl",  100, 0x8, 100000, detControl, "hr", "dc")
 taskDelay(10 * sysClkRateGet())
-taskSpawn ("wfsControl",     100, 0x8, 6000,  wfsControl)
+taskSpawn ("seqControl",     100, 0x8, 6000,  seqControl)
 taskDelay(3 * sysClkRateGet())
 
 # Spawn CAR Daemon tasks
 taskSpawn ("hr:detControlD", 98, 0x8, 5000, epToVxCarDaemon, "hrwfs:dc:detC")
-taskSpawn ("wfsControlD",    98, 0x8, 5000, epToVxCarDaemon, "hrwfs:controlC")
+taskSpawn ("seqControlD",    98, 0x8, 5000, epToVxCarDaemon, "hrwfs:controlC")
 
 # Spawn CPU-resource monitoring task
 taskSpawn ("wfsResMonitor", 255, 0x8, 4000, wfsResourceMonitor, 10000000, 200000)

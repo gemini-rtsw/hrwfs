@@ -1,0 +1,15 @@
+# pvload parameter definition file for HRWFS sequencer
+#
+# Set up name of HRWFS/AC subsystem
+#
+string $(sadtop)name = "HRWFS/AC";
+
+#
+# Set init state
+#
+int $(top)initialising = 2;
+
+#
+# Set up version of the software 
+#
+string $(sadtop)version = "dev";

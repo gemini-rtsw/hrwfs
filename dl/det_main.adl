@@ -6,11 +6,11 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="12"
-	nstr="101"
-	ndynamic="7"
+	npc="13"
+	nstr="106"
+	ndynamic="8"
 	nplot="0"
-	nrd="5"
+	nrd="6"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2990"
-	nwords_sta="128"
+	nwords_dspy="3320"
+	nwords_sta="140"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1716"
-	osta="1588"
-	odynamic="1716"
-	oplot="2178"
-	ord="2178"
-	oes="2978"
-	okd="2978"
-	opd="2990"
-	opo="2990"
+	odyng="1820"
+	osta="1680"
+	odynamic="1820"
+	oplot="2348"
+	ord="2348"
+	oes="3308"
+	okd="3308"
+	opd="3320"
+	opo="3320"
 	opc="68"
-	ostr="206"
-	ocmap="1588"
-	ocrules="1588"
+	ostr="216"
+	ocmap="1680"
+	ocrules="1680"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -96,7 +96,7 @@ display {
 "rectangle" {
 	object {
 		x="10"
-		y="45"
+		y="46"
 		width="680"
 		height="175"
 		groupid="0"
@@ -179,9 +179,20 @@ display {
 	textix="INIT STATE:"
 	align="horiz. left"
 }
+"text" {
+	object {
+		x="410"
+		y="77"
+		width="110"
+		height="20"
+		groupid="0"
+	}
+	textix="STATE:"
+	align="horiz. left"
+}
 "text update" {
 	object {
-		x="522"
+		x="520"
 		y="105"
 		width="160"
 		height="21"
@@ -326,16 +337,16 @@ display {
 		groupid="0"
 	}
 	monitor {
-		chan="$(top)observeC"
+		chan="hrwfs:observeC"
 		clr="0"
 		bclr="7"
 		label="none"
 		clrmod="rule"
-		rulechan[0] = "$(top)observeC.VAL"
-		rulechan[1] = "$(top)observeC.VAL"
-		rulechan[2] = "$(top)observeC.VAL"
-		rulechan[3] = "$(top)observeC.VAL"
-		rulechan[4] = "$(top)observeC.VAL"
+		rulechan[0] = "hrwfs:observeC.VAL"
+		rulechan[1] = "hrwfs:observeC.VAL"
+		rulechan[2] = "hrwfs:observeC.VAL"
+		rulechan[3] = "hrwfs:observeC.VAL"
+		rulechan[4] = "hrwfs:observeC.VAL"
 		rulechan[5] = ""
 		rulechan[6] = ""
 		rulechan[7] = ""
@@ -348,7 +359,7 @@ display {
 		rulechan[14] = ""
 		rulechan[15] = ""
 		clrrule="flashifbusy"
-		clrargs="C=$(top)observeC"
+		clrargs="C=hrwfs:observeC"
 		rulecolorbg="1"
 		rulecolorfg="1"
 		hdl="0"
@@ -365,7 +376,7 @@ display {
 }
 "text update" {
 	object {
-		x="523"
+		x="520"
 		y="134"
 		width="160"
 		height="21"
@@ -464,7 +475,53 @@ display {
 		groupid="0"
 	}
 	monitor {
-		chan="$(top)testResults"
+		chan="hrwfs:testResults"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="520"
+		y="76"
+		width="160"
+		height="21"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)state"
 		clr="0"
 		bclr="7"
 		label="none"
@@ -526,9 +583,9 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detSetWcs,car=det"
 	}
 	display[3] {
-		label="SET QL STREAM"
-		name="det_setdhsinfo.dl"
-		args="top=$(top), sensor=$(sensor),cad=setDhsInfo,car=det"
+		label=""
+		name=""
+		args=""
 	}
 	display[4] {
 		label=""
@@ -647,27 +704,27 @@ display {
 	display[0] {
 		label="START OBSERVATION"
 		name="det_observe.dl"
-		args="top=$(top),sensor=$(sensor),cad=observe,car=det"
+		args="top=$(top),sensor=$(sensor),cad=detObserve,car=det"
 	}
 	display[1] {
 		label="PAUSE OBSERVATION"
 		name="cad0.dl"
-		args="top=$(top),label=$(sensor),cad=pause,car=observe"
+		args="top=hrwfs:,label=$(sensor),cad=pause,car=observe"
 	}
 	display[2] {
 		label="CONTINUE OBSERVATION"
 		name="cad0.dl"
-		args="top=$(top),label=$(sensor),cad=continue,car=observe"
+		args="top=hrwfs:,label=$(sensor),cad=continue,car=observe"
 	}
 	display[3] {
 		label="STOP OBSERVATION"
 		name="cad0.dl"
-		args="top=$(top),label=$(sensor),cad=stop,car=observe"
+		args="top=hrwfs:,label=$(sensor),cad=stop,car=observe"
 	}
 	display[4] {
 		label="ABORT OBSERVATION"
 		name="cad0.dl"
-		args="top=$(top),label=$(sensor),cad=abort,car=observe"
+		args="top=hrwfs:,label=$(sensor),cad=abort,car=observe"
 	}
 	display[5] {
 		label=""
@@ -809,14 +866,14 @@ display {
 		args="top=$(top),sensor=$(sensor),cad=detPrim,car=det"
 	}
 	display[6] {
-		label=""
-		name=""
-		args=""
+		label="INITIALIZE"
+		name="det_init.dl"
+		args="top=$(top),sensor=$(sensor),cad=detInit,car=det"
 	}
 	display[7] {
-		label=""
-		name=""
-		args=""
+		label="RESET"
+		name="det_reset.dl"
+		args="top=$(top),sensor=$(sensor),cad=detReset,car=det"
 	}
 	display[8] {
 		label=""
@@ -905,27 +962,27 @@ display {
 }
 "related display" {
 	object {
-		x="347"
-		y="257"
+		x="346"
+		y="290"
 		width="300"
 		height="22"
 		groupid="0"
 	}
 	selfkill="off"
 	display[0] {
-		label="INITIALIZE"
-		name="det_init.dl"
-		args="top=$(top),sensor=$(sensor),cad=detInit,car=det"
+		label="SET EXPOSURE"
+		name="det_exposure.dl"
+		args="top=$(top),sensor=$(sensor),cad=detExposure,car=det"
 	}
 	display[1] {
-		label="RESET"
-		name="det_reset.dl"
-		args="top=$(top),sensor=$(sensor),cad=detReset,car=det"
+		label="SET DHS PARAMETERS"
+		name="det_setdhsinfo.dl"
+		args="top=$(top),sensor=$(sensor),cad=setDhsInfo,car=det"
 	}
 	display[2] {
-		label="TEST"
-		name="det_test.dl"
-		args="top=$(top),sensor=$(sensor),cad=detTest,car=det"
+		label="SET OBSERVATION PARAMETERS"
+		name="det_setObserve.dl"
+		args="top=$(top),sensor=$(sensor),cad=setObserve,car=det"
 	}
 	display[3] {
 		label=""
@@ -1034,13 +1091,13 @@ display {
 	}
 	clr="0"
 	bclr="6"
-	menu_title="ENGINEERING"
+	menu_title="OCS CAD COMMANDS"
 	decorate="none"
 }
 "related display" {
 	object {
-		x="347"
-		y="290"
+		x="346"
+		y="257"
 		width="300"
 		height="22"
 		groupid="0"
@@ -1169,6 +1226,140 @@ display {
 	clr="0"
 	bclr="6"
 	menu_title="TEMPERATURE CONTROL"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="346"
+		y="322"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="SAD"
+		name="det_sad.dl"
+		args="top=$(top),sensor=$(sensor)"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="SAD"
 	decorate="none"
 }
 "kill display" {

@@ -72,9 +72,7 @@ IMPORT STATUS wfsTargetTypeGet (const int processorNumber);
 IMPORT int    wfsNumProcsGet (void);
 IMPORT STATUS wfsSysInit (const int processorNumber, 
                           const BOOL redirectErrorLog);
-IMPORT STATUS wfsWriteVersion (void);
 IMPORT STATUS wfsShow (void);
-IMPORT void   wfsBusReset (void);
 IMPORT void   wfsGetTelName (char *pTelName);
 
 #endif /* __INCwfsLibh */

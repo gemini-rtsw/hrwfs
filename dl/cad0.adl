@@ -7,7 +7,7 @@ display {
 	mnrv="4"
 	ndyng="0"
 	npc="9"
-	nstr="47"
+	nstr="45"
 	ndynamic="10"
 	nplot="0"
 	nrd="1"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="1948"
-	nwords_sta="548"
+	nwords_dspy="1920"
+	nwords_sta="536"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1092"
-	osta="544"
-	odynamic="1092"
-	oplot="1776"
-	ord="1776"
-	oes="1936"
-	okd="1936"
-	opd="1948"
-	opo="1948"
+	odyng="1064"
+	osta="528"
+	odynamic="1064"
+	oplot="1748"
+	ord="1748"
+	oes="1908"
+	okd="1908"
+	opd="1920"
+	opo="1920"
 	opc="68"
 	ostr="172"
-	ocmap="544"
-	ocrules="544"
+	ocmap="528"
+	ocrules="528"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -221,17 +221,6 @@ display {
 	}
 	textix="$(label): $(cad)"
 	align="horiz. left"
-}
-"text" {
-	object {
-		x="515"
-		y="45"
-		width="145"
-		height="24"
-		groupid="0"
-	}
-	textix="$(car)C"
-	align="horiz. right"
 }
 "message button" {
 	object {
@@ -611,7 +600,7 @@ display {
 	object {
 		x="16"
 		y="45"
-		width="535"
+		width="644"
 		height="24"
 		groupid="0"
 	}

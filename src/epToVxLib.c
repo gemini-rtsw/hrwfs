@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: epToVxLib.c,v 1.3 2000-01-05 20:09:39 cboyer Exp $"};
+   "$Id: epToVxLib.c,v 1.4 2000-02-03 01:19:13 cboyer Exp $"};
 
 /*+
  * MODULE NAME:
@@ -126,6 +126,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/01/05 20:09:39  cboyer
+ * Tidy up the directory src: remove all the not used files and tidy up
+ *
  * Revision 1.2  1999/11/04 04:06:59  cboyer
  * Modifications in order to have binning and windowing, short integer for dhs,
  * IT working for SDSU, observe which does everything, WCS, FITS header.
@@ -2095,7 +2098,7 @@ STATUS   epToVxCaWriteDaemon
 
                      REC_FIELD_VALUE_DOUBLE (ppEpToVxCaDefTable[recordType][recordNumber]) =
                         * (double *) (int) DATA_PKT_VALUE_PTR (& pContext);
-                     dbfDataType = DBF_DOUBLE;
+                     dbfDataType = 8; /* Pb with DBF_DOUBLE, should be 8 and is 6 */
                      break;
 
                   case (EPICS_DATA_TYPE_STRING):
@@ -2469,6 +2472,7 @@ long   epToVxCadExecute
 
          /* MARK is always accepted. */
 
+         /*printf ( "MARK directive on the %s\n" , pcad->name ) ;*/
          returnValue = CAD_ACCEPT;
          break;
 
@@ -2479,6 +2483,7 @@ long   epToVxCadExecute
           * attribute string inputs and is always accepted.
           */
 
+         /*printf ( "CLEAR directive on the %s\n" , pcad->name ) ;*/
          eptovx_loadDefaultInputAttribs (context, pcad);
          eptovx_postEventsInputAttribs (context, pcad);   
                                          /* This is needed for the defaults   */
@@ -2490,6 +2495,7 @@ long   epToVxCadExecute
 
          /* If command pipe has not yet been opened, attempt to open it */
 
+         /*printf ( "PRESET directive on the %s\n" , pcad->name ) ;*/
          if (context->cadToTaskPipeFd == ERROR)
          {
             if ((context->cadToTaskPipeFd = 
@@ -2608,6 +2614,7 @@ long   epToVxCadExecute
 
       case CAD_STOP:
 
+         /*printf ( "STOP directive on the %s\n" , pcad->name ) ;*/
          if (! context->stopDirSupported) /* Fall through to CAD_START if STOP*/
                                           /* is supported, otherwise, REJECT  */
                                           /* this STOP directive (this is an  */
@@ -2646,6 +2653,7 @@ long   epToVxCadExecute
           * CAD_MAX_TRANSACTION_NUMBER.
           */
 
+         /*printf ( "START directive on the %s\n" , pcad->name ) ;*/
          if (context->clientId == CAD_MAX_TRANSACTION_NUMBER)
          {
             context->clientId = 0;
@@ -4825,8 +4833,7 @@ STATUS   eptovx_saveAttribs
 #ifdef DEBUG
       else
       {
-         printf ("epToVxLib: eptovx_saveAttribs: Attrib string [%d] = \"%s\", 
-                 (Attrib A = %s)\n",
+         printf ("epToVxLib: eptovx_saveAttribs: Attrib string [%d] = \"%s\", (Attrib A = %s)\n",
                  i, & pAttribSource [i * EPICS_MAX_BYTES_STRING_ATTRIB], 
                  pcad->a);
       }
@@ -6790,16 +6797,16 @@ STATUS   epToVxPipeWrite
    (
    char *         pRecordName,
    char *         pValue,
-   DATREC_CONTEXT   pContextKnown
+   DATREC_CONTEXT pContextKnown
    )
 {
-   int            recordType;                  /* Record type.                           */
-   int            nByte;                     /* Number of bytes written to pipe.            */
-   long         valueLong;
+   int            recordType;                 /* Record type.                           */
+   int            nByte;                      /* Number of bytes written to pipe.       */
+   long           valueLong;
    double         valueDouble;
-   DATREC_CONTEXT   pContext;                  /* Record context structure.               */
-   BOOL         updateFilteredValue = TRUE;      /* Can only be set FALSE if filter is enabled   */
-   BOOL         hysteresisExceeded = FALSE;
+   DATREC_CONTEXT pContext;                   /* Record context structure.              */
+   BOOL           updateFilteredValue = TRUE; /* Can only be set FALSE if filter is enabled */
+   BOOL           hysteresisExceeded = FALSE;
 
    /* Get the context structure for the specified data record and obtain the record type. */
 

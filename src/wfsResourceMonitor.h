@@ -1,15 +1,18 @@
 /*+
- *	MODULE NAME:
- *	wfsResourceMonitor
+ *   MODULE NAME:
+ *   wfsResourceMonitor
  *
- *	FILENAME:
- *	wfsResourceMonitor.h
+ *   FILENAME:
+ *   wfsResourceMonitor.h
  *
- *	PURPOSE:
- *	Include file for wavefront sensor application code
+ *   PURPOSE:
+ *   Include file for wavefront sensor application code
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:27  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.5  1998/12/07 11:17:29  cics
  * Removed obsolete and unmanageable COPYRIGHT statement.
  *
@@ -17,7 +20,8 @@
  * Minor comment changes
  *
  * Revision 1.3  1998/09/28 08:53:40  cics
- * Give warning if an attempt if made to compile this file for anything other than vxWorks
+ * Give warning if an attempt if made to compile this file for anything other 
+ * than vxWorks
  *
  * Revision 1.2  1998/06/30 12:40:27  smb
  * Dependency on sysextLib can be removed by defining NO_SYSEXTLIB macro.
@@ -41,8 +45,8 @@
  *-
  */
 
-#ifndef	__INCwfsResourceMonitorh
-#define	__INCwfsResourceMonitorh
+#ifndef   __INCwfsResourceMonitorh
+#define   __INCwfsResourceMonitorh
 
 
 /* includes */
@@ -51,7 +55,7 @@
 #include <vxWorks.h>
 #else
 #error This code only runs under VxWorks
-#endif	/* vxWorks */
+#endif   /* vxWorks */
 
 #include "wfsLib.h"
 #include "gemTypes.h"
@@ -60,31 +64,33 @@
 
 /* defines */
 
-#define	WFS_RAM_USED_SIR_NAME		"ramUsed"		/* Name of SIR record to	*/
-													/* contain amount of RAM	*/
-													/* used.					*/
+#define WFS_RAM_USED_SIR_NAME       "ramUsed"      /* Name of SIR record to   */
+                                                   /* contain amount of RAM   */
+                                                   /* used.                   */
 
-#define	WFS_RAM_LARGE_BLK_SIR_NAME	"ramFreeblk"	/* Name of SIR record to	*/
-													/* contain size of largest	*/
-													/* free RAM block.			*/
+#define WFS_RAM_LARGE_BLK_SIR_NAME  "ramFreeblk"   /* Name of SIR record to   */
+                                                   /* contain size of largest */
+                                                   /* free RAM block.         */
 
-#define	WFS_CPU_USAGE_SIR_NAME		"cpuUsed"		/* Name of SIR record to	*/
-													/* contain amount of CPU	*/
-													/* used.					*/
+#define WFS_CPU_USAGE_SIR_NAME      "cpuUsed"      /* Name of SIR record to   */
+                                                   /* contain amount of CPU   */
+                                                   /* used.                   */
 
-#define	WFS_CPU_PRIORITY_MAX			0			/* Max task priority.		*/
-#define	WFS_CPU_PRIORITY_MIN			255			/* Min task priority.		*/
+#define WFS_CPU_PRIORITY_MAX        0              /* Max task priority.      */
+#define WFS_CPU_PRIORITY_MIN        255            /* Min task priority.      */
 
-	/*
-	 * Error number codes used by wfsResourceMonitor.
-	 * These are designed to be processed using the vxWorks "makeStatTbl" utility.
-	 */
+   /*
+    * Error number codes used by wfsResourceMonitor.
+    * These are designed to be processed using the vxWorks "makeStatTbl" 
+    * utility.
+    */
 
-	/* (No error codes) */
+   /* (No error codes) */
 
 
 /* function declarations */
 
-IMPORT STATUS	wfsCpuResourceMonitor (int updateIntervalMicrosec, int cpuAveragingMicrosec);
+IMPORT STATUS wfsCpuResourceMonitor (int updateIntervalMicrosec, 
+                                     int cpuAveragingMicrosec);
 
 #endif /* __INCwfsResourceMonitorh */

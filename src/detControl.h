@@ -13,6 +13,8 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   31 jan 2000 - cb add detector controller state SIR record
+ *   19 jan 2000 - cb add testing sir record
  *   18 nov 1999 - cb add qlStream parameter and add cmd DET_CONTROL_CMD_DHSINFO
  *   27 oct 1999 - cb add fits keywords
  *   25 oct 1999 - cb add dhsOutOptions (perm, temp, ql)
@@ -45,14 +47,14 @@ typedef   unsigned long   DHS_CONNECT;
 
 /* defines */
 
-#define   DET_CONTROL_TASK_NAME            "detControl"
+#define   DET_CONTROL_TASK_NAME               "detControl"
                                     /* Detector Controller task name.   */
 
-#define   DET_CONTROL_INIT_SIR_NAME         "initialising"
+#define   DET_CONTROL_INIT_SIR_NAME           "initialising"
                                     /* Name of SIR record containing    */
                                     /* initialisation state.            */
 
-#define   DET_CONTROL_INIT_STATUS_SIR_NAME   "detInitStatus"
+#define   DET_CONTROL_INIT_STATUS_SIR_NAME    "detInitStatus"
                                     /* Name of SIR record containing    */
                                     /* SDSU initialisation status.      */
 
@@ -60,7 +62,7 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Name of SIR record containing    */
                                     /* SDSU test results.               */
 
-#define   DET_CONTROL_PRIM_REPLY_SIR_NAME      "detPrimReply"
+#define   DET_CONTROL_PRIM_REPLY_SIR_NAME     "detPrimReply"
                                     /* Name of SIR record containing    */
                                     /* reply from SDSU primitive cmd.   */
 
@@ -68,6 +70,45 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Name of SIR record containing    */
                                     /* observing state.                 */
 
+#define   DET_CONTROL_TESTING_SIR_NAME        "testing"
+                                    /* Name of SIR record containing    */
+                                    /* testing state.                   */
+
+#define   DET_CONTROL_STATE_SIR_NAME          "state"
+                                    /* Name of SIR record containing    */
+                                    /* the state of detector controller */
+
+#define   DET_CONTROL_DETTYPE_SIR_NAME        "detType"
+                                    /* Name of SIR record containing    */
+                                    /* the type of detector controller  */
+
+#define   DET_CONTROL_DETID_SIR_NAME          "detID"
+                                    /* Name of SIR record containing    */
+                                    /* the SN of the CCD                */
+
+#define   DET_CONTROL_DATALABEL_SIR_NAME      "dataLabel"
+                                    /* Name of SIR record containing    */
+                                    /* the most recent DHS data label   */
+
+#define   DET_CONTROL_INTTIME_SIR_NAME        "intTime"
+                                    /* Name of SIR record containing    */
+                                    /* the integration time             */
+
+#define   DET_CONTROL_NEXPRQ_SIR_NAME         "nexpRQ"
+                                    /* Name of SIR record containing    */
+                                    /* requested nb of exp/dataset      */
+
+#define   DET_CONTROL_NEXP_SIR_NAME           "nexp"
+                                    /* Name of SIR record containing    */
+                                    /* current nb of exp/dataset        */
+
+#define   DET_CONTROL_NFRAMES_SIR_NAME        "nframes"
+                                    /* Name of SIR record containing    */
+                                    /* nb of frames/dataset             */
+
+#define   DET_CONTROL_BUNIT_SIR_NAME          "bunit"
+                                    /* Name of SIR record containing    */
+                                    /* the data unit                    */
 
    /*
     * Define the VME addresses of the SDSU controllers installed on the bus.
@@ -138,6 +179,17 @@ typedef   unsigned long   DHS_CONNECT;
 
 #define   DET_CONTROL_DATA_FILE_PATH         "."
 
+   /* Define the default detector type */
+
+#define   DET_TYPE "CCD47+SDSUII"
+
+   /* Define the SN of the CCD Chip */
+
+#define   DET_CCD_SN "8283-4-3"
+
+   /* Define the units of CCD data */
+
+#define   DET_BUNIT "SDSU ADC units"
 
 typedef   struct      /* Context structure used to describe an observation.   */
 {
@@ -304,6 +356,21 @@ typedef   struct      /* Context structure used to describe an observation.   */
 
    double       mjdobs;    /* Epoch of observation as a modified Julian date. */
 
+                           /* SAD information.                                */
+
+   DATREC_CONTEXT pDataLabelContext ; /* Data Label SIR record context        */
+                                      /* structure                            */
+   DATREC_CONTEXT pObsModeContext ;   /* Observation mode SIR record context  */
+                                      /* structure                            */
+   DATREC_CONTEXT pIntTimeContext ;   /* Integration time SIR record context  */
+                                      /* structure                            */
+   DATREC_CONTEXT pNExpRQContext ;    /* Requested number of exp/data set SIR */
+                                      /* record context structure             */
+   DATREC_CONTEXT pNExpContext ;      /* Actual number of exp/data set SIR    */
+                                      /* record context structure             */
+   DATREC_CONTEXT pNFramesContext ;   /* Number of frames/data set SIR        */
+                                      /* record context structure             */
+   
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*
@@ -338,9 +405,11 @@ enum
    DET_CONTROL_CMD_EXPOSURE,   /* Specify exposure time.                      */
    DET_CONTROL_CMD_OBSTYPE,    /* Specify observation type.                   */
    DET_CONTROL_CMD_DHSINFO,    /* Specify quick look stream.                  */
+   DET_CONTROL_CMD_SETOBSERVE, /* Specify quick look stream.                  */
    DET_CONTROL_CMD_SETDHS,     /* Set Data Handling System parameters.        */
    DET_CONTROL_CMD_SETWCS,     /* Set World Coordinate System parameters.     */
-   DET_CONTROL_CMD_OBSERVE,    /* Make observation.                           */
+   DET_CONTROL_CMD_DETOBSERVE, /* Make observation.                           */
+   DET_CONTROL_CMD_OBSERVE,    /* OBSERVE command for the OCS                 */
    DET_CONTROL_CMD_PAUSE,      /* Pause observation.                          */
    DET_CONTROL_CMD_CONTINUE,   /* Continue observation.                       */
    DET_CONTROL_CMD_STOP,       /* Stop observation.                           */
@@ -352,8 +421,8 @@ enum
    /* Engineering commands. */
    DET_CONTROL_CMD_INITIALISE, /* Initialise SDSU controller.                 */
    DET_CONTROL_CMD_RESET,      /* Reset SDSU controller.                      */
-   DET_CONTROL_CMD_TEST,       /* Test SDSU controller.                       */
    DET_CONTROL_CMD_GIVEUP,     /* Give up control of hardware (HRWFS/OIWFS).  */
+   DET_CONTROL_CMD_TEST,       /* Test SDSU controller                        */
    DET_CONTROL_CMD_SAVE,       /* Save SDSU controller parameters.            */
    DET_CONTROL_CMD_GEOMETRY,   /* Set detector readout geometry.              */
    DET_CONTROL_CMD_PRIMITIVE,  /* Execute SDSU primitive command.             */

@@ -1,9 +1,6 @@
-# $Id: startup_MINIMAL.vws,v 1.4 2000-01-05 20:10:31 cboyer Exp $
+# $Id: startup_MINIMAL.vws,v 1.5 2000-02-03 01:19:43 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
-#
-# MINIMAL STARTUP SCRIPT. This script does as little as possible, to allow
-# scripts to be run manually on the Baja for testing purposes.
 #
 
 shellPromptSet "Minimal startup hrwfs> "

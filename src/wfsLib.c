@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.4 2000-01-05 20:10:07 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.5 2000-02-03 01:19:26 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -29,10 +29,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   wfsTargetTypeGet      - Return the target type of the given processor
  *   wfsNumProcsGet        - Return the number of defined processors
  *   wfsSysInit            - Initialise a WFS control task on a given processor
- *   wfsWriteVersion       - Writes current s/w version to EPICS record
  *   wfsWriteState         - Writes current state variable to EPICS record
  *   wfsShow               - Display information about the current environment
- *   wfsWriteName          - Write current name of system to EPICS record
  *   wfsInitTelName        - Init the telescope name from the TCS
  *   wfsGetTelName         - Get the local copy of the TCS Telescope name
  *
@@ -581,86 +579,6 @@ STATUS wfsSysInit
 
 /*+
  *   FUNCTION NAME:
- *   wfsWriteVersion
- *
- *   INVOCATION:
- *   wfsWriteVersion (void)
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   None
- *
- *   FUNCTION VALUE:
- *   (STATUS)   OK if successful, or ERROR if unsuccessful
- *
- *   PURPOSE:
- *   Writes the current software version to the "version" EPICS record
- *
- *   DESCRIPTION:
- *   This routine obtains the RCS revision number and commit date and time
- *   and writes this to an EPICS record called "version".
- *
- *   EXTERNAL VARIABLES:
- *   (>)   pWfsNumProcessors      (int)      Number of processors
- *
- *   PRIOR REQUIREMENTS:
- *   The numprocessor variable should have been initialised before calling
- *   this function.
- *
- *   It is assumed this module has been committed using CVS or RCS, so that the
- *   RCS "Revision" and "Date" keywords contain the revision number and commit
- *   date. If RCS is not available, the function can be made to use the compile
- *   date and time instead by defining the NO_RCS preprocessor flag.
- *
- *   It is assumed that an EPICS record daemon is running or will soon
- *   be spawned
- *
- *   INCLUDE FILES:
- *   gemTypes.h
- *   wfsLib.h
- *
- *   DEFICIENCIES:
- *   The RCS keywords are updated only when wfsLib is committed. They
- *   do not reflect the state of other modules in the system. It would
- *   be useful if the value of the tag describing the latest release
- *   of the whole AGWPS system could be obtained.
- *
- *   BUGS:
- *   The epToVxPipeWrite() function fails if the RCS keywords translate
- *   to a string longer than 40 characters. Because of this, only the RCS
- *   revision number is currently written.
- *-
- */
-
-STATUS   wfsWriteVersion (void)
-{
-
-   /*
-    * If RCS is available, use the revision [and date] keywords set by RCS; or
-    * if RCS is not available, use the COMPILE_DATE_AND_TIME macro
-    * (defined in gemTypes.h); to write the latest compile date and time to
-    * the "version" EPICS record.
-    */
-
-#ifdef NO_RCS
-   if (epToVxPipeWrite ("version", COMPILE_DATE_AND_TIME, 0) == ERROR)
-#else
-    if (epToVxPipeWrite ("version", "$Revision: 1.4 $", 0) == ERROR)
-#endif
-   {
-      ERROR_LOG ("Failed to write version number");
-      return (ERROR);
-   }
-   else
-   {
-      return (OK);
-   }
-}
-
-
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
  *   wfsWriteState
  *
  *   INVOCATION:
@@ -830,73 +748,6 @@ STATUS wfsShow (void)
    return (OK);
 }
 
-
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
- *   wfsBusReset
- *
- *   INVOCATION:
- *   wfsBusReset (void)
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   None
- *
- *   FUNCTION VALUE:
- *   None
- *
- *   PURPOSE:
- *   Resets the VME bus (engineering function)
- *
- *   DESCRIPTION:
- *   This routine resets the VME bus. It may be used to free up the VME bus 
- *   if it has hung up after a software or hardware problem. The reset will 
- *   cause the IOC to reboot.
- *
- *   NOTE:
- *   This code has been copied from sysextLib, since sysextLib is no longer 
- *   going to be used. It only works on an mv167.
- *
- *   EXTERNAL VARIABLES:
- *   None
- *
- *   PRIOR REQUIREMENTS:
- *   It is assumed that an EPICS record daemon is running or will soon
- *   be spawned
- *
- *   INCLUDE FILES:
- *   gemTypes.h
- *   wfsLib.h
- *
- *   DEFICIENCIES:
- *   None known
- *
- *-
- */
-
-#define BIT_SET(p, d)    { __typeof__ (* (p)) __temp = (* (p));   \
-                           * (p) = __temp | (d); }
-
-#define BUS_RESET_REG_MV167 0xfff40060   /* Bus reset register for MVME167    */
-
-#define BUS_RESET_BIT_MV167 0x01800000   /* Reset-Switch-Enable and Bus-Reset */
-                                         /* bits                              */
-
-void   wfsBusReset (void)
-{
-
-   printf ("wfsBusReset: BUS RESET - SYSTEM WILL REBOOT.\n");
-
-   /* Brief pause to allow printf() to flush..   */
-
-   taskDelay (sysClkRateGet ());
-
-   /* ..then waggle the hardware bits   */
-   BIT_SET ((HW_REG32 *) BUS_RESET_REG_MV167, BUS_RESET_BIT_MV167);
-}
-
-
 /* -------------------------------------------------------------------------- */
 
 /*+
@@ -986,49 +837,6 @@ STATUS   wfs_errorLogPipeSet (void)
 
    return (OK);
 }
-
-/* -------------------------------------------------------------------------- */
-
-/*+
- *   FUNCTION NAME:
- *   wfsWriteName
- *
- *   INVOCATION:
- *   wfsWriteName (sirRecord)
- *
- *   PARAMETERS: (">" input, "!" modified, "<" output)
- *   None
- *
- *   FUNCTION VALUE:
- *   (STATUS)   OK if successful, or ERROR if unsuccessful
- *
- *   PURPOSE:
- *   Writes the current software name to the "name" EPICS record
- *
- *   DESCRIPTION:
- *   This routine writes the name of the software to an EPICS record called 
- *   "name".
- *
- *   EXTERNAL VARIABLES:
- *
- *   PRIOR REQUIREMENTS:
- *
- *   INCLUDE FILES:
- *   <sirRecord>.h
- *
- *   DEFICIENCIES:
- *
- *   BUGS:
- *-
- */
-
-STATUS   wfsWriteName (struct sirRecord *psir)
-{
-
-    strcpy ( (char *)psir->val , "High Resolution Wavefront Sensor" ) ;
-    return (OK) ;
-}
-
 
 /* -------------------------------------------------------------------------- */
 

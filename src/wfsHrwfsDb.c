@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.5 2000-01-05 20:10:06 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.6 2000-02-03 01:19:25 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,16 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   31 jan 2000 - cb add obsType, obsMode, dc:detType, dc:detID sirs
+ *   21 jan 2000 - cb add command setObserve
+ *   20 jan 2000 - cb add verify and verifying, endVerify and 
+ *                    endVerifying, guide and guiding
+ *                    endGuiding and endGuide 
+ *                    endObserving and endObserve 
+ *   19 jan 2000 - cb add rebooting, testing sir records
+ *                    add parking, datum, datuming records
+ *                    add test command
+ *   13 jan 2000 - cb remove include osp.h file
  *   18 nov 1999 - cb new setDhsInfo command 
  *   25 oct 1999 - cb new observe command 
  *   14 oct 1999 - cb simplified version for HRWFS only
@@ -84,8 +94,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include "wfsLib.h"
 #include "epToVxLib.h"
 #include "detControl.h"    /* This is where DET_CONTROL_ parameters come from.*/
-#include "osp.h"           /* This is where the OSP_ parameters come from.    */
-#include "wfsControl.h"    /* This is where WFS_CONTROL_ parameters come from.*/
+#include "seqControl.h"    /* This is where SEQ_CONTROL_ parameters come from.*/
 #include "errorLog.h"      /* This is where LOGTASK_ parameters comes from.   */
 
 
@@ -106,96 +115,80 @@ CAD_RECORD pWfsDbCadList [] =
 {
    {
       RECORD_NAME ("init"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_INIT,
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_INIT,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       NO_TIMEOUT
    },
    {
       RECORD_NAME ("park"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_PARK,
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_PARK,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       NO_TIMEOUT
    },
    {
-      RECORD_NAME ("setRouter"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_SETROUTER,
-      STOP_DIRECTIVE_UNSUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "1", {"1", "5"}
-   },
-   {
-      RECORD_NAME ("startMeasure"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_STARTMEASURE,
-      STOP_DIRECTIVE_SUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "3",     {"2", "3"},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,    "19",    {"3", "19"},
-      CAD_ATTRIB_C, EPICS_DATA_TYPE_DOUBLE,  "0.05",  {"0.001", "100.0"},
-      CAD_ATTRIB_D, EPICS_DATA_TYPE_DOUBLE,  "0.5",   {"0.05", "10000.0"},
-      CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,    "0",     {"0", "7"},
-      CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG,    "0",     {"0", "7"},
-      CAD_ATTRIB_G, EPICS_DATA_TYPE_LONG,    "0",     {"0", "7"}
-   },
-   {
-      RECORD_NAME ("stopMeasure"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_STOPMEASURE,
-      STOP_DIRECTIVE_UNSUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0
-   },
-   {
-      RECORD_NAME ("gbdObserve"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_GBDOBSERVE,
-      STOP_DIRECTIVE_SUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "7",     {"0", "7"},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING,  "WFS",   {"WFS"},
-      CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG,    "1",     {"-1", NO_HI_LIMIT},
-      CAD_ATTRIB_D, EPICS_DATA_TYPE_DOUBLE,  "1.0",   {"0.001", "1000.0"},
-      CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,    "0",     {"0", "1"},
-      CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_G, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS}
-   },
-   {
-      RECORD_NAME ("calibrate"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_CALIBRATE,
-      STOP_DIRECTIVE_SUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "7",     {"0", "7"},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING,  "DARK",  {"DARK", "FLAT", "ZNULL"},
-      CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG,    "1",     {"1", NO_HI_LIMIT},
-      CAD_ATTRIB_D, EPICS_DATA_TYPE_DOUBLE,  "1.0",   {"0.001", "1000.0"},
-      CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,    "0",     {"0", "1"},
-      CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_G, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS},
-      CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING,  "NONE",  {NO_ATTRIBUTE_LIMITS}
-   },
-   {
       RECORD_NAME ("reboot"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_REBOOT,
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_REBOOT,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("datum"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_DATUM,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("verify"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_VERIFY,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("endVerify"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_ENDVERIFY,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("guide"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_GUIDE,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("endGuide"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_ENDGUIDE,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      NO_TIMEOUT
+   },
+   {
+      RECORD_NAME ("endObserve"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_ENDOBSERVE,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       NO_TIMEOUT
    },
    {
       RECORD_NAME ("simulate"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_SIMULATE,
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_SIMULATE,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
@@ -205,14 +198,22 @@ CAD_RECORD pWfsDbCadList [] =
    },
    {
       RECORD_NAME ("debug"),
-      WFS_CONTROL_TASK_NAME,
-      WFS_CONTROL_CMD_DEBUG,
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_DEBUG,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,      ATTRIB (EPTOVX_DEBUG_MODE_NONE),
                                                 {ATTRIB (EPTOVX_DEBUG_MODE_NONE),
                                                 ATTRIB (EPTOVX_DEBUG_MODE_FULL)}
+   },
+   {
+      RECORD_NAME ("test"),
+      SEQ_CONTROL_TASK_NAME,
+      SEQ_CONTROL_CMD_TEST,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      120.0
    },
    {
       RECORD_NAME ("dc:detSetup"),
@@ -241,7 +242,7 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       30.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "1",    {"-1", NO_HI_LIMIT},
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "-1",    {"-1", NO_HI_LIMIT},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_DOUBLE,  "1.0",  {"0.0001", "100000.0"}
    },
    {
@@ -260,7 +261,8 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       40.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "hrwfsScience", {NO_ATTRIBUTE_LIMITS}
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "hrwfsScience", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,   "2", {"0", "2"}
    },
    {
       RECORD_NAME ("dc:detSetWcs"),
@@ -273,9 +275,30 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, "hrcalib.wcs",            {NO_ATTRIBUTE_LIMITS}
    },
    {
-      RECORD_NAME ("dc:observe"),
+      RECORD_NAME ("dc:setObserve"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SETOBSERVE,
+      STOP_DIRECTIVE_SUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      120.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,   "1", {"0", "1"},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, "hrwfs.fits", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
+   },
+   {
+      RECORD_NAME ("observe"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
       DET_CONTROL_CMD_OBSERVE,
+      STOP_DIRECTIVE_SUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      120.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
+   },
+   {
+      RECORD_NAME ("dc:detObserve"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_DETOBSERVE,
       STOP_DIRECTIVE_SUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       120.0,
@@ -289,7 +312,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
    },
    {
-      RECORD_NAME ("dc:stop"),
+      RECORD_NAME ("stop"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
       DET_CONTROL_CMD_STOP,
       STOP_DIRECTIVE_UNSUPPORTED,
@@ -297,9 +320,17 @@ CAD_RECORD pWfsDbCadList [] =
       120.0
    },
    {
-      RECORD_NAME ("dc:abort"),
+      RECORD_NAME ("abort"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
       DET_CONTROL_CMD_ABORT,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      120.0
+   },
+   {
+      RECORD_NAME ("dc:detTest"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_TEST,
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       120.0
@@ -318,7 +349,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING,   DET_CONTROL_HRWFS_OMF_TIM_FILE,   {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_E, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_UTL_FILE,      {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_F, EPICS_DATA_TYPE_LONG,      ATTRIB (DET_CONTROL_HRWFS_MAX_FRAMES),   {"0", "100"}
-},
+   },
    {
       RECORD_NAME ("dc:detReset"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
@@ -332,16 +363,6 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_VME_FILE,      {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_E, EPICS_DATA_TYPE_STRING,   DET_CONTROL_HRWFS_OMF_TIM_FILE,   {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING,   DET_CONTROL_OMF_UTL_FILE,      {NO_ATTRIBUTE_LIMITS}
-   },
-   {
-      RECORD_NAME ("dc:detTest"),
-      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
-      DET_CONTROL_CMD_TEST,
-      STOP_DIRECTIVE_UNSUPPORTED,
-      SIMULATION_MODE_SUPPORTED,
-      120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "8",         {"0", "8"},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,    "0",         {"0", "1"}
    },
    {
       RECORD_NAME ("dc:detSave"),
@@ -461,7 +482,7 @@ CAR_RECORD   pWfsDbCarList [] =
 {
    {
       RECORD_NAME ("controlC"),
-      WFS_CONTROL_TASK_NAME
+      SEQ_CONTROL_TASK_NAME
    },
    {
       RECORD_NAME ("dc:detC"),
@@ -497,10 +518,6 @@ SIR_RECORD   pWfsDbSirList [] =
       EPICS_DATA_TYPE_STRING
    },
    {
-      RECORD_NAME ("version"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
       RECORD_NAME ("debugMode"),
       EPICS_DATA_TYPE_STRING
    },
@@ -510,6 +527,42 @@ SIR_RECORD   pWfsDbSirList [] =
    },
    {
       RECORD_NAME ("initialising"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("rebooting"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("datuming"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("parking"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("verifying"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("endVerifying"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("guiding"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("endGuiding"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("endObserving"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("testing"),
       EPICS_DATA_TYPE_LONG
    },
    {
@@ -527,6 +580,14 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("seeing"),
       EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("obsType"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("obsMode"),
+      EPICS_DATA_TYPE_STRING
    },
    {
       RECORD_NAME ("historyLog"),
@@ -560,6 +621,10 @@ SIR_RECORD   pWfsDbSirList [] =
       256.0
    },
    {
+      RECORD_NAME ("testResults"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
       RECORD_NAME ("dc:name"),
       EPICS_DATA_TYPE_STRING
    },
@@ -569,10 +634,6 @@ SIR_RECORD   pWfsDbSirList [] =
    },
    {
       RECORD_NAME ("dc:health"),
-      EPICS_DATA_TYPE_STRING
-   },
-   {
-      RECORD_NAME ("dc:testResults"),
       EPICS_DATA_TYPE_STRING
    },
    {
@@ -588,7 +649,43 @@ SIR_RECORD   pWfsDbSirList [] =
       EPICS_DATA_TYPE_LONG
    },
    {
-      RECORD_NAME ("dc:observing"),
+      RECORD_NAME ("dc:testing"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:detType"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:detID"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:dataLabel"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:intTime"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:nexpRQ"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:nexp"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:nframes"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:bunit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("observing"),
       EPICS_DATA_TYPE_LONG
    }
 };

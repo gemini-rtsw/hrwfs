@@ -32,23 +32,19 @@ LIBSRCS.c	= \
 	../cicsLib.c \
 	../epToVxLib.c \
 	../errorLib.c \
-	../ospInvertFuncs.c \
-	../ospLib.c \
 	../sdsuLib.c \
 	../timeoutLib.c \
 	../wfsLib.c \
-	../wfsWcs.c \
-	../writeZernikes.c
+	../wfsWcs.c
 
 APPLSRCS.c	= \
 	../detControl.c \
 	../simpleLogHrwfs.c \
-	../wfsControl.c \
+	../seqControl.c \
 	../wfsHrwfsDb.c \
 	../wfsResourceMonitor.c \
 	../wfsSite.c \
 	../sdsuRead.c \
-	../strcasecmp.c \
 	../fpscr.c 
 
 SRCS.c	= $(LIBSRCS.c) $(APPLSRCS.c)
@@ -83,7 +79,7 @@ MAN1	=
 DOCS	=
 
 # DATA are installed in INSTALL_DATA
-DATA	=
+DATA	= ../hrwfsSeq.pv ../hrwfsDet.pv
 
 # Any extra targets can be placed in a TARGETS macro (the build target
 # builds only pre_build, LIBNAME, TARGETS and PROD, not SCRIPTS, INC etc)
