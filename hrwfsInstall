@@ -15,16 +15,16 @@ editUAE()
 ed UAE.dist << eof >/dev/null
 /^FILES4
 a
-FILES5 = ( \${APPLIC_INSTALL}/bin/asm56000 )
-FILES6 = ( \${APPLIC_INSTALL}/IMP_Startup.hrwfs )
+FILES6 = ( \${APPLIC_INSTALL}/bin/asm56000 )
+FILES7 = ( \${APPLIC_INSTALL}/IMP_Startup.hrwfs )
 .
 w
 $
 a
 
-(\${FILES5}) -> (\${HOSTS})
-        install -R \${DIST_PATH}/bin/asm56000;
 (\${FILES6}) -> (\${HOSTS})
+        install -R \${DIST_PATH}/bin/asm56000;
+(\${FILES7}) -> (\${HOSTS})
         install -R \${DIST_PATH}/IMP_Startup.hrwfs;
 .
 w
