@@ -1,16 +1,16 @@
 file {
-	name="det_setOffsets.dl"
+	name="det_setdhsinfo.dl"
 }
 display {
 	magic="305419896"
 	majv="2"
 	mnrv="4"
 	ndyng="0"
-	npc="13"
-	nstr="54"
-	ndynamic="14"
+	npc="10"
+	nstr="53"
+	ndynamic="9"
 	nplot="0"
-	nrd="0"
+	nrd="1"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -18,28 +18,28 @@ display {
 	object {
 		x="0"
 		y="0"
-		width="655"
-		height="298"
+		width="678"
+		height="243"
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2238"
-	nwords_sta="548"
+	nwords_dspy="1960"
+	nwords_sta="536"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1260"
-	osta="712"
-	odynamic="1260"
-	oplot="2226"
-	ord="2226"
-	oes="2226"
-	okd="2226"
-	opd="2238"
-	opo="2238"
+	odyng="1176"
+	osta="640"
+	odynamic="1176"
+	oplot="1788"
+	ord="1788"
+	oes="1948"
+	okd="1948"
+	opd="1960"
+	opo="1960"
 	opc="68"
-	ostr="220"
-	ocmap="712"
-	ocrules="712"
+	ostr="184"
+	ocmap="640"
+	ocrules="640"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -62,42 +62,130 @@ display {
 		width="0"
 	}
 }
+"text" {
+	object {
+		x="14"
+		y="7"
+		width="560"
+		height="25"
+		groupid="0"
+	}
+	textix="$(sensor) : SPECIFY QUICK LOOK STREAM"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="24"
+		y="106"
+		width="118"
+		height="21"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+}
 "rectangle" {
 	object {
-		x="5"
-		y="37"
+		x="14"
+		y="38"
 		width="643"
-		height="252"
+		height="187"
 		groupid="0"
 	}
 }
 "text" {
 	object {
-		x="10"
-		y="156"
-		width="266"
+		x="336"
+		y="69"
+		width="133"
+		height="21"
+		groupid="0"
+	}
+	textix="CLIENT ID:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="22"
+		y="191"
+		width="180"
+		height="16"
+		groupid="0"
+	}
+	textix="Quick look stream:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="107"
+		width="107"
+		height="19"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="88"
+		width="148"
+		height="20"
+		groupid="0"
+	}
+	textix="ERROR NUMBER:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="22"
+		y="157"
+		width="193"
 		height="24"
 		groupid="0"
 	}
 	textix="PARAMETERS:"
 	align="horiz. left"
 }
+"text" {
+	object {
+		x="24"
+		y="49"
+		width="144"
+		height="21"
+		groupid="0"
+	}
+	textix="DIRECTIVE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="48"
+		width="145"
+		height="22"
+		groupid="0"
+	}
+	textix="CAR STATE:"
+	align="horiz. left"
+}
 "line" {
 	object {
-		x="5"
-		y="153"
+		x="14"
+		y="154"
 		width="642"
 		height="0"
 		groupid="0"
 	}
 	npoints="2"
 	point[0] {
-		x="5"
-		y="153"
+		x="14"
+		y="154"
 	}
 	point[1] {
-		x="647"
-		y="153"
+		x="656"
+		y="154"
 	}
 	orgpoint[0] {
 		x="0"
@@ -110,20 +198,20 @@ display {
 }
 "line" {
 	object {
-		x="319"
-		y="38"
+		x="328"
+		y="39"
 		width="0"
 		height="115"
 		groupid="0"
 	}
 	npoints="2"
 	point[0] {
-		x="319"
-		y="38"
+		x="328"
+		y="39"
 	}
 	point[1] {
-		x="319"
-		y="152"
+		x="328"
+		y="153"
 	}
 	orgpoint[0] {
 		x="1000"
@@ -134,109 +222,10 @@ display {
 		y="999"
 	}
 }
-"text" {
-	object {
-		x="6"
-		y="6"
-		width="490"
-		height="25"
-		groupid="0"
-	}
-	textix="$(sensor): SET ADC OFFSETS"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="10"
-		y="183"
-		width="422"
-		height="16"
-		groupid="0"
-	}
-	textix="A: ADC offset for output 0  ... ... ... :"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="13"
-		y="105"
-		width="123"
-		height="21"
-		groupid="0"
-	}
-	textix="MESSAGE:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="13"
-		y="48"
-		width="133"
-		height="22"
-		groupid="0"
-	}
-	textix="DIRECTIVE:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="327"
-		y="68"
-		width="176"
-		height="21"
-		groupid="0"
-	}
-	textix="CLIENT ID:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="327"
-		y="106"
-		width="100"
-		height="21"
-		groupid="0"
-	}
-	textix="MESSAGE:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="327"
-		y="87"
-		width="178"
-		height="21"
-		groupid="0"
-	}
-	textix="ERROR NUMBER:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="327"
-		y="47"
-		width="194"
-		height="24"
-		groupid="0"
-	}
-	textix="CAR STATE:"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="11"
-		y="234"
-		width="434"
-		height="16"
-		groupid="0"
-	}
-	textix="B: ADC offset for output 1  ... ... ... :"
-	align="horiz. left"
-}
 "message button" {
 	object {
-		x="136"
-		y="48"
+		x="145"
+		y="49"
 		width="71"
 		height="24"
 		groupid="0"
@@ -283,8 +272,8 @@ display {
 }
 "text update" {
 	object {
-		x="475"
-		y="47"
+		x="484"
+		y="48"
 		width="150"
 		height="20"
 		groupid="0"
@@ -329,8 +318,8 @@ display {
 }
 "text update" {
 	object {
-		x="13"
-		y="125"
+		x="24"
+		y="126"
 		width="300"
 		height="22"
 		groupid="0"
@@ -375,8 +364,8 @@ display {
 }
 "text update" {
 	object {
-		x="475"
-		y="67"
+		x="484"
+		y="68"
 		width="150"
 		height="20"
 		groupid="0"
@@ -421,8 +410,8 @@ display {
 }
 "text update" {
 	object {
-		x="326"
-		y="125"
+		x="335"
+		y="126"
 		width="315"
 		height="22"
 		groupid="0"
@@ -467,8 +456,8 @@ display {
 }
 "text update" {
 	object {
-		x="475"
-		y="87"
+		x="484"
+		y="88"
 		width="150"
 		height="20"
 		groupid="0"
@@ -513,8 +502,8 @@ display {
 }
 "message button" {
 	object {
-		x="136"
-		y="77"
+		x="145"
+		y="78"
 		width="71"
 		height="24"
 		groupid="0"
@@ -561,8 +550,8 @@ display {
 }
 "message button" {
 	object {
-		x="222"
-		y="77"
+		x="231"
+		y="78"
 		width="71"
 		height="24"
 		groupid="0"
@@ -609,14 +598,14 @@ display {
 }
 "text entry" {
 	object {
-		x="426"
-		y="234"
-		width="175"
-		height="19"
+		x="205"
+		y="189"
+		width="441"
+		height="20"
 		groupid="0"
 	}
 	control {
-		chan="$(top)$(cad).B"
+		chan="$(top)$(cad).A"
 		clr="0"
 		bclr="6"
 		label="none"
@@ -652,247 +641,144 @@ display {
 	}
 	format="decimal"
 }
-"text entry" {
+"related display" {
 	object {
-		x="426"
-		y="183"
-		width="175"
-		height="19"
+		x="25"
+		y="80"
+		width="80"
+		height="20"
 		groupid="0"
 	}
-	control {
-		chan="$(top)$(cad).A"
-		clr="0"
-		bclr="6"
-		label="none"
-		clrmod="rule"
-		rulechan[0] = "$(top)$(cad).VAL"
-		rulechan[1] = "$(top)$(cad).VAL"
-		rulechan[2] = "$(top)$(cad).VAL"
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="acceptReject"
-		clrargs="C=$(top)$(cad)"
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
+	selfkill="off"
+	display[0] {
+		label="Details"
+		name="cad_details2.dl"
+		args="top=$(top),cad=$(cad)"
 	}
-	format="hexadecimal"
-}
-"message button" {
-	object {
-		x="10"
-		y="205"
-		width="175"
-		height="19"
-		groupid="0"
+	display[1] {
+		label=""
+		name=""
+		args=""
 	}
-	control {
-		chan="$(top)$(cad).A"
-		clr="1"
-		bclr="6"
-		label="none"
-		clrmod="rule"
-		rulechan[0] = "$(top)$(cad).VAL"
-		rulechan[1] = "$(top)$(cad).VAL"
-		rulechan[2] = "$(top)$(cad).VAL"
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="acceptReject"
-		clrargs="C=$(top)$(cad)"
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
+	display[2] {
+		label=""
+		name=""
+		args=""
 	}
-	inactive_label="Do not change"
-	pressed_label="Do not change"
-	press_msg="-1"
-	release_msg=""
-}
-"message button" {
-	object {
-		x="10"
-		y="256"
-		width="175"
-		height="19"
-		groupid="0"
+	display[3] {
+		label=""
+		name=""
+		args=""
 	}
-	control {
-		chan="$(top)$(cad).B"
-		clr="1"
-		bclr="6"
-		label="none"
-		clrmod="rule"
-		rulechan[0] = "$(top)$(cad).VAL"
-		rulechan[1] = "$(top)$(cad).VAL"
-		rulechan[2] = "$(top)$(cad).VAL"
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="acceptReject"
-		clrargs="C=$(top)$(cad)"
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
+	display[4] {
+		label=""
+		name=""
+		args=""
 	}
-	inactive_label="Do not change"
-	pressed_label="Do not change"
-	press_msg="-1"
-	release_msg=""
-}
-"message button" {
-	object {
-		x="193"
-		y="205"
-		width="175"
-		height="19"
-		groupid="0"
+	display[5] {
+		label=""
+		name=""
+		args=""
 	}
-	control {
-		chan="$(top)$(cad).A"
-		clr="1"
-		bclr="6"
-		label="none"
-		clrmod="rule"
-		rulechan[0] = "$(top)$(cad).VAL"
-		rulechan[1] = "$(top)$(cad).VAL"
-		rulechan[2] = "$(top)$(cad).VAL"
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="acceptReject"
-		clrargs="C=$(top)$(cad)"
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
+	display[6] {
+		label=""
+		name=""
+		args=""
 	}
-	inactive_label="Back to normal"
-	pressed_label="2400"
-	press_msg="2400"
-	release_msg=""
-}
-"message button" {
-	object {
-		x="193"
-		y="256"
-		width="175"
-		height="19"
-		groupid="0"
+	display[7] {
+		label=""
+		name=""
+		args=""
 	}
-	control {
-		chan="$(top)$(cad).B"
-		clr="1"
-		bclr="6"
-		label="none"
-		clrmod="rule"
-		rulechan[0] = "$(top)$(cad).VAL"
-		rulechan[1] = "$(top)$(cad).VAL"
-		rulechan[2] = "$(top)$(cad).VAL"
-		rulechan[3] = ""
-		rulechan[4] = ""
-		rulechan[5] = ""
-		rulechan[6] = ""
-		rulechan[7] = ""
-		rulechan[8] = ""
-		rulechan[9] = ""
-		rulechan[10] = ""
-		rulechan[11] = ""
-		rulechan[12] = ""
-		rulechan[13] = ""
-		rulechan[14] = ""
-		rulechan[15] = ""
-		clrrule="acceptReject"
-		clrargs="C=$(top)$(cad)"
-		rulecolorbg="1"
-		rulecolorfg="1"
-		hdl="0"
-		ldl="0"
-		prec="-1"
-		newunits=""
-		units="none"
-		decorate="none"
-		convertFunc=""
-		convertParams=""
+	display[8] {
+		label=""
+		name=""
+		args=""
 	}
-	inactive_label="Back to normal"
-	pressed_label="2398"
-	press_msg="2398"
-	release_msg=""
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
 }
 "kill display" {
 	object {
-		x="572"
-		y="5"
+		x="585"
+		y="7"
 		width="72"
 		height="23"
 		groupid="0"
