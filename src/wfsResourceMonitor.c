@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsResourceMonitor.c,v 1.2 2000-02-03 01:19:27 cboyer Exp $"};
+   "$Id: wfsResourceMonitor.c,v 1.3 2001-10-26 03:28:10 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -31,6 +31,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/02/03 01:19:27  cboyer
+ * New V0-8 release: a lot of tidy up + sequencer created
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:25  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -127,7 +130,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include <memLib.h>
 #include <math.h>
 #include <tickLib.h>
-#include "car.h"
+#include "menuCarstates.h"
 #include "gemTypes.h"
 #include "timeoutLib.h"
 #include "errorLib.h"

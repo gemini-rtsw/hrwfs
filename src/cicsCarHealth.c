@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: cicsCarHealth.c,v 1.3 2000-03-13 20:46:39 cboyer Exp $"};
+   "$Id: cicsCarHealth.c,v 1.4 2001-10-26 03:28:08 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -38,7 +38,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   recSup.h       - EPICS record support constants
  *   dbCommon.h     - Data structure and definitions common to all EPICS records
  *   genSubRecord.h - EPICS genSub record data structure and definitions
- *   car.h          - EPICS CAR record data structure and definitions
+ *   menuCarstates.h  - EPICS CAR record data structure and definitions
  *
  *   AUTHOR:
  *   Steven Beard  (smb@roe.ac.uk)
@@ -61,6 +61,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 /* *INDENT-OFF* */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.3  2000/03/13 20:46:39  cboyer
+ * V0-9 New sad records
+ *
  * Revision 1.2  2000/01/05 20:09:28  cboyer
  * Tidy up the directory src: remove all the not used files and tidy up
  *
@@ -91,7 +94,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 
 #include  <dbDefs.h>
 #include  <genSubRecord.h>
-#include  <car.h>
+#include  <menuCarstates.h>
 #include  <dbCommon.h>
 #include  <recSup.h>
 
@@ -203,7 +206,7 @@ STATUS cicsCarValCombine( struct genSubRecord *pgensub )
  * CAR records has the largest client ID.
  */
 
-    outVal = CAR_IDLE;
+    outVal = menuCarstatesIDLE;
 
     outClid = *(long *)pgensub->b;
     outIndex = 1;
@@ -237,37 +240,37 @@ STATUS cicsCarValCombine( struct genSubRecord *pgensub )
  * PAUSED output value.
  */
 
-    if ( *(long *)pgensub->a == CAR_PAUSED )
+    if ( *(long *)pgensub->a == menuCarstatesPAUSED )
     {
-        outVal = CAR_PAUSED;
+        outVal = menuCarstatesPAUSED;
         outClid = *(long *)pgensub->b;
         outIndex = 1;
     }
 
-    if ( *(long *)pgensub->c == CAR_PAUSED )
+    if ( *(long *)pgensub->c == menuCarstatesPAUSED )
     {
-        outVal = CAR_PAUSED;
+        outVal = menuCarstatesPAUSED;
         outClid = *(long *)pgensub->d;
         outIndex = 2;
     }
 
-    if ( *(long *)pgensub->e == CAR_PAUSED )
+    if ( *(long *)pgensub->e == menuCarstatesPAUSED )
     {
-        outVal = CAR_PAUSED;
+        outVal = menuCarstatesPAUSED;
         outClid = *(long *)pgensub->f;
         outIndex = 3;
     }
 
-    if ( *(long *)pgensub->g == CAR_PAUSED )
+    if ( *(long *)pgensub->g == menuCarstatesPAUSED )
     {
-        outVal = CAR_PAUSED;
+        outVal = menuCarstatesPAUSED;
         outClid = *(long *)pgensub->h;
         outIndex = 4;
     }
 
-    if ( *(long *)pgensub->i == CAR_PAUSED )
+    if ( *(long *)pgensub->i == menuCarstatesPAUSED )
     {
-        outVal = CAR_PAUSED;
+        outVal = menuCarstatesPAUSED;
         outClid = *(long *)pgensub->j;
         outIndex = 5;
     }
@@ -277,37 +280,37 @@ STATUS cicsCarValCombine( struct genSubRecord *pgensub )
  * in a BUSY output value.
  */
 
-    if ( *(long *)pgensub->a == CAR_BUSY )
+    if ( *(long *)pgensub->a == menuCarstatesBUSY )
     {
-        outVal = CAR_BUSY;
+        outVal = menuCarstatesBUSY;
         outClid = *(long *)pgensub->b;
         outIndex = 1;
     }
 
-    if ( *(long *)pgensub->c == CAR_BUSY )
+    if ( *(long *)pgensub->c == menuCarstatesBUSY )
     {
-        outVal = CAR_BUSY;
+        outVal = menuCarstatesBUSY;
         outClid = *(long *)pgensub->d;
         outIndex = 2;
     }
 
-    if ( *(long *)pgensub->e == CAR_BUSY )
+    if ( *(long *)pgensub->e == menuCarstatesBUSY )
     {
-        outVal = CAR_BUSY;
+        outVal = menuCarstatesBUSY;
         outClid = *(long *)pgensub->f;
         outIndex = 3;
     }
 
-    if ( *(long *)pgensub->g == CAR_BUSY )
+    if ( *(long *)pgensub->g == menuCarstatesBUSY )
     {
-        outVal = CAR_BUSY;
+        outVal = menuCarstatesBUSY;
         outClid = *(long *)pgensub->h;
         outIndex = 4;
     }
 
-    if ( *(long *)pgensub->i == CAR_BUSY )
+    if ( *(long *)pgensub->i == menuCarstatesBUSY )
     {
-        outVal = CAR_BUSY;
+        outVal = menuCarstatesBUSY;
         outClid = *(long *)pgensub->j;
         outIndex = 5;
     }
@@ -317,37 +320,37 @@ STATUS cicsCarValCombine( struct genSubRecord *pgensub )
  * or BUSY states and result in an ERROR output value.
  */
 
-    if ( *(long *)pgensub->a == CAR_ERROR )
+    if ( *(long *)pgensub->a == menuCarstatesERROR )
     {
-        outVal = CAR_ERROR;
+        outVal = menuCarstatesERROR;
         outClid = *(long *)pgensub->b;
         outIndex = 1;
     }
 
-    if ( *(long *)pgensub->c == CAR_ERROR )
+    if ( *(long *)pgensub->c == menuCarstatesERROR )
     {
-        outVal = CAR_ERROR;
+        outVal = menuCarstatesERROR;
         outClid = *(long *)pgensub->d;
         outIndex = 2;
     }
 
-    if ( *(long *)pgensub->e == CAR_ERROR )
+    if ( *(long *)pgensub->e == menuCarstatesERROR )
     {
-        outVal = CAR_ERROR;
+        outVal = menuCarstatesERROR;
         outClid = *(long *)pgensub->f;
         outIndex = 3;
     }
 
-    if ( *(long *)pgensub->g == CAR_ERROR )
+    if ( *(long *)pgensub->g == menuCarstatesERROR )
     {
-        outVal = CAR_ERROR;
+        outVal = menuCarstatesERROR;
         outClid = *(long *)pgensub->h;
         outIndex = 4;
     }
 
-    if ( *(long *)pgensub->i == CAR_ERROR )
+    if ( *(long *)pgensub->i == menuCarstatesERROR )
     {
-        outVal = CAR_ERROR;
+        outVal = menuCarstatesERROR;
         outClid = *(long *)pgensub->j;
         outIndex = 5;
     }

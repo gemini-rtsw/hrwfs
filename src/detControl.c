@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.21 2001-10-06 04:17:16 cboyer Exp $"};
+   "$Id: detControl.c,v 1.22 2001-10-26 03:28:09 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -106,7 +106,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include <limits.h>
 #include <math.h>
 #include <selectLib.h>
-#include "car.h"
+#include "menuCarstates.h"
 #include <sirRecord.h>
 
 #include "dhs.h"
@@ -263,9 +263,6 @@ LOCAL uint32   detFrameSize (const char * pWfsName, const char * pRecordPrefix,
 LOCAL uint32   detPrimitive (const char * pWfsName, const char * pRecordPrefix,
                              CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                              SDSU_ID sdsuId, OBS_ID obsId); 
-LOCAL uint32   detDownload (const char * pWfsName, const char * pRecordPrefix,
-                            CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
-                            SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detMode (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID sdsuId, OBS_ID obsId);
@@ -329,6 +326,9 @@ uint32 detContInit (char * pInitFileName, uint32 * pTempCode,
                     int * pPort);
 uint32 detGetSirContext (const char * pRecordPrefix, OBS_ID obsId);
 uint32 detWriteDefSirContext (OBS_ID obsId);
+uint32 detDownload (const char * pWfsName, const char * pRecordPrefix,
+                    CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
+                    SDSU_ID sdsuId, OBS_ID obsId);
 
 /* -------------------------------------------------------------------------- */
 
@@ -546,7 +546,7 @@ STATUS   detControl
 
    /* As soon as we have the SIR record context, set the "initialising" flag. */
 
-   initState = CAR_BUSY;
+   initState = menuCarstatesBUSY;
    if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
        == ERROR)
    {
@@ -1122,7 +1122,7 @@ STATUS   detControl
 
    /* Finally, reset the "initialising" flag. */
 
-   initState = CAR_IDLE;
+   initState = menuCarstatesIDLE;
    if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
        == ERROR)
    {
@@ -3218,7 +3218,7 @@ uint32 observeStart
       obsId->stopped = FALSE;
       obsId->nframes = 0;
       obsId->outNFrames = 0;
-      observingState = CAR_BUSY;
+      observingState = menuCarstatesBUSY;
       if (epToVxPipeWrite (NULL, (char *) &observingState, 
                            obsId->pDetObservingContext) == ERROR)
       {
@@ -3403,7 +3403,7 @@ uint32 observeStart
          {
             ERROR_LOG ("Failed to start simple readout process");
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext) == ERROR)
             {
@@ -3420,7 +3420,7 @@ uint32 observeStart
          {
             ERROR_LOG ("Failed to start simple readout process");
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext) == ERROR)
             {
@@ -3483,7 +3483,7 @@ uint32 observeStart
          {
             ERROR_SET (0, "Failed to set alarm timer", ERROR_LOG_NOW);
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext)
                == ERROR)
@@ -4890,7 +4890,7 @@ uint32 detObserveStart
       obsId->stopped = FALSE;
       obsId->nframes = 0;
       obsId->outNFrames = 0;
-      observingState = CAR_BUSY;
+      observingState = menuCarstatesBUSY;
       if (epToVxPipeWrite (NULL, (char *) &observingState, 
                            obsId->pDetObservingContext) == ERROR)
       {
@@ -5257,7 +5257,7 @@ uint32 detObserveStart
          {
             ERROR_LOG ("Failed to start simple readout process");
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext) == ERROR)
             {
@@ -5274,7 +5274,7 @@ uint32 detObserveStart
          {
             ERROR_LOG ("Failed to start simple readout process");
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext) == ERROR)
             {
@@ -5337,7 +5337,7 @@ uint32 detObserveStart
          {
             ERROR_SET (0, "Failed to set alarm timer", ERROR_LOG_NOW);
             obsId->observing = FALSE;
-            observingState = CAR_ERROR;
+            observingState = menuCarstatesERROR;
             if (epToVxPipeWrite (NULL, (char *) &observingState, 
                                  obsId->pDetObservingContext)
                == ERROR)
@@ -6827,7 +6827,7 @@ void detObserveEnd
       }
 
       obsId->observing = FALSE;
-      observingState = CAR_IDLE;
+      observingState = menuCarstatesIDLE;
       if (epToVxPipeWrite (NULL, (char *) &observingState, 
                            obsId->pDetObservingContext) == ERROR)
       {
@@ -6914,7 +6914,7 @@ ERROR_EXIT:
    }*/
 
    obsId->observing = FALSE;
-   observingState = CAR_ERROR;
+   observingState = menuCarstatesERROR;
    if (epToVxPipeWrite (NULL, (char *) &observingState, 
                         obsId->pDetObservingContext) == ERROR)
    {
@@ -7130,7 +7130,7 @@ void detObserveTimeout
       "Observation timed out - trying to read data anyway...");
 
       obsId->observing = FALSE;
-      observingState = CAR_ERROR;
+      observingState = menuCarstatesERROR;
       if (epToVxPipeWrite (NULL, (char *) &observingState, 
           obsId->pDetObservingContext) == ERROR)
       {
@@ -7408,7 +7408,7 @@ uint32 detAbort
    {
 
       obsId->observing = FALSE;
-      observingState = CAR_IDLE;
+      observingState = menuCarstatesIDLE;
       if (epToVxPipeWrite (NULL, (char *) &observingState, 
                            obsId->pDetObservingContext) == ERROR)
       {
@@ -7554,7 +7554,7 @@ uint32 detInit
       ERROR_LOG ("Failed to set INITIALIZING state");
    }
 
-   initState = CAR_BUSY;
+   initState = menuCarstatesBUSY;
    if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
        == ERROR)
    {
@@ -7620,7 +7620,7 @@ uint32 detInit
 
       /* Set the initialisation state to ERROR. */
 
-      initState = CAR_ERROR;
+      initState = menuCarstatesERROR;
       if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
           == ERROR)
       {
@@ -7718,7 +7718,7 @@ uint32 detInit
 
          /* Set the initialisation state to ERROR. */
 
-         initState = CAR_ERROR;
+         initState = menuCarstatesERROR;
          if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext)
              == ERROR)
          {
@@ -8084,7 +8084,7 @@ uint32 detInit
    {
       epToVxSetHealth( pRecordPrefix, "GOOD" );
 
-      initState = CAR_IDLE;
+      initState = menuCarstatesIDLE;
       if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
           == ERROR)
       {
@@ -8102,7 +8102,7 @@ uint32 detInit
    }
    else
    {
-      initState = CAR_ERROR;
+      initState = menuCarstatesERROR;
       if (epToVxPipeWrite (NULL, (char *) &initState, obsId->pDetInitContext) 
           == ERROR)
       {
@@ -8714,7 +8714,7 @@ uint32 detTest
 
    /* Set the testC CAR record to BUSY */
 
-   testingState = CAR_BUSY;
+   testingState = menuCarstatesBUSY;
    if (epToVxPipeWrite (NULL, (char *) &testingState,
                         obsId->pTestingContext) == ERROR)
    {
@@ -8769,7 +8769,7 @@ uint32 detTest
          ERROR_LOG ("Failed to write test results");
       }
       
-      testingState = CAR_ERROR;
+      testingState = menuCarstatesERROR;
       if (epToVxPipeWrite (NULL, (char *) &testingState,
                            obsId->pTestingContext) == ERROR)
       {
@@ -8786,7 +8786,7 @@ uint32 detTest
       {
          ERROR_LOG ("Failed to write test results");
       }
-      testingState = CAR_IDLE;
+      testingState = menuCarstatesIDLE;
       if (epToVxPipeWrite (NULL, (char *) &testingState,
                            obsId->pTestingContext) == ERROR)
       {

@@ -10,6 +10,9 @@
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2000/01/05 20:09:43  cboyer
+ * Tidy up the directory src: remove all the not used files and tidy up
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:26  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -239,7 +242,7 @@
                                              /* Timeout initialising record.  */
 #define S_epToVxLib_TIMEOUT_WAITING_FOR_PIPE (M_epToVxLib | 7)   
                                              /* Timeout waiting for pipe.     */
-#define S_epToVxLib_CAD_STOP_UNSUPPORTED     (M_epToVxLib | 8)   
+#define S_epToVxLib_menuDirectiveSTOP_UNSUPPORTED     (M_epToVxLib | 8)   
                                              /* STOP directive not supported  */
 #define S_epToVxLib_CAD_CMD_UNSUPPORTED      (M_epToVxLib | 9)   
                                              /* Command not supported.        */

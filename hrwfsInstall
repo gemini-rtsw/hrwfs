@@ -3,6 +3,12 @@
 # Install script for Gemini HRWFS system
 #
 
+astlib_dir=/gemini/epics3.13.4/astlib/astlib
+slalib_dir=/gemini/epics3.13.4/slalib/slalib
+timelib_dir=/gemini/epics3.13.4/timelib/timelib
+cfitsio_dir=/gemini/epics3.13.4/cfitsio/cfitsio
+dhs_dir=/gemini/dhs
+
 host=`hostname`
 if [ "`egrep $host /etc/hosts | egrep '^10\.'`" -ne "" ]; then
     site=MK;
@@ -10,12 +16,12 @@ else
     site=CP;
 fi
 
-applSetup -T svgm5 -s Makefile.subdirs -I docs -I dspsrc -I par -X sys -X ar \
-          -depends /gemini/astlib -depends /gemini/slalib \
-          -depends /gemini/timelib -depends /gemini/cfitsio/cfitsio \
-          -depends /gemini/dhs -site $site $1 > hrwfsBuild.log 2>&1
 
-applSetup  >> hrwfsBuild.log 2>&1
+applSetup.pl -T ppc604 -I adl -I capfast -I src -I startup\
+             -I docs -I dspsrc -I par -I db\
+             -d $astlib_dir -d $slalib_dir \
+             -d $timelib_dir -d $cfitsio_dir\
+             -d $dhs_dir -S $site $1 > hrwfsBuild.log 2>&1
 
 editUAE()
 {

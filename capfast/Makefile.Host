@@ -1,0 +1,18 @@
+
+
+include ../.applTop
+include $(APPLIC_TOP)/config/CONFIG
+
+# You can change the way the sf2db and sch2edif tools work by adding to
+# the following flags
+# SF2DB_FLAGS    =
+# SCH2EDIF_FLAGS =
+# SCH2EDIF_PATH  =
+
+# List of ASCII database (*.db) files
+# DEPSCHS is a list of schematics they depend on
+DEPSCHS = $(wildcard ../*.sch)
+#DATA   = $(patsubst ../%.sch, %.db, $(wildcard ../*.sch))
+DATA =	hrwfsTop.db hrwfsSadTop.db
+
+include $(APPLIC_TOP)/config/RULES.Build

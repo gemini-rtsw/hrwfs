@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: sdsuLib.c,v 1.5 2001-06-11 07:51:24 cjm Exp $"};
+   "$Id: sdsuLib.c,v 1.6 2001-10-26 03:28:10 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -197,7 +197,6 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include <ctype.h>
 #include <vxLib.h>
 #include <logLib.h>
-#include <ppc.h>
 #include "gemTypes.h"
 #include "sdsuLib.h"
 #include "errorLib.h"
@@ -1104,7 +1103,7 @@ uint32 sdsuVersionGet ( SDSU_ID         context,
     */
 
    if (destId == SDSU_IDENT_HST)
-      return (sdsu_getVersion ("$Revision: 1.5 $"));
+      return (sdsu_getVersion ("$Revision: 1.6 $"));
    
    /*
     * The SDSU context must be valid if the code gets this far, as the version 
@@ -3575,6 +3574,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
              */
 
             i = 0;                        /* Reached end of this data record? */
+            startAddress = address;
             while (! sdsu_isRecordType (pField))
             {
                if (address >= start &&         /* ...no, save Code/Data value */
@@ -3623,6 +3623,7 @@ STATUS sdsuMemoryDnload ( SDSU_ID       context,
                   return (ERROR);
                }
             }
+
             if (i != 0)                      /* Download anything left in the */
                                              /* working buffer                */
             {
@@ -6944,16 +6945,14 @@ void   sdsu_simpleTask
 
    int             frame;
    int             failures;
-   int             oldPriority;
+   /*int             oldPriority;*/
    int             lastFrame;
    uint32          dmaAddress;
 
-   double          timeout;
+   /*double          timeout;*/
    int             i ;
 
-   /* Turn off floating point exception errors */
-
-   setFPE() ;
+   /* Init error context */
 
    if (errorInit () == ERROR)
    {

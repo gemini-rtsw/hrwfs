@@ -1,30 +1,18 @@
 
-HOSTS = ( ${DIST_HOST} )
-
-FILES1 = ( ${APPLIC_INSTALL}/bin/${T_A} )
-FILES2 = ( ${APPLIC_INSTALL}/bin/${HOST_ARCH} )
-FILES3 = ( ${APPLIC_INSTALL}/data )
-FILES4 = ( ${APPLIC_INSTALL}/include )
-FILES6 = ( ${APPLIC_INSTALL}/bin/asm56000 )
-FILES7 = ( ${APPLIC_INSTALL}/IMP_Startup.hrwfs )
-FILES5 = ( ${APPLIC_INSTALL}/RELEASE.NOTES )
-
-(${FILES1}) -> (${HOSTS})
+(${APPLIC_INSTALL}/bin/${T_A}) -> ${DIST_HOST}
 	install -R ${DIST_PATH}/bin/${T_A};
 
-(${FILES2}) -> (${HOSTS})
-	install -R ${DIST_PATH}/bin/${HOST_ARCH};
+(${APPLIC_INSTALL}/bin/solaris) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/bin/solaris;
 
-(${FILES3}) -> (${HOSTS})
-	install -R ${DIST_PATH}/data;
+(${APPLIC_INSTALL}/lib) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/lib;
 
-(${FILES4}) -> (${HOSTS})
+(${APPLIC_INSTALL}/include) -> ${DIST_HOST}
 	install -R ${DIST_PATH}/include;
 
-(${FILES5}) -> (${HOSTS})
-	install -R ${DIST_PATH}/RELEASE.NOTES;
+(${APPLIC_INSTALL}/dbd) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/dbd;
 
-(${FILES6}) -> (${HOSTS})
-        install -R ${DIST_PATH}/bin/asm56000;
-(${FILES7}) -> (${HOSTS})
-        install -R ${DIST_PATH}/IMP_Startup.hrwfs;
+(${APPLIC_INSTALL}/data) -> ${DIST_HOST}
+	install -R ${DIST_PATH}/data;

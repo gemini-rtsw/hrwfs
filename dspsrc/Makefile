@@ -1,10 +1,21 @@
-# $Id: Makefile,v 1.4 2001-06-05 02:58:04 cboyer Exp $
+# $Id: Makefile,v 1.5 2001-10-26 03:28:07 cboyer Exp $
 #
+
+include .applTop
+-include $(APPLIC_TOP)/config/CONFIG
 
 APPLIC_DIR_TYPE = src
 
+# Define cp if we don't have it yet
+ifndef CP
+CP = cp
+endif
+
+.applTop : ../.applTop
+	$(CP) $< $@
+
 # Where to install the output files:
-INSTALL_DSP = .applTop/bin/asm56000
+INSTALL_DSP = $(APPLIC_TOP)/bin/asm56000
 
 # The following gives the location of the asm56000 utilities
 # (Edit for your current location)
@@ -20,6 +31,8 @@ INSTALL_PROD = $(PROD:%=$(INSTALL_DSP)/%)
 # What to build:
 PROD = tim-39.lod tim-39-full.lod tim-47.lod tim-47-full.lod util.lod vme-39.lod vme-47.lod vmerom.lod timrom.lod
 
+
+buildInstall: $(INSTALL_PROD)
 
 install: $(INSTALL_PROD)
 

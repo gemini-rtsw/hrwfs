@@ -1,4 +1,4 @@
-static char rcsid[]="$Id: hrwfsConfig.c,v 1.2 2001-06-24 18:43:01 gemvx Exp $";
+static char rcsid[]="$Id: hrwfsConfig.c,v 1.3 2001-10-26 03:28:09 cboyer Exp $";
 /*
 *   FILENAME
 *   hrwfsConfig.c
@@ -14,6 +14,9 @@ static char rcsid[]="$Id: hrwfsConfig.c,v 1.2 2001-06-24 18:43:01 gemvx Exp $";
 /* *INDENT-OFF* */
 /*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  2001/06/24 18:43:01  gemvx
+ * Add standard CAD routine and extend CAR combination to include more CAR records
+ *
  * Revision 1.1  2001/06/11 08:11:00  cjm
  * Source code for hrwfs configuration checking
  *
@@ -21,10 +24,8 @@ static char rcsid[]="$Id: hrwfsConfig.c,v 1.2 2001-06-24 18:43:01 gemvx Exp $";
 /* *INDENT-ON* */
 
 #include <string.h>
-#include <subCadRecord.h>
-#include <subcad.h>
 #include <cad.h>
-#include <car.h>
+#include <menuCarstates.h>
 #include <genSubRecord.h>
 #include <cadRecord.h>
 
@@ -75,31 +76,31 @@ long hrwfsCarCombine(struct genSubRecord *pgsub)
   char mess[MAX_STRING_SIZE] ;
 
 /* Make output IDLE by default */
-  outval = CAR_IDLE ;
+  outval = menuCarstatesIDLE ;
   strcpy(mess, "" ) ;
 
 /* Check for BUSY first */
-  if ( *(long *)pgsub->a == CAR_BUSY ||
-       *(long *)pgsub->c == CAR_BUSY ||
-       *(long *)pgsub->e == CAR_BUSY ||
-       *(long *)pgsub->g == CAR_BUSY ) {
-    outval = CAR_BUSY ;
-  } else if (*(long *)pgsub->a == CAR_ERROR ||
-             *(long *)pgsub->c == CAR_ERROR ||
-             *(long *)pgsub->e == CAR_ERROR ||
-             *(long *)pgsub->g == CAR_ERROR) {
-    outval = CAR_ERROR ;
+  if ( *(long *)pgsub->a == menuCarstatesBUSY ||
+       *(long *)pgsub->c == menuCarstatesBUSY ||
+       *(long *)pgsub->e == menuCarstatesBUSY ||
+       *(long *)pgsub->g == menuCarstatesBUSY ) {
+    outval = menuCarstatesBUSY ;
+  } else if (*(long *)pgsub->a == menuCarstatesERROR ||
+             *(long *)pgsub->c == menuCarstatesERROR ||
+             *(long *)pgsub->e == menuCarstatesERROR ||
+             *(long *)pgsub->g == menuCarstatesERROR) {
+    outval = menuCarstatesERROR ;
 
 /* Copy the error message to the output. If there is more than one error
 *  message then the last will get output
 */
-    if (*(long *)pgsub->a == CAR_ERROR)  
+    if (*(long *)pgsub->a == menuCarstatesERROR)  
       strcpy(pgsub->vala, pgsub->b) ;
-    if (*(long *)pgsub->c == CAR_ERROR)  
+    if (*(long *)pgsub->c == menuCarstatesERROR)  
       strcpy(pgsub->vala, pgsub->d) ;
-    if (*(long *)pgsub->e == CAR_ERROR)  
+    if (*(long *)pgsub->e == menuCarstatesERROR)  
       strcpy(pgsub->vala, pgsub->f) ;
-    if (*(long *)pgsub->g == CAR_ERROR)  
+    if (*(long *)pgsub->g == menuCarstatesERROR)  
       strcpy(pgsub->vala, pgsub->h) ;
   }
 
@@ -119,7 +120,7 @@ long hrwfsCarCombine(struct genSubRecord *pgsub)
  *
  *   Description:
  *   This routine is called as soon as a new configuration is started by
- *   the OCS or by an engineering screen. It is tied to a subcad record
+ *   the OCS or by an engineering screen. It is tied to a cad record
  *   which is in turn the first record triggered by the top level Apply
  *   record. It will get called the top level Apply both when preset and
  *   start are issued. Any code that needs to be executed before preset
@@ -130,7 +131,7 @@ long hrwfsCarCombine(struct genSubRecord *pgsub)
  *   hrwfsConfigBegin (pcad)
  *
  *   Parameters: (">" input, "!" modified, "<" output)
- *      (!)    pcad     (struct subCadRecord *)  Pointer to subcad structure
+ *      (!)    pcad     (struct cadRecord *)  Pointer to cad structure
  *
  *   Function value:
  *   (<)  status  (long)  Return status, 0 = OK
@@ -138,7 +139,7 @@ long hrwfsCarCombine(struct genSubRecord *pgsub)
  *-
  */
 
-long hrwfsConfigBegin(struct subCadRecord *pcad )
+long hrwfsConfigBegin(struct cadRecord *pcad )
 {
     long status;                      /* return status */
 
@@ -150,11 +151,11 @@ long hrwfsConfigBegin(struct subCadRecord *pcad )
         status = CAD_REJECT;
     else {
         switch (pcad->dir) {
-        case CAD_PRESET:
+        case menuDirectivePRESET:
 
             break;
 
-        case CAD_START:
+        case menuDirectiveSTART:
             break;
 
         default:
@@ -174,7 +175,7 @@ long hrwfsConfigBegin(struct subCadRecord *pcad )
  *
  *   Description:
  *   This routine is called once a new configuration has been started by
- *   the OCS or by an engineering screen. It is tied to a subcad record
+ *   the OCS or by an engineering screen. It is tied to a cad record
  *   which is in turn the last record triggered by the top level Apply
  *   record. It will get called by the top level Apply both when preset and
  *   start are issued. Any code that needs to be executed after preset
@@ -185,7 +186,7 @@ long hrwfsConfigBegin(struct subCadRecord *pcad )
  *   hrwfsConfigEnd (pcad)
  *
  *   Parameters: (">" input, "!" modified, "<" output)
- *      (!)    pcad     (struct subCadRecord *)  Pointer to subcad structure
+ *      (!)    pcad     (struct cadRecord *)  Pointer to cad structure
  *
  *   Function value:
  *   (<)  status  (long)  Return status, 0 = OK
@@ -193,7 +194,7 @@ long hrwfsConfigBegin(struct subCadRecord *pcad )
  *-
  */
 
-long hrwfsConfigEnd(struct subCadRecord *pcad)
+long hrwfsConfigEnd(struct cadRecord *pcad)
 {
 
     long status;             /* return status */
@@ -202,11 +203,11 @@ long hrwfsConfigEnd(struct subCadRecord *pcad)
 
     switch (pcad->dir) {
 
-    case CAD_PRESET:
+    case menuDirectivePRESET:
 
         break;
 
-    case CAD_START:
+    case menuDirectiveSTART:
 
         break;
 
@@ -218,7 +219,6 @@ long hrwfsConfigEnd(struct subCadRecord *pcad)
     return status;
 
 }
-
 
 /*+
  *   Function name:
@@ -289,7 +289,7 @@ long hrwfsMechCad (struct cadRecord *pcad)
 
 /* Check for any interlocks */
 
-  if (pcad->dir != CAD_CLEAR)
+  if (pcad->dir != menuDirectiveCLEAR)
     if (hrwfsInterlocked (pcad->mess)) return CAD_REJECT;
 
   status = CAD_REJECT ;
@@ -297,12 +297,12 @@ long hrwfsMechCad (struct cadRecord *pcad)
   switch (pcad->dir)
   {
 
-   case CAD_PRESET :
+   case menuDirectivePRESET :
 
    status = CAD_ACCEPT;
    break ;
 
-   case CAD_START :
+   case menuDirectiveSTART :
 
 /* Copy over the parameters for the A&G CAD */
 
@@ -315,15 +315,15 @@ long hrwfsMechCad (struct cadRecord *pcad)
     status = CAD_ACCEPT;
    break ;
 
-   case CAD_MARK :
+   case menuDirectiveMARK :
    status = CAD_ACCEPT;
    break ;
 
-   case CAD_STOP :
+   case menuDirectiveSTOP :
    status = CAD_ACCEPT;
    break ;
 
-   case CAD_CLEAR :
+   case menuDirectiveCLEAR :
    status = CAD_ACCEPT;
    break ;
 

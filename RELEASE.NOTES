@@ -151,3 +151,14 @@ V1-6 05 Oct 2001 - CB
 ---------------------
   - Minor changes for the seqexec (do not init the lifetime and contrib).
     Also some keywords are no more in low case
+
+V2-0 25 Oct 2001 - CB
+---------------------
+  - Port to epics3.13.4
+    . hrwfsInstall modified
+    . Directory adl created, contains now all the .adl files
+    . src: wfsHrwfsDb.c, epToVxLib.c, sdsuLib.c, hrwfsConfig.c modified
+    . capfast: replace all the wait records, replace all the subcad records
+    . startup: startup files modified
+    . dspsrc: Makefile rewrite
+    . db 

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.13 2001-10-06 04:17:16 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.14 2001-10-26 03:28:10 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -212,9 +212,7 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,      ATTRIB (EPTOVX_SIM_MODE_NONE),
-                                                {ATTRIB (EPTOVX_SIM_MODE_VSM),
-                                                ATTRIB (EPTOVX_SIM_MODE_NONE)}
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, ATTRIB (EPTOVX_SIM_MODE_NONE), {ATTRIB (EPTOVX_SIM_MODE_VSM), ATTRIB (EPTOVX_SIM_MODE_NONE)}
    },
    {
       RECORD_NAME ("dc:debug"),
@@ -223,9 +221,7 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_UNSUPPORTED,
       10.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,      ATTRIB (EPTOVX_DEBUG_MODE_NONE),
-                                                {ATTRIB (EPTOVX_DEBUG_MODE_NONE),
-                                                ATTRIB (EPTOVX_DEBUG_MODE_FULL)}
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, ATTRIB (EPTOVX_DEBUG_MODE_NONE), {ATTRIB (EPTOVX_DEBUG_MODE_NONE), ATTRIB (EPTOVX_DEBUG_MODE_FULL)}
    },
    {
       RECORD_NAME ("dc:detSetup"),
@@ -234,7 +230,7 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       120.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, DET_CONTROL_PAR_FILE_PATH,   {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, DET_CONTROL_PAR_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, "hrparams.par", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG, "-1", {"-1", "3"}
    },
@@ -812,9 +808,9 @@ SIR_RECORD   pWfsDbSirList [] =
 /* Determine the number of CAD, CAR and SIR records defined above. */
 
 int      wfsDbNCadRecord      = NELEMENTS (pWfsDbCadList);
-int      wfsDbNGsubRecord   = NELEMENTS (pWfsDbGsubList);
 int      wfsDbNCarRecord      = NELEMENTS (pWfsDbCarList);
 int      wfsDbNSirRecord      = NELEMENTS (pWfsDbSirList);
+int      wfsDbNGsubRecord     = NELEMENTS (pWfsDbGsubList);
 
 char   pWfsDbRecNamePrefix [] = TOP;
 
@@ -831,8 +827,8 @@ BOOL   pWfsDbRecInitialised [N_RECORD_TYPES] = {FALSE, FALSE, FALSE, FALSE};
 char   pppWfsDbRecFieldName [N_RECORD_TYPES][EPICS_MAX_NFIELD_PER_RECORD][EPICS_MAX_BYTES_FIELD_NAME + 2] =
    {
       {""},                                    /* CAD record field names      */
-      {".J", ".VALJ"},                           /* genSub record field names   */
-      {"ID", ".IERR", ".IMSS", ".IVAL"},               /* CAR record field names      */
+      {".J", ".VALJ"},                         /* genSub record field names   */
+      {"ID", ".IERR", ".IMSS", ".IVAL"},       /* CAR record field names      */
       {".VAL"}                                 /* SIR record field names      */
    };
 

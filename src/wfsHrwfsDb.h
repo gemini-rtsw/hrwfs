@@ -12,6 +12,9 @@
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:23  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.8  1998/12/07 11:17:52  cics
  * Removed obsolete and unmanageable COPYRIGHT statement.
  *
@@ -57,37 +60,37 @@
 /* defines */
 
 #ifndef	TOP
-#define	TOP	"hrwfs:"						/* Top level prefix for HRWFS EPICS record names.	*/
-#endif	/* TOP */
+#define TOP "hrwfs:"         /* Top level prefix for HRWFS EPICS record names.*/
+#endif   /* TOP */
 
-	/*
-	 * Declare the data structures to contain EPICS record information.
-	 * The CAD_RECORD, CAR_RECORD and SIR_RECORD data types are declared
-	 * in "dbTypes.h". The structures are initialised in wfsDb.c.
-	 */
+   /*
+    * Declare the data structures to contain EPICS record information.
+    * The CAD_RECORD, CAR_RECORD and SIR_RECORD data types are declared
+    * in "dbTypes.h". The structures are initialised in wfsDb.c.
+    */
 
-IMPORT char			pppWfsDbRecFieldName [N_RECORD_TYPES][EPICS_MAX_NFIELD_PER_RECORD][EPICS_MAX_BYTES_FIELD_NAME + 2];
-												/* Recognised field names for each		*/
-												/* type of record. (The "+2" in the		*/
-												/* string length allows for the "."		*/
-												/* and the null terminator).			*/
+IMPORT char pppWfsDbRecFieldName [N_RECORD_TYPES][EPICS_MAX_NFIELD_PER_RECORD][EPICS_MAX_BYTES_FIELD_NAME + 2];
+                                    /* Recognised field names for each      */
+                                    /* type of record. (The "+2" in the     */
+                                    /* string length allows for the "."     */
+                                    /* and the null terminator).            */
 
-IMPORT CAD_RECORD	pWfsDbCadList [];			/* Array of CAD record structures.		*/
-IMPORT GSUB_RECORD	pWfsDbGsubList [];			/* Array of genSub record structures.	*/
-IMPORT CAR_RECORD	pWfsDbCarList [];			/* Array of CAR record structures.		*/
-IMPORT SIR_RECORD	pWfsDbSirList [];			/* Array of SIR record structures.		*/
+IMPORT CAD_RECORD   pWfsDbCadList [];    /* Array of CAD record structures.   */
+IMPORT GSUB_RECORD  pWfsDbGsubList [];   /* Array of genSub record structures.*/
+IMPORT CAR_RECORD   pWfsDbCarList [];    /* Array of CAR record structures.   */
+IMPORT SIR_RECORD   pWfsDbSirList [];    /* Array of SIR record structures.   */
 
-IMPORT int			wfsDbNCadRecord;			/* Total number of CAD records.			*/
-IMPORT int			wfsDbNGsubRecord;			/* Total number of genSub records.		*/
-IMPORT int			wfsDbNCarRecord;			/* Total number of CAR records.			*/
-IMPORT int			wfsDbNSirRecord;			/* Total number of SIR records.			*/
+IMPORT int          wfsDbNCadRecord;     /* Total number of CAD records.      */
+IMPORT int          wfsDbNGsubRecord;    /* Total number of genSub records.   */
+IMPORT int          wfsDbNCarRecord;     /* Total number of CAR records.      */
+IMPORT int          wfsDbNSirRecord;     /* Total number of SIR records.      */
 
-IMPORT char 		pWfsDbRecNamePrefix [];		/* Record name prefix string.			*/
-IMPORT BOOL			pWfsDbRecInitialised [];	/* Array of flags indicating when		*/
-												/* the set of records of each type		*/
-												/* have been initialised.				*/
-IMPORT BOOL			wfsDbEpicsDbIsLocal;		/* Flag indicating whether the			*/
-												/* EPICS database resides on the		*/
-												/* local processor.						*/
+IMPORT char         pWfsDbRecNamePrefix []; /* Record name prefix string.     */
+IMPORT BOOL         pWfsDbRecInitialised [];/* Array of flags indicating when */
+                                    /* the set of records of each type        */
+                                    /* have been initialised.                 */
+IMPORT BOOL         wfsDbEpicsDbIsLocal;    /* Flag indicating whether the    */
+                                    /* EPICS database resides on the          */
+                                    /* local processor.                       */
 
-#endif	/* ifndef __INCwfsHrwfsDbh */
+#endif   /* ifndef __INCwfsHrwfsDbh */

@@ -1,8 +1,8 @@
 
-include Target.include
-include .applTop/config/CONFIG
+include ../.applTop
+include $(APPLIC_TOP)/config/CONFIG
 
 # The resource.def will be placed in the data data directory
 DATA	= $(wildcard ../resource.def)
 
-include .applTop/config/RULES.Build
+include $(APPLIC_TOP)/config/RULES.Build

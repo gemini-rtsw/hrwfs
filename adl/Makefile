@@ -1,7 +1,8 @@
 include .applTop
+
 -include $(APPLIC_TOP)/config/CONFIG
 
-APPLIC_DIR_TYPE = all
+APPLIC_DIR_TYPE = adl
 
 -include $(APPLIC_TOP)/config/RULES.Dirs
 
@@ -15,4 +16,3 @@ endif
 
 clean ::
 	$(RM) .applTop
-

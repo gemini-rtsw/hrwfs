@@ -1,0 +1,20 @@
+include ../.applTop
+include $(APPLIC_TOP)/config/CONFIG
+
+#ADL2DL = $(EPICS_EXTENSIONS)/bin/$(HOST_ARCH)/adl2dl2-4
+
+# List of display (*.dl) files
+DATA    = colors.dl template.dl $(wildcard ../*.dl) \
+          $(patsubst ../%.adl, %.dl, $(wildcard ../*.adl ../*.bit ../*.tk ../*.sh))
+
+include $(APPLIC_TOP)/config/RULES.Build
+
+# Override system rules for creating dl files
+
+%.dl: ../%.adl
+	$(RM) $@
+	-$(ADL2DL) $< >/dev/null
+
+%.dl: %.adl
+	$(RM) $@
+	-$(ADL2DL) $< >/dev/null

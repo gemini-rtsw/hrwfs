@@ -48,7 +48,7 @@
 #include <memLib.h>
 #include <math.h>
 #include <tickLib.h>
-#include "car.h"
+#include "menuCarstates.h"
 #include "gemTypes.h"
 #include "timeoutLib.h"
 #include "errorLib.h"
@@ -292,7 +292,7 @@ STATUS   seqControl (void)
 
    /* Set the initialisation state to BUSY (if it isn't already set). */
 
-   initState = CAR_BUSY;
+   initState = menuCarstatesBUSY;
    if (epToVxPipeWrite( NULL, (char *) &initState, pInitContext ) == ERROR)
    {
       strncpy (messageLog, "Failed to set initialisation state to BUSY", 
@@ -344,7 +344,7 @@ STATUS   seqControl (void)
 
    /* Set the initialisation state to IDLE. */
 
-   initState = CAR_IDLE;
+   initState = menuCarstatesIDLE;
    if (epToVxPipeWrite( NULL, (char *) &initState, pInitContext ) == ERROR)
    {
       strncpy (messageLog, "Failed to set initialisation state to IDLE",
@@ -435,7 +435,7 @@ STATUS   seqControl (void)
 
          /* Set the initialisation state to BUSY. */
 
-         initState = CAR_BUSY;
+         initState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &initState, pInitContext ) == 
              ERROR)
          {
@@ -463,7 +463,7 @@ STATUS   seqControl (void)
 
          /* Set the initialisation state back to IDLE. */
 
-         initState = CAR_IDLE;
+         initState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &initState, pInitContext ) == 
              ERROR)
          {
@@ -490,7 +490,7 @@ STATUS   seqControl (void)
 
          /* Set the test state to BUSY. */
 
-         testState = CAR_BUSY;
+         testState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &testState, pTestContext ) == 
              ERROR)
          {
@@ -509,7 +509,7 @@ STATUS   seqControl (void)
 
          /* Set the test state back to IDLE. */
 
-         testState = CAR_IDLE;
+         testState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &testState, pTestContext ) == 
              ERROR)
          {
@@ -532,7 +532,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         parkState = CAR_BUSY;
+         parkState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &parkState, pParkContext ) == 
              ERROR)
          {
@@ -553,7 +553,7 @@ STATUS   seqControl (void)
           * Set the park state to IDLE. 
           */
 
-         parkState = CAR_IDLE;
+         parkState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &parkState, pParkContext ) == 
              ERROR)
          {
@@ -576,7 +576,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         datumState = CAR_BUSY;
+         datumState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &datumState, pDatumContext ) == 
              ERROR)
          {
@@ -597,7 +597,7 @@ STATUS   seqControl (void)
           * Set the datum state to IDLE. 
           */
 
-         datumState = CAR_IDLE;
+         datumState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &datumState, pDatumContext ) == 
              ERROR)
          {
@@ -620,7 +620,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         verifyState = CAR_BUSY;
+         verifyState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &verifyState, pVerifyContext ) == 
              ERROR)
          {
@@ -641,7 +641,7 @@ STATUS   seqControl (void)
           * Set the verify state to IDLE. 
           */
 
-         verifyState = CAR_IDLE;
+         verifyState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &verifyState, pVerifyContext ) == 
              ERROR)
          {
@@ -664,7 +664,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         endVerifyState = CAR_BUSY;
+         endVerifyState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &endVerifyState, 
                               pEndVerifyContext ) == ERROR)
          {
@@ -685,7 +685,7 @@ STATUS   seqControl (void)
           * Set the endVerify state to IDLE. 
           */
 
-         endVerifyState = CAR_IDLE;
+         endVerifyState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &endVerifyState, 
                               pEndVerifyContext ) == ERROR)
          {
@@ -708,7 +708,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         guideState = CAR_BUSY;
+         guideState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &guideState, pGuideContext ) == 
              ERROR)
          {
@@ -729,7 +729,7 @@ STATUS   seqControl (void)
           * Set the guide state to IDLE. 
           */
 
-         guideState = CAR_IDLE;
+         guideState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &guideState, pGuideContext ) == 
              ERROR)
          {
@@ -752,7 +752,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         endGuideState = CAR_BUSY;
+         endGuideState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &endGuideState, 
                               pEndGuideContext ) == ERROR)
          {
@@ -773,7 +773,7 @@ STATUS   seqControl (void)
           * Set the endGuide state to IDLE. 
           */
 
-         endGuideState = CAR_IDLE;
+         endGuideState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &endGuideState, 
                               pEndGuideContext ) == ERROR)
          {
@@ -796,7 +796,7 @@ STATUS   seqControl (void)
          printf ( "seqControl: %s\n" , messageLog ) ;
          epToVxPipeWrite (NULL, messageLog, pHistoryLogContext) ;
 
-         endObserveState = CAR_BUSY;
+         endObserveState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &endObserveState, 
                               pEndObserveContext ) == ERROR)
          {
@@ -817,7 +817,7 @@ STATUS   seqControl (void)
           * Set the endObserve state to IDLE. 
           */
 
-         endObserveState = CAR_IDLE;
+         endObserveState = menuCarstatesIDLE;
          if (epToVxPipeWrite( NULL, (char *) &endObserveState, 
                               pEndObserveContext ) == ERROR)
          {
@@ -833,7 +833,7 @@ STATUS   seqControl (void)
       {
          /* Set the reboot state to BUSY. */
 
-         rebootState = CAR_BUSY;
+         rebootState = menuCarstatesBUSY;
          if (epToVxPipeWrite( NULL, (char *) &rebootState, pRebootContext ) == 
              ERROR)
          {

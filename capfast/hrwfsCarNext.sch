@@ -1,7 +1,9 @@
 [schematic2]
-uniq 198
+uniq 204
 [tools]
 [detail]
+w 420 843 100 2 n#203 hwin.hwin#202.in 416 848 416 848 egenSub.combDatum.INPC
+w 420 2331 100 2 n#201 hwin.hwin#200.in 416 2336 416 2336 egenSub.combPark.INPC
 w 866 2187 100 0 n#197 egenSub.combPark.FLNK 704 1760 800 1760 800 2176 992 2176 carID.carID#186.SLNK
 w 866 2283 100 0 n#196 egenSub.combPark.OUTB 704 2400 800 2400 800 2272 992 2272 carID.carID#186.ICID
 w 1282 2379 100 0 n#194 junction 960 2304 960 2368 1664 2368 1664 2144 2048 2144 egenSub.combSystemNext.INPA
@@ -10,16 +12,14 @@ w 1266 667 100 0 n#137 carID.carID#170.FLNK 1184 656 1408 656 1408 2176 1184 217
 w 1698 1483 100 0 n#137 junction 1408 1472 2048 1472 egenSub.combSystemNext.SLNK
 w 1378 2283 100 0 n#195 carID.carID#186.CLID 1184 2272 1632 2272 1632 2080 2048 2080 egenSub.combSystemNext.INPB
 w 420 2267 100 2 n#193 hwin.hwin#192.in 416 2272 416 2272 egenSub.combPark.INPD
-w -222 1675 100 0 n#191 ewait.parkWait.VAL -544 1664 160 1664 160 2336 416 2336 egenSub.combPark.INPC
-w 242 1803 100 0 n#190 carID.carID#21.FLNK -96 2176 128 2176 128 1792 416 1792 egenSub.combPark.SLNK
-w -238 1387 100 0 n#190 ewait.parkWait.FLNK -544 1376 128 1376 128 1792 junction
+w 34 2187 100 0 n#190 carID.carID#21.FLNK -96 2176 224 2176 224 1792 416 1792 egenSub.combPark.SLNK
+w 66 1867 100 0 n#190 ecalcouts.parkWait.FLNK -32 1856 224 1856 junction
 w -382 2315 100 0 n#182 elongouts.parkPut.OUT -416 2304 -288 2304 carID.carID#21.IVAL
 w -142 2379 100 0 n#182 junction -320 2304 -320 2368 96 2368 96 2464 416 2464 egenSub.combPark.INPA
 w 242 2411 100 0 n#189 carID.carID#21.CLID -96 2272 128 2272 128 2400 416 2400 egenSub.combPark.INPB
 w 1410 763 100 0 n#188 carID.carID#170.CLID 1184 752 1696 752 1696 1952 2048 1952 egenSub.combSystemNext.INPD
-w -142 219 100 0 n#164 ewait.datumWait.FLNK -544 -144 -384 -144 -384 208 160 208 160 304 junction
+w -142 219 100 0 n#164 ecalcouts.datumWait.FLNK -544 -144 -384 -144 -384 208 160 208 160 304 junction
 w 162 315 100 0 n#164 carID.carID#114.FLNK -96 656 -32 656 -32 304 416 304 egenSub.combDatum.SLNK
-w -238 155 100 0 n#178 ewait.datumWait.VAL -544 144 128 144 128 848 416 848 egenSub.combDatum.INPC
 w 1202 987 100 0 n#171 junction 800 976 1664 976 1664 2016 2048 2016 egenSub.combSystemNext.INPC
 w 866 795 100 0 n#171 egenSub.combDatum.OUTA 704 976 800 976 800 784 992 784 carID.carID#170.IVAL
 w 866 667 100 0 n#173 egenSub.combDatum.FLNK 704 272 800 272 800 656 992 656 carID.carID#170.SLNK
@@ -39,30 +39,36 @@ w 2664 2147 100 0 OVAL egenSub.combSystemNext.OUTA 2336 2144 3040 2144 outhier.O
 s -256 2560 500 0 Wavefront Sensing - System CAR Records
 s 2000 -352 500 512 hrwfsCarNext.sch
 [cell use]
+use hwin 224 807 100 0 hwin#202
+xform 0 320 848
+p 227 840 100 0 -1 val(in):$(agtop)cc:datumC.VAL
+use hwin 224 2295 100 0 hwin#200
+xform 0 320 2336
+p 227 2328 100 0 -1 val(in):$(agtop)cc:parkC.VAL
+use ecalcouts -352 1671 100 0 parkWait
+xform 0 -192 1792
+p -280 1704 100 0 -1 CALC:A
+p -288 1600 100 0 1 OOPT:On Change
+p -288 1568 100 0 1 PV:$(top)
+p -288 1632 100 0 1 SCAN:Passive
+p -816 1856 100 0 1 def(INPA):$(agtop)cc:parkC.VAL
+p -288 1672 100 0 0 name:$(top)$(I)
+p -400 1864 75 0 -1 pproc(INPA):CPP
+use ecalcouts -864 -329 100 0 datumWait
+xform 0 -704 -208
+p -792 -296 100 0 -1 CALC:A
+p -800 -352 100 0 1 OOPT:On Change
+p -800 -416 100 0 1 PV:$(top)
+p -800 -384 100 0 1 SCAN:Passive
+p -1296 -144 100 0 1 def(INPA):$(agtop)cc:datumC.VAL
+p -800 -328 100 0 0 name:$(top)$(I)
+p -912 -136 75 0 -1 pproc(INPA):CPP
 use hwin 224 743 100 0 hwin#168
 xform 0 320 784
 p 227 776 100 0 -1 val(in):$(agtop)cc:datumC.CLID
 use hwin 224 2231 100 0 hwin#192
 xform 0 320 2272
 p 227 2264 100 0 -1 val(in):$(agtop)cc:parkC.CLID
-use ewait -1248 -233 100 0 datumWait
-xform 0 -896 96
-p -925 344 100 0 1 CALC:A
-p -1152 304 100 0 1 DESC:Monitor component controller datumC
-p -864 144 100 0 1 INAP:Yes
-p -1120 -80 100 0 1 OOPT:On Change
-p -864 16 100 0 1 PV:$(top)
-p -1120 238 100 0 1 SCAN:I/O Intr
-p -1120 -176 100 0 1 def(INAN):$(agtop)cc:datumC.VAL
-use ewait -1248 1287 100 0 parkWait
-xform 0 -896 1616
-p -925 1864 100 0 1 CALC:A
-p -1120 1824 100 0 1 DESC:Monitor component controller parkC
-p -864 1664 100 0 1 INAP:Yes
-p -1120 1440 100 0 1 OOPT:On Change
-p -864 1536 100 0 1 PV:$(top)
-p -1120 1758 100 0 1 SCAN:I/O Intr
-p -1120 1344 100 0 1 def(INAN):$(agtop)cc:parkC.VAL
 use carID 992 535 100 0 carID#170
 xform 0 1088 688
 p 992 528 100 0 1 set1:car Datum
@@ -178,7 +184,7 @@ p 2128 -416 200 0 1 checked:
 p 2624 -432 200 0 -1 date:2000/01/19
 p 2112 2672 200 0 -1 id:hrwfsCarNext.sch
 p 2640 -80 200 0 -1 project:Gemini Wavefront Sensing System
-p 2128 -160 200 0 -1 revision:$Revision: 1.1 $
+p 2128 -160 200 0 -1 revision:$Revision: 1.2 $
 p 2640 -208 200 0 -1 title:System CAR Records
 use notes 2880 151 100 0 notes#13
 xform 0 3136 336

@@ -1,4 +1,4 @@
-# $Id: startupMK.vws,v 1.3 2001-06-13 00:39:12 cboyer Exp $
+# $Id: startupMK.vws,v 1.4 2001-10-26 03:28:11 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -23,30 +23,29 @@ pwd
 
 hostAdd ("archie","10.2.4.56")
 
-# Load EPICS core and record stuff
-ld < $(epics)/base/bin/$(arch)/iocCore
-ld < $(epics)/base/bin/$(arch)/drvSup
-ld < $(epics)/base/bin/$(arch)/recSup
-ld < $(epics)/base/bin/$(arch)/devSup
-ld < $(epics)/extensions/bin/$(arch)/pvload
+# Load EPICS core, sequencer and pvload 
+ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore
+ld < /gemini/external/GEM7/base/bin/$(arch)/seq
+ld < /gemini/external/GEM7/extensions/bin/$(arch)/pvload
 
-# If using state programs, load the sequencer
-ld < $(epics)/base/bin/$(arch)/seq
+# Records, device and driver support for a Gemini base system
+ld < $(version)/bin/$(arch)/gemini$(dbname).Support
 
 # Load the Gemini astrometric and time libraries
-ld < /gemini/slalib/bin/$(arch)/slalib
-ld < /gemini/timelib/bin/$(arch)/timelib
-ld < /gemini/astlib/bin/$(arch)/astlib
-ld < /gemini/cfitsio/cfitsio/bin/$(arch)/cFitsIo
+ld < /gemini/epics3.13.4/slalib/slalib/bin/$(arch)/slalib
+ld < /gemini/epics3.13.4/timelib/timelib/bin/$(arch)/timelib
+ld < /gemini/epics3.13.4/astlib/astlib/bin/$(arch)/astlib
+ld < /gemini/epics3.13.4/cfitsio/cfitsio/bin/$(arch)/cfitsiolib
 
-ld < /gemini/timelib/bin/$(arch)/timeSeq
+# Load sequences here
+ld < /gemini/epics3.13.4/timelib/timelib/bin/$(arch)/timeSeq
 
 # Load the Gemini data handling libraries
-ld < /gemini/dhs/external/lib/$(arch)/libers.o
-ld < /gemini/dhs/external/lib/$(arch)/libimp.o
-ld < /gemini/dhs/external/lib/$(arch)/libsds.o
-ld < /gemini/dhs/lib/$(arch)/libgen.a
-ld < /gemini/dhs/lib/$(arch)/libdhs.a
+ld < /gemini/dhs/external/lib/mv2700/libers.o
+ld < /gemini/dhs/external/lib/mv2700/libimp.o
+ld < /gemini/dhs/external/lib/mv2700/libsds.o
+ld < /gemini/dhs/lib/mv2700/libgen.a
+ld < /gemini/dhs/lib/mv2700/libdhs.a
 
 # Load the Gemini A&G wavefront processing software
 ld < $(version)/bin/$(arch)/wfsHrwfsDb
@@ -59,20 +58,19 @@ ld < $(version)/bin/$(arch)/wfsResourceMonitor
 ld < $(version)/bin/$(arch)/simpleLogHrwfs
 ld < $(version)/bin/$(arch)/fpscr
 
-# Load sequences here
-# ld < $(version)/bin/$(arch)/testseq.o
-
 #Turn off floating point underflow for each tasks
 taskCreateHookAdd( usrFppCreateHook )
 
-# Initialise the Gemini time system (1=master, 1=simulate, intPerSecond, intperTick, timeOffset)
+# Initialise the Gemini time system 
+# (1=master, 1=simulate, intPerSecond, intperTick, timeOffset)
 timeClockInit (0, 0, 60, 1, 0)
 
-# Configure the Timestamp system (1=Master IOC, synch rate, clock rate, master, port, timeout, type)
+# Configure the Timestamp system 
+# (1=Master IOC, synch rate, clock rate, master, port, timeout, type)
 TSconfigure 1, 0, 0, 0, 0, 0, 0
 
 # Load one or more ASCII databases here
-dbLoad "$(version)/data/$(dctsdr).dctsdr"
+dbLoadDatabase "$(version)/dbd/gemini$(dbname).dbd"
 
 dbLoadRecords "$(version)/data/hrwfsTop.db"
 dbLoadRecords "$(version)/data/hrwfsSadTop.db"
@@ -109,8 +107,10 @@ epToVxCaInitRecords ()
 # see a copy of them straight away.
 #errorLogConsoleEnable( 1 )
 
-# Initialise the DHS for the detector controllers (clientName, numConnect, hostName, serverName)
-# (Uncomment this line to activate the DHS. Comment it to prevent the DHS from being used).
+# Initialise the DHS for the detector controllers 
+# (clientName, numConnect, hostName, serverName)
+# (Uncomment this line to activate the DHS. Comment it to prevent the DHS 
+# from being used).
 
 detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
 

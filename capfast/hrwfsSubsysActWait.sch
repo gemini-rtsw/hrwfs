@@ -1,5 +1,5 @@
 [schematic2]
-uniq 85
+uniq 86
 [tools]
 [detail]
 w 2208 1179 100 0 n#84 ecars.CommSentC.VAL 2128 1168 2336 1168 outhier.VAL1.p
@@ -7,7 +7,7 @@ w 2208 1115 100 0 n#83 ecars.CommSentC.OMSS 2128 1104 2336 1104 outhier.OMSS1.p
 w 2208 955 100 0 n#82 ecars.CommSentC.FLNK 2128 944 2336 944 outhier.FLNK.p
 w 688 1778 100 0 n#76 estringouts.estringouts#14.FLNK 1472 1968 1568 1968 1568 1776 -144 1776 -144 1184 32 1184 ecalcs.ActCalc.SLNK
 w 376 1746 100 0 n#36 junction 912 2208 912 1744 -112 1744 -112 1568 32 1568 ecalcs.ActCalc.INPA
-w 816 2210 100 0 n#36 ewait.testWait.VAL 768 2208 912 2208 912 2256 1024 2256 eaos.eaos#5.DOL
+w 720 2219 100 0 n#36 ecalcouts.ecalcouts#85.VAL 576 2208 912 2208 912 2256 1024 2256 eaos.eaos#5.DOL
 w 1088 642 100 0 n#75 hrwfsTimeOut.hrwfsTimeOut#80.EXPIRED 768 608 992 608 992 640 1232 640 estringouts.ActTout.SLNK
 w 888 770 100 0 n#74 eaos.ActIdle.FLNK 1472 944 1536 944 1536 768 288 768 288 416 320 416 hrwfsTimeOut.hrwfsTimeOut#80.STOP
 w 784 1378 100 0 n#73 efanouts.ActFan.LNK1 672 1376 944 1376 944 1184 1216 1184 estringouts.ActNull.SLNK
@@ -20,7 +20,7 @@ w 1650 888 100 0 n#44 estringouts.ActTout.OUT 1488 624 1648 624 1648 1104 juncti
 w 1536 1170 100 0 n#44 estringouts.ActNull.OUT 1472 1168 1648 1168 1648 1104 1808 1104 ecars.CommSentC.IMSS
 w 1136 1442 100 0 n#70 hwin.hwin#65.in 1104 1440 1216 1440 eaos.ResetIdle.DOL
 w 1336 1554 100 0 n#69 estringouts.ResetNull.FLNK 1472 1664 1568 1664 1568 1552 1152 1552 1152 1408 1216 1408 eaos.ResetIdle.SLNK
-w 946 2096 100 0 n#66 ewait.testWait.FLNK 768 1920 944 1920 944 2224 1024 2224 eaos.eaos#5.SLNK
+w 736 2283 100 0 n#66 ecalcouts.ecalcouts#85.FLNK 576 2272 944 2272 944 2224 1024 2224 eaos.eaos#5.SLNK
 w 1320 514 100 0 n#61 estringouts.ActTout.FLNK 1488 656 1536 656 1536 512 1152 512 1152 368 1232 368 eaos.ActErr.SLNK
 w 136 546 100 0 n#59 eaos.StartTimer.FLNK 80 544 240 544 240 608 320 608 hrwfsTimeOut.hrwfsTimeOut#80.START
 w 1160 402 100 0 n#58 hwin.hwin#57.in 1136 400 1232 400 eaos.ActErr.DOL
@@ -35,14 +35,13 @@ w 1552 1938 100 0 n#29 estringouts.estringouts#14.OUT 1472 1936 1680 1936 1680 2
 w 1480 2194 100 0 n#28 eaos.eaos#5.OUT 1280 2192 1728 2192 1728 2160 1808 2160 ecars.ecars#24.IVAL
 w 1112 1986 100 0 n#20 inhier.c#21.P 1056 1984 1216 1984 estringouts.estringouts#14.DOL
 w 1208 2082 100 0 n#15 eaos.eaos#5.FLNK 1280 2256 1440 2256 1440 2080 1024 2080 1024 1952 1216 1952 estringouts.estringouts#14.SLNK
-w -136 2306 100 0 n#11 inhier.c#10.P -288 2304 64 2304 ewait.testWait.INAN
 s 2048 288 100 0 C Mayer 22/06/01
 s 2272 320 100 0 the TCS.
 s 2272 352 100 0 Derived from the schematics used by
 s 1824 1600 100 0 before any new commands are issued.
 s 1824 1632 100 0 is issued. This ensures CommSentC always gets set to IDLE 
 s 1824 1664 100 0 The reset line will be trigerred each time a new configuration
-s 2032 2592 100 0 $Id: hrwfsSubsysActWait.sch,v 1.1 2001-06-24 18:54:37 gemvx Exp $
+s 2032 2592 100 0 $Id: hrwfsSubsysActWait.sch,v 1.2 2001-10-26 03:28:00 cboyer Exp $
 s 2640 272 100 0 1
 s 2528 272 100 0 1
 s 2288 400 100 0 HRWFS/AC
@@ -52,6 +51,14 @@ s 1840 2448 100 0 subsystem activeC CAR record transitions to BUSY.
 s 1840 2416 100 0 Note that the internal HRWFS ActiveC record is set BUSY
 s 1840 2384 100 0 first so that overall applyC remains BUSY.
 [cell use]
+use ecalcouts 256 2087 100 0 ecalcouts#85
+xform 0 416 2208
+p 328 2120 100 0 -1 CALC:A
+p 320 2048 100 0 1 OOPT:On Change
+p 320 2000 100 0 1 SCAN:Passive
+p -176 2272 100 0 1 def(INPA):$(subsys)activeC.VAL
+p 320 2088 100 0 -1 name:$(top)$(prefix)ActWait
+p 208 2280 75 0 -1 pproc(INPA):CPP
 use outhier 2304 903 100 0 FLNK
 xform 0 2320 944
 use outhier 2304 1063 100 0 OMSS1
@@ -113,8 +120,6 @@ use inhier 1016 1608 100 0 RESET
 xform 0 1008 1648
 use inhier 1064 1944 100 0 c#21
 xform 0 1056 1984
-use inhier -280 2264 100 0 c#10
-xform 0 -288 2304
 use hwin 936 1400 100 0 hwin#65
 xform 0 1008 1440
 p 915 1432 100 0 -1 val(in):$(CAR_IDLE)
@@ -176,15 +181,4 @@ xform 0 1968 2048
 p 1928 1872 100 1024 -1 name:$(top)$(prefix)ActiveC
 use bc200tr -544 120 -100 0 frame
 xform 0 1136 1424
-use ewait 88 1832 -100 0 testWait
-xform 0 416 2160
-p 336 2414 100 0 1 CALC:A
-p 737 1285 100 0 0 DTYP:Soft Channel
-p 448 2208 100 0 1 INAP:Yes
-p 448 2176 100 0 0 INBP:No
-p 448 2144 100 0 0 INCP:No
-p 192 1984 100 0 1 OOPT:On Change
-p 192 2302 100 0 1 SCAN:I/O Intr
-p -240 2318 100 0 -1 def(INAN):$(subsys)activeC.VAL
-p 284 1808 100 1024 1 name:$(top)$(prefix)ActWait
 [comments]

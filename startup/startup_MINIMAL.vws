@@ -1,10 +1,10 @@
-# $Id: startup_MINIMAL.vws,v 1.6 2001-02-20 20:41:50 cboyer Exp $
+# $Id: startup_MINIMAL.vws,v 1.7 2001-10-26 03:28:11 cboyer Exp $
 #
 # Minimal VxWorks startup script for HRWFS
 #
 
 # Execute Gemini VxWorks script to ensure all users are recognised.
-< /gemini/external/vxWorks/vxUsers
+< /gemini/external/vxWorks/tornado2.0/vxUsers
 
 # Set the prompt
 shellPromptSet "Minimal startup hrwfs> "
