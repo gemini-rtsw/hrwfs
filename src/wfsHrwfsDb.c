@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.15 2001-12-21 02:42:11 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.16 2002-01-11 03:50:22 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   09 Jan 2001 - cb add detPowerOn
  *   05 Oct 2001 - cb setDhsInfo: dhsOutOptions = (0,3)
  *   14 Jun 2001 - cb detDhsReconnect modify timeout to be NO_TIMEOUT
  *   01 Jun 2001 - cb add overscan region: detGeometry and detFrameSize are
@@ -441,6 +442,14 @@ CAD_RECORD pWfsDbCadList [] =
       40.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE,    "-20",         {"-63", "25"},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,      "0x80",         {NO_ATTRIBUTE_LIMITS}
+   },
+   {
+      RECORD_NAME ("dc:detPowerOn"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_POWER_ON,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0
    },
    {
       RECORD_NAME ("dc:detFrameSize"),

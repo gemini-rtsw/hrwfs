@@ -169,3 +169,13 @@ V2-0 20 Dec 2001 - CB
   - detDhsInit is now started by detControl.c
   - Minor changes for seqexec (do not init OBSTYPE, telescope and OBSERVAT)
   - Replace some ifdef DEBUG by MESSAGE_LOG into detControl.c
+
+V2-1 10 Jan 2001 - CB
+---------------------
+  - add detPowerOn
+  - hrwfs_dm.sh uses now dm2-4 command
+  - Minor changes for seqexec (do not init EQUINOX, EPOCH and FRAME)
+  - detWriteFitsUint16: strings are now left justified following Claudia's 
+    request
+
+dev equivalent to V2-1

@@ -1,7 +1,11 @@
 [schematic2]
-uniq 157
+uniq 163
 [tools]
 [detail]
+w 946 -661 100 0 n#162 ecad4.detPowerOn.MESS 3104 1952 3296 1952 3296 -64 2528 -64 2528 -672 -576 -672 -576 896 -272 896 eapply.apply6.INMD
+w 946 -693 100 0 n#161 ecad4.detPowerOn.VAL 3104 1984 3328 1984 3328 -96 2560 -96 2560 -704 -608 -704 -608 928 -272 928 eapply.apply6.INPD
+w 1354 907 100 0 n#159 eapply.apply6.OCLD 112 896 2656 896 2656 1952 2784 1952 ecad4.detPowerOn.ICID
+w 1338 939 100 0 n#158 eapply.apply6.OUTD 112 928 2624 928 2624 1984 2784 1984 ecad4.detPowerOn.DIR
 w 218 1195 100 0 n#156 eapply.apply6.MESS 112 1184 384 1184 384 1136 480 1136 outhier.MESS.p
 w 266 1227 100 0 n#155 eapply.apply6.VAL 112 1216 480 1216 outhier.VAL.p
 w -502 1195 100 0 n#154 inhier.ICID.P -816 1072 -672 1072 -672 1184 -272 1184 eapply.apply6.CLID
@@ -30,47 +34,29 @@ w 570 1035 100 0 n#130 eapply.apply6.OCLB 112 1024 1088 1024 1088 1952 1216 1952
 w 554 1067 100 0 n#129 eapply.apply6.OUTB 112 1056 1056 1056 1056 1984 1216 1984 ecad4.detSave.DIR
 w 186 1099 100 0 n#128 eapply.apply6.OCLA 112 1088 320 1088 320 1952 480 1952 ecad4.detSetup.ICID
 w 354 1995 100 0 n#127 eapply.apply6.OUTA 112 1120 288 1120 288 1984 480 1984 ecad4.detSetup.DIR
-s 4048 -288 500 512 hrwfsCommands3.sch
 s 336 2240 500 0 Wavefront Sensing - WFS CAD Records
+s 4048 -288 500 512 hrwfsCommands3.sch
 [cell use]
-use outhier 448 1175 100 0 VAL
-xform 0 464 1216
+use ecad4 2784 1287 100 0 detPowerOn
+xform 0 2944 1664
+p 2848 1248 100 0 1 DESC:POWER ON UTL BOARD
+p 2896 1792 100 0 0 FTVA:STRING
+p 2896 1728 100 0 0 FTVB:STRING
+p 2896 1664 100 0 0 FTVC:STRING
+p 2896 1600 100 0 0 FTVD:STRING
+p 2848 1216 100 0 1 INAM:epToVxCadInit
+p 2848 1152 100 0 1 PV:$(top)$(wfs)
+p 2848 1184 100 0 1 SNAM:epToVxCadExecute
 use outhier 448 1095 100 0 MESS
 xform 0 464 1136
-use inhier -832 1175 100 0 DIR
-xform 0 -816 1216
+use outhier 448 1175 100 0 VAL
+xform 0 464 1216
 use inhier -832 1031 100 0 ICID
 xform 0 -816 1072
+use inhier -832 1175 100 0 DIR
+xform 0 -816 1216
 use eapply -272 583 100 0 apply6
 xform 0 -80 944
-use ecad8 2016 -313 100 0 detFrameSize
-xform 0 2176 192
-p 2080 -352 100 0 1 DESC:Define frame size
-p 2128 448 100 0 1 FTVA:LONG
-p 2128 384 100 0 1 FTVB:LONG
-p 2128 320 100 0 1 FTVC:LONG
-p 2128 256 100 0 1 FTVD:LONG
-p 2128 192 100 0 1 FTVE:LONG
-p 2128 128 100 0 1 FTVF:LONG
-p 2128 64 100 0 1 FTVG:LONG
-p 2128 0 100 0 0 FTVH:STRING
-p 2080 -384 100 0 1 INAM:epToVxCadInit
-p 2080 -416 100 0 1 SNAM:epToVxCadExecute
-p 2128 -320 100 1024 0 name:$(top)$(wfs)$(I)
-use ecad8 1216 -313 100 0 detPrim
-xform 0 1376 192
-p 1280 -352 100 0 1 DESC:Execute SDSU primitive command
-p 1328 448 100 0 1 FTVA:STRING
-p 1328 384 100 0 1 FTVB:LONG
-p 1328 320 100 0 1 FTVC:LONG
-p 1328 256 100 0 1 FTVD:LONG
-p 1328 192 100 0 1 FTVE:LONG
-p 1328 128 100 0 1 FTVF:LONG
-p 1328 64 100 0 1 FTVG:LONG
-p 1328 0 100 0 1 FTVH:LONG
-p 1280 -384 100 0 1 INAM:epToVxCadInit
-p 1280 -448 100 0 1 PV:$(top)$(wfs)
-p 1280 -416 100 0 1 SNAM:epToVxCadExecute
 use ecad8 480 -313 100 0 detObserve
 xform 0 640 192
 p 544 -352 100 0 1 DESC:Make observation
@@ -85,26 +71,34 @@ p 592 224 100 0 1 FTVH:STRING
 p 544 -384 100 0 1 INAM:epToVxCadInit
 p 544 -448 100 0 1 PV:$(top)$(wfs)
 p 544 -416 100 0 1 SNAM:epToVxCadExecute
-use ecad4 2016 1287 100 0 detOffset
-xform 0 2176 1664
-p 2080 1248 100 0 1 DESC:Set SDSU ADC offsets
-p 2128 1792 100 0 1 FTVA:LONG
-p 2128 1728 100 0 1 FTVB:LONG
-p 2128 1664 100 0 0 FTVC:STRING
-p 2128 1600 100 0 0 FTVD:STRING
-p 2080 1216 100 0 1 INAM:epToVxCadInit
-p 2080 1152 100 0 1 PV:$(top)$(wfs)
-p 2080 1184 100 0 1 SNAM:epToVxCadExecute
-use ecad4 1216 1287 100 0 detSave
-xform 0 1376 1664
-p 1280 1248 100 0 1 DESC:Save detector controller parameters
-p 1328 1792 100 0 1 FTVA:STRING
-p 1328 1728 100 0 1 FTVB:STRING
-p 1328 1664 100 0 1 FTVC:LONG
-p 1328 1600 100 0 0 FTVD:STRING
-p 1280 1216 100 0 1 INAM:epToVxCadInit
-p 1280 1152 100 0 1 PV:$(top)$(wfs)
-p 1280 1184 100 0 1 SNAM:epToVxCadExecute
+use ecad8 1216 -313 100 0 detPrim
+xform 0 1376 192
+p 1280 -352 100 0 1 DESC:Execute SDSU primitive command
+p 1328 448 100 0 1 FTVA:STRING
+p 1328 384 100 0 1 FTVB:LONG
+p 1328 320 100 0 1 FTVC:LONG
+p 1328 256 100 0 1 FTVD:LONG
+p 1328 192 100 0 1 FTVE:LONG
+p 1328 128 100 0 1 FTVF:LONG
+p 1328 64 100 0 1 FTVG:LONG
+p 1328 0 100 0 1 FTVH:LONG
+p 1280 -384 100 0 1 INAM:epToVxCadInit
+p 1280 -448 100 0 1 PV:$(top)$(wfs)
+p 1280 -416 100 0 1 SNAM:epToVxCadExecute
+use ecad8 2016 -313 100 0 detFrameSize
+xform 0 2176 192
+p 2080 -352 100 0 1 DESC:Define frame size
+p 2128 448 100 0 1 FTVA:LONG
+p 2128 384 100 0 1 FTVB:LONG
+p 2128 320 100 0 1 FTVC:LONG
+p 2128 256 100 0 1 FTVD:LONG
+p 2128 192 100 0 1 FTVE:LONG
+p 2128 128 100 0 1 FTVF:LONG
+p 2128 64 100 0 1 FTVG:LONG
+p 2128 0 100 0 0 FTVH:STRING
+p 2080 -384 100 0 1 INAM:epToVxCadInit
+p 2080 -416 100 0 1 SNAM:epToVxCadExecute
+p 2128 -320 100 1024 0 name:$(top)$(wfs)$(I)
 use ecad4 480 1287 100 0 detSetup
 xform 0 640 1664
 p 544 1248 100 0 1 DESC:Download detector control parameters
@@ -115,14 +109,34 @@ p 592 1600 100 0 0 FTVD:STRING
 p 544 1216 100 0 1 INAM:epToVxCadInit
 p 544 1184 100 0 1 SNAM:epToVxCadExecute
 p 592 1280 100 1024 0 name:$(top)$(wfs)$(I)
+use ecad4 1216 1287 100 0 detSave
+xform 0 1376 1664
+p 1280 1248 100 0 1 DESC:Save detector controller parameters
+p 1328 1792 100 0 1 FTVA:STRING
+p 1328 1728 100 0 1 FTVB:STRING
+p 1328 1664 100 0 1 FTVC:LONG
+p 1328 1600 100 0 0 FTVD:STRING
+p 1280 1216 100 0 1 INAM:epToVxCadInit
+p 1280 1152 100 0 1 PV:$(top)$(wfs)
+p 1280 1184 100 0 1 SNAM:epToVxCadExecute
+use ecad4 2016 1287 100 0 detOffset
+xform 0 2176 1664
+p 2080 1248 100 0 1 DESC:Set SDSU ADC offsets
+p 2128 1792 100 0 1 FTVA:LONG
+p 2128 1728 100 0 1 FTVB:LONG
+p 2128 1664 100 0 0 FTVC:STRING
+p 2128 1600 100 0 0 FTVD:STRING
+p 2080 1216 100 0 1 INAM:epToVxCadInit
+p 2080 1152 100 0 1 PV:$(top)$(wfs)
+p 2080 1184 100 0 1 SNAM:epToVxCadExecute
 use bd200tr -1024 -920 -100 0 frame
 xform 0 1616 784
 p 2608 -688 200 0 1 author:S.M.Beard
 p 3120 -720 100 0 0 border:D
 p 2608 -768 200 0 1 checked:B.Goodrich
-p 3120 -784 200 0 -1 date:$Date: 2001-06-24 18:45:38 $
-p 2592 2304 200 0 -1 id:$Id: hrwfsCommands3.sch,v 1.2 2001-06-24 18:45:38 gemvx Exp $
+p 3120 -784 200 0 -1 date:$Date: 2002-01-11 03:50:21 $
+p 2592 2304 200 0 -1 id:$Id: hrwfsCommands3.sch,v 1.3 2002-01-11 03:50:21 cboyer Exp $
 p 3120 -432 200 0 -1 project:Gemini Wavefront Sensing System
-p 2592 -528 200 0 -1 revision:$Revision: 1.2 $
+p 2592 -528 200 0 -1 revision:$Revision: 1.3 $
 p 3120 -560 200 0 -1 title:Wavefront Sensor CAD Records
 [comments]

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.23 2001-12-21 02:42:11 cboyer Exp $"};
+   "$Id: detControl.c,v 1.24 2002-01-11 03:50:21 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   10 Jan 2001 - cb For observe comment do not init EPOCH, EQUINOX, FRAME if
+ *                 dhsOutOptions = 3 (sequencer)
+ *                 detWriteFitsUint16: strings are now left-justified
+ *   09 Jan 2001 - cb Add detPowerOn
  *   20 Dec 2001 - cb reject detObserveStart and observeStart if dhs output 
  *                 option selected and dhs NOT_CONNECTED
  *                 detDhsInit started from detControl now
@@ -254,6 +258,8 @@ LOCAL uint32   detFrameSize (const char * pWfsName, const char * pRecordPrefix,
 LOCAL uint32   detPrimitive (const char * pWfsName, const char * pRecordPrefix,
                              CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                              SDSU_ID sdsuId, OBS_ID obsId); 
+LOCAL uint32   detPowerOn (CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
+                           SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detMode (const char * pWfsName, const char * pRecordPrefix, 
                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                         SDSU_ID sdsuId, OBS_ID obsId);
@@ -1431,6 +1437,15 @@ STATUS   detControl
             errorNumber = 
             detPrimitive (pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
                           sdsuId, obsId);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_POWER_ON)
+         {
+
+            /* Execute SDSU POWER ON primitive command. */
+
+            errorNumber =
+            detPowerOn (cadCmdContext, commandNumber, sdsuId, obsId);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_MODE)
@@ -4083,20 +4098,29 @@ uint32 observeStart
                CHECK_DHS (dhsErrno);
             }
 
-            dhsBdAttribAdd (obsId->dhsDataset, "EQUINOX", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->equinox, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            /* If sequencer (dhsOutOptions = 3) do not init equinox and epoch */
+            if ( obsId->dhsOutOptions != 3 )
+            {
+               dhsBdAttribAdd (obsId->dhsDataset, "EQUINOX", DHS_DT_DOUBLE, 0, 
+                               NULL, obsId->equinox, &dhsErrno);
+               CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataset, "EPOCH", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->epoch, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "EPOCH", DHS_DT_DOUBLE, 0, 
+                               NULL, obsId->epoch, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+            }
 
             dhsBdAttribAdd (obsId->dhsDataset, "MJD-OBS", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING, 
-                            0, NULL, obsId->frame, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+
+            /* If sequencer (dhsOutOptions = 3) do not init frame */
+            if ( obsId->dhsOutOptions != 3 )
+            {
+               dhsBdAttribAdd (obsId->dhsDataset, "FRAME", DHS_DT_STRING, 
+                               0, NULL, obsId->frame, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+            }
 
             /* ADD MORE DATA FRAME HEADER ITEMS HERE. */
 
@@ -10652,6 +10676,90 @@ uint32 detPrimitive
    return (errorNumber);
 }
 
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detPowerOn
+ *
+ *   INVOCATION:
+ *   detPowerOn (cadCmdContext, commandNumber, sdsuId, obsId) 
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) cadCmdContext        (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber        (int)             Command number
+ *   (>) sdsuId               (SDSU_ID)         Current SDSU context structure
+ *   (>) obsId                (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Execute detPowerOn command
+ *
+ *   DESCRIPTION:
+ *   This function executes POWER ON command for the Bob Leach controller
+ *
+ *   EXTERNAL VARIABLES:
+ *   NONE
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+uint32 detPowerOn
+   (
+   CAD_CMD_CONTEXT cadCmdContext,  /* CAD command context structure.          */
+   int             commandNumber,  /* Command number.                         */
+   SDSU_ID         sdsuId,         /* SDSU context structure.                 */
+   OBS_ID          obsId           /* Observation context structure.          */
+   )
+{
+   uint32          errorNumber;     /* Error number reported by task.         */
+
+   /*
+    * Initialise the error number.
+    */
+
+   errorNumber = 0;
+
+   /*
+    * Check there are valid SDSU context structure.
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised",
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   /*
+    * Issue the primitive commands to the SDSU controller.
+    */
+
+   if (sdsuPrimitive (sdsuId, "INI", SDSU_IDENT_UTL, NULL, NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to init UTILITY DSP with INI command");
+      errorNumber = S_detControl_SDSU_ERROR;
+   }
+
+   if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to init TIMING DSP with LDP command");
+      errorNumber = S_detControl_SDSU_ERROR;
+   }
+
+   return (errorNumber);
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -13131,13 +13239,13 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "EXTEND  =                    T /                                                ");
    headerCount++;
-   fprintf (fp, "UTSTART ='%20s'/                                                ", utStartReduceString);
+   fprintf (fp, "UTSTART ='%-20s'/                                                ", utStartReduceString);
    headerCount++;
-   fprintf (fp, "DATE-OBS='%20s'/                                                ", obsId->utDateStartString);
+   fprintf (fp, "DATE-OBS='%-20s'/                                                ", obsId->utDateStartString);
    headerCount++;
-   fprintf (fp, "TIME-OBS='%20s'/                                                ", obsId->utTimeStartString);
+   fprintf (fp, "TIME-OBS='%-20s'/                                                ", obsId->utTimeStartString);
    headerCount++;
-   fprintf (fp, "UTEND   ='%20s'/                                                ", utEndReduceString);
+   fprintf (fp, "UTEND   ='%-20s'/                                                ", utEndReduceString);
    headerCount++;
    fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->expTime);
    headerCount++;
@@ -13145,21 +13253,21 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "ELAPSED =      %15f /                                                ", (obsId->rawtEnd - obsId->rawtStart));
    headerCount++;
-   fprintf (fp, "TELESCOP='%20s'/                                                ", telName);
+   fprintf (fp, "TELESCOP='%-20s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "INSTRUME='%20s'/                                                ", obsId->instName);
+   fprintf (fp, "INSTRUME='%-20s'/                                                ", obsId->instName);
    headerCount++;
-   fprintf (fp, "OBSERVAT='%20s'/                                                ", telName);
+   fprintf (fp, "OBSERVAT='%-20s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "FILTER1 ='%20s'/                                                ", acCCId.clFilterName);
+   fprintf (fp, "FILTER1 ='%-20s'/                                                ", acCCId.clFilterName);
    headerCount++;
-   fprintf (fp, "FILTER2 ='%20s'/                                                ", acCCId.ndFilterName);
+   fprintf (fp, "FILTER2 ='%-20s'/                                                ", acCCId.ndFilterName);
    headerCount++;
-   fprintf (fp, "ACLENS  ='%20s'/                                                ", acCCId.lensName);
+   fprintf (fp, "ACLENS  ='%-20s'/                                                ", acCCId.lensName);
    headerCount++;
-   fprintf (fp, "FLDSTOP ='%20s'/                                                ", acCCId.fldStopName);
+   fprintf (fp, "FLDSTOP ='%-20s'/                                                ", acCCId.fldStopName);
    headerCount++;
-   fprintf (fp, "CALSRC  ='%20s'/                                                ", acCCId.calName);
+   fprintf (fp, "CALSRC  ='%-20s'/                                                ", acCCId.calName);
    headerCount++;
    fprintf (fp, "ACFOCUS =      %15f /                                                ", acCCId.focusPos);
    headerCount++;
@@ -13167,22 +13275,22 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "INPORT  =                %5d /                                                ", obsId->inport);
    headerCount++;
-   fprintf (fp, "BUNIT   ='%20s'/                                                ", DET_BUNIT);
+   fprintf (fp, "BUNIT   ='%-20s'/                                                ", DET_BUNIT);
    headerCount++;
-   fprintf (fp, "UNITS   ='%20s'/                                                ", DET_BUNIT);
+   fprintf (fp, "UNITS   ='%-20s'/                                                ", DET_BUNIT);
    headerCount++;
-   fprintf (fp, "OBSTYPE ='%20s'/                                                ", obsId->pObsType);
+   fprintf (fp, "OBSTYPE ='%-20s'/                                                ", obsId->pObsType);
    headerCount++;
 
    if ( obsId->wcsStatus == 0 )
    {
-      fprintf (fp, "CTYPE1  ='%20s'/                                                ", obsId->ctype1);
+      fprintf (fp, "CTYPE1  ='%-20s'/                                                ", obsId->ctype1);
       headerCount++;
       fprintf (fp, "CRPIX1  =      %15f /                                                ", obsId->crpix1);
       headerCount++;
       fprintf (fp, "CRVAL1  =      %15f /                                                ", obsId->crval1);
       headerCount++;
-      fprintf (fp, "CTYPE2  ='%20s'/                                                ", obsId->ctype2);
+      fprintf (fp, "CTYPE2  ='%-20s'/                                                ", obsId->ctype2);
       headerCount++;
       fprintf (fp, "CRPIX2  =      %15f /                                                ", obsId->crpix2);
       headerCount++;
@@ -13196,7 +13304,7 @@ STATUS detWriteFitsUint16
       headerCount++;
       fprintf (fp, "CD2_2   =      %15f /                                                ", obsId->cd2_2);
       headerCount++;
-      fprintf (fp, "RADECSYS='%20s'/                                                ", obsId->radecsys);
+      fprintf (fp, "RADECSYS='%-20s'/                                                ", obsId->radecsys);
       headerCount++;
    }
 
@@ -13208,31 +13316,31 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "MJDOBS  =      %15f /                                                ", obsId->mjdobs);
    headerCount++;
-   fprintf (fp, "FRAME   ='%20s'/                                                ", obsId->frame);
+   fprintf (fp, "FRAME   ='%-20s'/                                                ", obsId->frame);
    headerCount++;
    fprintf (fp, "XBIN    =                %5d /                                                ", obsId->xBin);
    headerCount++;
    fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
    headerCount++;
-   fprintf (fp, "CCDSIZE ='%20s'/                                                ", obsId->ccdSize);
+   fprintf (fp, "CCDSIZE ='%-20s'/                                                ", obsId->ccdSize);
    headerCount++;
-   fprintf (fp, "CCDSEC  ='%20s'/                                                ", obsId->ccdSec);
+   fprintf (fp, "CCDSEC  ='%-20s'/                                                ", obsId->ccdSec);
    headerCount++;
-   fprintf (fp, "CCDSEC1 ='%20s'/                                                ", obsId->ccdSec1);
+   fprintf (fp, "CCDSEC1 ='%-20s'/                                                ", obsId->ccdSec1);
    headerCount++;
-   fprintf (fp, "CCDSEC2 ='%20s'/                                                ", obsId->ccdSec2);
+   fprintf (fp, "CCDSEC2 ='%-20s'/                                                ", obsId->ccdSec2);
    headerCount++;
-   fprintf (fp, "DATASEC1='%20s'/                                                ", obsId->dataSec1);
+   fprintf (fp, "DATASEC1='%-20s'/                                                ", obsId->dataSec1);
    headerCount++;
-   fprintf (fp, "DATASEC2='%20s'/                                                ", obsId->dataSec2);
+   fprintf (fp, "DATASEC2='%-20s'/                                                ", obsId->dataSec2);
    headerCount++;
-   fprintf (fp, "BIASSEC1='%20s'/                                                ", obsId->biasSec1);
+   fprintf (fp, "BIASSEC1='%-20s'/                                                ", obsId->biasSec1);
    headerCount++;
-   fprintf (fp, "BIASSEC2='%20s'/                                                ", obsId->biasSec2);
+   fprintf (fp, "BIASSEC2='%-20s'/                                                ", obsId->biasSec2);
    headerCount++;
-   fprintf (fp, "DETTYPE ='%20s'/                                                ", obsId->detType);
+   fprintf (fp, "DETTYPE ='%-20s'/                                                ", obsId->detType);
    headerCount++;
-   fprintf (fp, "DETID   ='%20s'/                                                ", obsId->detId);
+   fprintf (fp, "DETID   ='%-20s'/                                                ", obsId->detId);
    headerCount++;
    fprintf (fp, "END                                                                             ");
    headerCount++;

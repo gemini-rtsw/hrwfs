@@ -1,0 +1,742 @@
+file {
+	name="detPowerOn.dl"
+}
+display {
+	magic="305419896"
+	majv="2"
+	mnrv="4"
+	ndyng="0"
+	npc="18"
+	nstr="98"
+	ndynamic="8"
+	nplot="0"
+	nrd="1"
+	nes="0"
+	nkd="1"
+	npd="0"
+	npo="0"
+	object {
+		x="0"
+		y="0"
+		width="677"
+		height="224"
+	}
+	clr="1"
+	bclr="13"
+	nwords_dspy="2484"
+	nwords_sta="528"
+	nwords_cmap="0"
+	nwords_crules="0"
+	odyng="1766"
+	osta="1238"
+	odynamic="1766"
+	oplot="2312"
+	ord="2312"
+	oes="2472"
+	okd="2472"
+	opd="2484"
+	opo="2484"
+	opc="68"
+	ostr="280"
+	ocmap="1238"
+	ocrules="1238"
+	style="solid"
+	fill="outline"
+	width="0"
+	clrmod="static"
+	vismod="static"
+	precision="-1"
+	clrrule="alarm"
+	pv=""
+	cmap="colors.dl"
+	pixwid="1280"
+	pixht="1024"
+	mmwid="361"
+	mmht="289"
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="14"
+		y="7"
+		width="495"
+		height="25"
+		groupid="0"
+	}
+	textix="$(sensor) - SDSU POWER ON CMD"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="24"
+		y="106"
+		width="108"
+		height="20"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+}
+"rectangle" {
+	object {
+		x="14"
+		y="38"
+		width="643"
+		height="172"
+		groupid="0"
+	}
+}
+"text" {
+	object {
+		x="336"
+		y="69"
+		width="127"
+		height="20"
+		groupid="0"
+	}
+	textix="CLIENT ID:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="107"
+		width="112"
+		height="19"
+		groupid="0"
+	}
+	textix="MESSAGE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="88"
+		width="148"
+		height="18"
+		groupid="0"
+	}
+	textix="ERROR NUMBER:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="24"
+		y="49"
+		width="183"
+		height="21"
+		groupid="0"
+	}
+	textix="DIRECTIVE:"
+	align="horiz. left"
+}
+"text" {
+	object {
+		x="336"
+		y="48"
+		width="129"
+		height="19"
+		groupid="0"
+	}
+	textix="CAR STATE:"
+	align="horiz. left"
+}
+"line" {
+	object {
+		x="14"
+		y="154"
+		width="642"
+		height="0"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="14"
+		y="154"
+	}
+	point[1] {
+		x="656"
+		y="154"
+	}
+	orgpoint[0] {
+		x="0"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="0"
+	}
+}
+"line" {
+	object {
+		x="328"
+		y="39"
+		width="0"
+		height="115"
+		groupid="0"
+	}
+	npoints="2"
+	point[0] {
+		x="328"
+		y="39"
+	}
+	point[1] {
+		x="328"
+		y="153"
+	}
+	orgpoint[0] {
+		x="1000"
+		y="0"
+	}
+	orgpoint[1] {
+		x="1000"
+		y="999"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="15"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"text" {
+	object {
+		x="27"
+		y="177"
+		width="505"
+		height="21"
+		groupid="0"
+	}
+	textix="No parameters - Click on START"
+	align="horiz. left"
+}
+"message button" {
+	object {
+		x="145"
+		y="49"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="START"
+	pressed_label="START"
+	press_msg="MARK"
+	release_msg="START"
+}
+"text update" {
+	object {
+		x="484"
+		y="48"
+		width="150"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="rule"
+		rulechan[0] = "$(top)$(car)C.VAL"
+		rulechan[1] = "$(top)$(car)C.VAL"
+		rulechan[2] = "$(top)$(car)C.VAL"
+		rulechan[3] = "$(top)$(car)C.VAL"
+		rulechan[4] = "$(top)$(car)C.VAL"
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="flashifbusy"
+		clrargs="C=$(top)$(car)C"
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="24"
+		y="126"
+		width="300"
+		height="22"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(cad).MESS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="484"
+		y="68"
+		width="150"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.CLID"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="hexadecimal"
+}
+"text update" {
+	object {
+		x="335"
+		y="126"
+		width="315"
+		height="22"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.OMSS"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"text update" {
+	object {
+		x="484"
+		y="88"
+		width="150"
+		height="20"
+		groupid="0"
+	}
+	monitor {
+		chan="$(top)$(car)C.OERR"
+		clr="0"
+		bclr="7"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	align="horiz. left"
+	format="decimal"
+}
+"message button" {
+	object {
+		x="145"
+		y="78"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="PRESET"
+	pressed_label="PRESET"
+	press_msg="MARK"
+	release_msg="PRESET"
+}
+"message button" {
+	object {
+		x="231"
+		y="78"
+		width="71"
+		height="24"
+		groupid="0"
+	}
+	control {
+		chan="$(top)$(cad).DIR"
+		clr="1"
+		bclr="6"
+		label="none"
+		clrmod="static"
+		rulechan[0] = ""
+		rulechan[1] = ""
+		rulechan[2] = ""
+		rulechan[3] = ""
+		rulechan[4] = ""
+		rulechan[5] = ""
+		rulechan[6] = ""
+		rulechan[7] = ""
+		rulechan[8] = ""
+		rulechan[9] = ""
+		rulechan[10] = ""
+		rulechan[11] = ""
+		rulechan[12] = ""
+		rulechan[13] = ""
+		rulechan[14] = ""
+		rulechan[15] = ""
+		clrrule="alarm"
+		clrargs=""
+		rulecolorbg="1"
+		rulecolorfg="1"
+		hdl="0"
+		ldl="0"
+		prec="-1"
+		newunits=""
+		units="none"
+		decorate="none"
+		convertFunc=""
+		convertParams=""
+	}
+	inactive_label="DEFAULT"
+	pressed_label="(CLEAR)"
+	press_msg="MARK"
+	release_msg="CLEAR"
+}
+"related display" {
+	object {
+		x="25"
+		y="79"
+		width="80"
+		height="20"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="Details"
+		name="cad_details4.dl"
+		args="top=$(top),cad=$(cad)"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title=""
+	decorate="none"
+}
+"kill display" {
+	object {
+		x="586"
+		y="8"
+		width="72"
+		height="23"
+		groupid="0"
+	}
+	label="EXIT"
+	clr="1"
+	bclr="9"
+	decorate="none"
+}

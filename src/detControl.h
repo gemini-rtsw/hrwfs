@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   09 Jan 2001: CB - Add detPowerOn
  *   07 Jun 2001 - cb add frame in obsId structure
  *   05 Jun 2001 - cb add detTemp, instName, inport in obsId structure
  *                 modify the ccdsec,...
@@ -619,6 +620,7 @@ enum
    DET_CONTROL_CMD_SAVE,       /* Save SDSU controller parameters.            */
    DET_CONTROL_CMD_GEOMETRY,   /* Set detector readout geometry.              */
    DET_CONTROL_CMD_PRIMITIVE,  /* Execute SDSU primitive command.             */
+   DET_CONTROL_CMD_POWER_ON,   /* Execute POWER ON primitive command.         */
    DET_CONTROL_CMD_DOWNLOAD,   /* Download DSP code.                          */
    DET_CONTROL_CMD_MODE,       /* Set detector readout mode.                  */
    DET_CONTROL_CMD_OFFSET,     /* Set detector ADC offsets.                   */
