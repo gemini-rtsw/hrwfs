@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.19 2001-06-15 01:51:32 cboyer Exp $"};
+   "$Id: detControl.c,v 1.20 2001-06-16 04:06:10 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -6414,6 +6414,28 @@ void detObserveEnd
          goto ERROR_EXIT;
       }
 
+      if ( obsId->windowingFlag == TRUE )
+      {
+         if ( detFrameReduceUint16 ( obsId ) == ERROR )
+         {
+            ERROR_LOG ("Failed to reduce data");
+            if ( obsId->outOptions == 1 )
+            {
+               dummyDhsErrno = DHS_S_SUCCESS; /* Fudge around bad DHS feature.*/
+               dhsBdDsFree ( obsId->dhsDataset, &dummyDhsErrno );
+               free (obsId->pCurFrame); /* windowingFlag = TRUE */
+               obsId->pCurFrame = NULL;
+            }
+            else
+            {
+               free (obsId->pDispFrame);
+               obsId->pDispFrame = NULL;
+               free (obsId->pCurFrame); /* windowingFlag = TRUE */
+               obsId->pCurFrame = NULL;
+            }
+            goto ERROR_EXIT;
+         }
+      }
 
 #ifdef DEBUG
       /* ADD 23 SEPT */
