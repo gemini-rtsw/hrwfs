@@ -13,3 +13,20 @@ V0-5 8 Nov 1999 CB:
 Modifications toward V0-4
   - WCS bug fix
   - TELESCOP and OBSERVAT are now updated from the tcs:name
+
+V0-6 17 Nov 1999 CB:
+--------------------
+Modifications toward V0-5
+  - Bug fixed into capfast hrwfsSequenceCad.sch
+  - in local.vws add 
+    hostAdd ("manta","10.1.5.10")
+    nfsMount "manta", "/export/astro", "/usr/astro"
+    to be able to save a file into /usr/astro/data/...
+  - offsets for detectors are 2400,2398
+    detOffset modified only 2 offsets for HR
+  - add new command setDhsInfo
+  - FOUND A BUG A MEMORY LEAK WITH DHS (1456 bytes)
+  - bug fixed into wfsInitTelName in wfsLib.c
+
+dev
+  - for the moment startup cd install instead of iocpath
