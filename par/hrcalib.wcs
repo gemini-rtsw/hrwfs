@@ -1,11 +1,12 @@
 ;
-; Example World Coordinate System calibration for HRWFS
-; (Make sure this file does not contain any blank lines
-; at the beginning).
+; World Coordinate System Calibration for HRWFS
+; N.B. This file must not contain any blank lines at the beginning
 ;
-; Pixel i, Pixel j, Focal plane x, Focal plane y
-     1.0      1.0     -15.0          -15.0
-  1024.0      1.0      15.0          -15.0
-     1.0   1024.0     -15.0           15.0
-  1024.0   1024.0      15.0           15.0
-   512.0    512.0       0.0            0.0
+; These data were taken on 10 June 2000 on hip78267 with 1 second
+; integrations and were unguided. They should be considered an initial
+; rough calibration only
+; Pixel i   Pixel j   Focal plane x    Focal plane y
+   126.5     938.3        30.0           30.0
+   950.9     128.2       -30.0          -30.0
+   270.1     125.0       -30.0           20.0
+   812.0     939.5        30.0          -20.0
