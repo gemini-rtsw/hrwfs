@@ -1,5 +1,5 @@
 [schematic2]
-uniq 77
+uniq 78
 [tools]
 [detail]
 w 424 1899 100 0 n#75 hrwfsApply.hrwfsApply#72.CLID 352 1888 544 1888 hrwfsCarTree.hrwfsCarTree#73.ICID
@@ -7,6 +7,9 @@ w 424 1643 100 0 n#74 hrwfsApply.hrwfsApply#72.OLNK 352 1632 544 1632 hrwfsCarTr
 s -576 2224 500 0 Gemini High Resolution Wavefront Sensor
 s 1488 80 500 512 hrwfs.sch
 [cell use]
+use hrwfsSetDefCommand 144 583 100 0 hrwfsSetDefCommand#77
+xform 0 240 704
+p 136 536 100 0 1 seta:wfs dc:
 use hrwfsCarTree 544 1575 100 0 hrwfsCarTree#73
 xform 0 720 1760
 use hrwfsApply 32 1575 100 0 hrwfsApply#72
@@ -27,9 +30,9 @@ xform 0 656 1200
 p 1552 64 100 0 1 author:S.M.Beard
 p 1776 48 100 0 -1 border:C
 p 1552 32 100 0 1 checked:B.Goodrich
-p 1776 16 100 0 -1 date:$Date: 2001-06-24 18:51:04 $
-p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.7 2001-06-24 18:51:04 gemvx Exp $
+p 1776 16 100 0 -1 date:$Date: 2004-01-08 01:57:44 $
+p 1552 2368 100 0 -1 id:$Id: hrwfs.sch,v 1.8 2004-01-08 01:57:44 cboyer Exp $
 p 1792 176 100 0 -1 project:Gemini Wavefront Sensing System
-p 1552 144 100 0 -1 revision:$Revision: 1.7 $
+p 1552 144 100 0 -1 revision:$Revision: 1.8 $
 p 1792 112 100 0 -1 title:Under Top Level Schematic for HRWFS Database
 [comments]

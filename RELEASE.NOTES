@@ -207,3 +207,8 @@ V3-3 11 November 2003 - PG
   - Fixed reggie's ip number in startupCP.vws
   - Removed .applTop in all subdirectories from the repository
   - Changed DHS path name in hrwfsInstall
+
+V3-4 07 Jan 20034 - CB
+-----------------------
+  - detFrameSize: default parameters of the command into a pv load file 
+    (one per site)

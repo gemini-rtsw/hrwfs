@@ -1,0 +1,12 @@
+[symbol2]
+bbox -128 -128 160 128
+uniq 78
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -112 16 commands
+l 100 0 0 -112 48 Set defaults to
+l 100 0 0 -112 -112 hrwfsSetDefCommand
+r 0 -128 -128 160 128
+[comments]

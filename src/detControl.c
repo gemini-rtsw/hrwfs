@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.28 2003-11-11 15:31:29 pedro Exp $"};
+   "$Id: detControl.c,v 1.29 2004-01-08 01:57:44 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   06 Jan 2004 - cb add detInitFrameSize
  *   08 Oct 2002 - cb add detPowerOff command
  *   07 Oct 2002 - cb detObserveStart modified when start directive received 
  *                 and observation already in progress. 
@@ -16658,4 +16659,57 @@ uint32 detPowerOff
    }
 
    return (errorNumber);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detInitFrameSize
+ *
+ *   INVOCATION:
+ *   detInitFrameSize (struct genSubRecord *pgsub)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (<) pgsub (struct genSubRecord *) Pointer to initFrameSize gsub record
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if command successful, ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Init the detFrameSize input fields 
+ *
+ *   DESCRIPTION:
+ *   For this record, I have decided to use Epics facilities and not
+ *   epToVxLib. 
+ *
+ *   EXTERNAL VARIABLES:
+ *   None.
+ *
+ *   PRIOR REQUIREMENTS:
+ *   external variables: detObsIdP2
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None
+ *-
+ */
+
+STATUS detInitFrameSize
+   (
+   struct genSubRecord * pgsub    /* Pointer to "initFrameSize" gensub record */
+   )
+
+{
+   *(long *)pgsub->vala = *(long *)pgsub->a;
+   *(long *)pgsub->valb = *(long *)pgsub->b;
+   *(long *)pgsub->valc = *(long *)pgsub->c;
+   *(long *)pgsub->vald = *(long *)pgsub->d;
+   *(long *)pgsub->vale = *(long *)pgsub->e;
+   *(long *)pgsub->valf = *(long *)pgsub->f;
+   *(long *)pgsub->valg = *(long *)pgsub->g;
+
+   return (OK);
 }

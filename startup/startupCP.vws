@@ -1,4 +1,4 @@
-# $Id: startupCP.vws,v 1.9 2003-11-11 15:33:45 pedro Exp $
+# $Id: startupCP.vws,v 1.10 2004-01-08 01:57:45 cboyer Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -98,6 +98,7 @@ iocInit ("$(version)/data/resource.def")
 #dbpf "hrwfs:initialising.VAL","2"
 pvload "$(version)/data/hrwfsSeq.pv","top=hrwfs:, sadtop=hrwfs:"
 pvload "$(version)/data/hrwfsDet.pv","top=hrwfs:, sadtop=hrwfs:, wfs=dc:"
+pvload "$(version)/data/hrwfsSetDefCommandCP.pv","top=hrwfs:, wfs=dc:"
 
 # Initialise the database records not initialised by iocInit.
 epToVxCaInitRecords ()

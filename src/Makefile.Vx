@@ -76,7 +76,8 @@ MAN1	=
 DOCS	=
 
 # DATA are installed in INSTALL_DATA
-DATA    = ../hrwfsSeq.pv ../hrwfsDet.pv
+DATA    = ../hrwfsSeq.pv ../hrwfsDet.pv ../hrwfsSetDefCommandMK.pv \
+	  ../hrwfsSetDefCommandCP.pv
 
 # Any extra targets can be placed in a TARGETS macro (the build target
 # builds only pre_build, LIBNAME, TARGETS and PROD, not SCRIPTS, INC etc)
