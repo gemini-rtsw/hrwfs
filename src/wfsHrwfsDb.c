@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.3 1999-11-04 04:07:06 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.4 1999-11-23 03:38:06 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -63,6 +63,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   18 nov 1999 - new setDhsInfo command 
  *   25 oct 1999 - new observe command 
  *   14 oct 1999 - simplified version for HRWFS only
  *-
@@ -250,7 +251,16 @@ CAD_RECORD pWfsDbCadList [] =
       STOP_DIRECTIVE_UNSUPPORTED,
       SIMULATION_MODE_SUPPORTED,
       40.0,
-      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "UNDEFINED", {"DARK","FLAT","ZERO","UNDEFINED","OBJECT"},
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "UNDEFINED", {"DARK","FLAT","ZERO","UNDEFINED","OBJECT"}
+   },
+   {
+      RECORD_NAME ("dc:setDhsInfo"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_DHSINFO,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, "hrwfsScience", {NO_ATTRIBUTE_LIMITS}
    },
    {
       RECORD_NAME ("dc:detSetWcs"),
@@ -399,9 +409,7 @@ CAD_RECORD pWfsDbCadList [] =
       SIMULATION_MODE_SUPPORTED,
       40.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   NO_HI_LIMIT},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   NO_HI_LIMIT},
-      CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG,      "-1",         {"-1",   "-1"},
-      CAD_ATTRIB_D, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   "-1"}
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   NO_HI_LIMIT}
    },
    {
       RECORD_NAME ("dc:detTemp"),

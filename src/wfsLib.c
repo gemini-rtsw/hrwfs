@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.2 1999-11-10 20:45:41 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.3 1999-11-23 03:38:07 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -47,10 +47,15 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   MODIFICATION
+ *   22 Nov 1999 - cb - bug fixed into wfsInitTelName 
  *   9 Nov 1999 - cb - add wfsInitTelName and wfsGetTelName
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.2  1999/11/10 20:45:41  cboyer
+ * Telescope name is now read from the TCS tcs:name record
+ * Bug fixed for WCS when binning or windowing
+ *
  * Revision 1.1.1.1  1999/03/17 03:14:24  cboyer
  * Initial creation of the Gemini HRWFS repository
  *
@@ -774,7 +779,7 @@ STATUS   wfsWriteVersion (void)
 #ifdef NO_RCS
    if (epToVxPipeWrite ("version", COMPILE_DATE_AND_TIME, 0) == ERROR)
 #else
-    if (epToVxPipeWrite ("version", "$Revision: 1.2 $", 0) == ERROR)
+    if (epToVxPipeWrite ("version", "$Revision: 1.3 $", 0) == ERROR)
 #endif
    {
       ERROR_LOG ("Failed to write version number");
@@ -1214,7 +1219,7 @@ STATUS   wfsInitTelName (struct genSubRecord *pgensub)
 {
 
     strcpy ( tcsTelName , (char *)pgensub->a ) ; 
-    if ( (strcmp ( tcsTelName , "Gemini North" ) == 0) || ( strcmp ( tcsTelName , "Gemini South" ) == 0) )
+    if ( (strcmp ( tcsTelName , "Gemini North" ) != 0) && ( strcmp ( tcsTelName , "Gemini South" ) != 0) )
        strcpy ( tcsTelName , "Gemini North" ) ;
     return (OK) ;
 }

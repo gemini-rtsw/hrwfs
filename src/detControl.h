@@ -13,6 +13,7 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   18 nov 1999 - cb add qlStream parameter and add cmd DET_CONTROL_CMD_DHSINFO
  *   27 oct 1999 - cb add fits keywords
  *   25 oct 1999 - cb add dhsOutOptions (perm, temp, ql)
  *   19 oct 1999 - cb cancel ospGeometry and replace by all coeff needed by 
@@ -140,8 +141,8 @@ typedef   unsigned long   DHS_CONNECT;
 
 typedef   struct      /* Context structure used to describe an observation.   */
 {
-                           /* AGWPS context information.                      */
-                           /* --------------------------                      */
+                           /* SDSU context information.                       */
+                           /* -------------------------                       */
    SDSU_ID      sdsuId;    /* SDSU context.                                   */
    BOOL         observing; /* Flag set TRUE when observing.                   */
    BOOL         stopped;   /* Flag set TRUE when observation stopped.         */
@@ -179,6 +180,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
    int          yPixelsDhs;/* Number of rows in pixels to be displayed        */
    char         pDataLabel [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
                            /* DHS data label.                                 */
+   char         pQlStream [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                           /* DHS Quick look stream.                          */
    char         pOutFileName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1)*2];
                            /* Combined path name and file name for processed  */
                            /* data.                                           */
@@ -334,6 +337,7 @@ enum
    DET_CONTROL_CMD_CHOP,       /* Specify chop states mask.                   */
    DET_CONTROL_CMD_EXPOSURE,   /* Specify exposure time.                      */
    DET_CONTROL_CMD_OBSTYPE,    /* Specify observation type.                   */
+   DET_CONTROL_CMD_DHSINFO,    /* Specify quick look stream.                  */
    DET_CONTROL_CMD_SETDHS,     /* Set Data Handling System parameters.        */
    DET_CONTROL_CMD_SETWCS,     /* Set World Coordinate System parameters.     */
    DET_CONTROL_CMD_OBSERVE,    /* Make observation.                           */

@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.5 1999-11-10 20:45:38 cboyer Exp $"};
+   "$Id: detControl.c,v 1.6 1999-11-23 03:38:03 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -35,6 +35,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   22 Nov 1999 - cb change offset for detectors (2400,2398)
+ *                 + modify detOffset to have only two offsets
+ *   18 Nov 1999 - cb add new setDhsInfo command
+ *   17 Nov 1999 - cb change offset for detectors (2450,2450)
  *   9 Nov 1999 - cb TELSCOP and OBSERVAT are now updated from the TCS
  *   8 Nov 1999 - cb Fix a bug for WCS when binning or windowing
  *   27 oct 1999 - cb dhs/fits add keywords, fix bug of WCS. 
@@ -174,6 +178,9 @@ LOCAL uint32   detExposure (const char * pWfsName, const char * pRecordPrefix,
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                             SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detObstype (const char * pWfsName, const char * pRecordPrefix, 
+                           CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
+                           SDSU_ID sdsuId, OBS_ID obsId);
+LOCAL uint32   setDhsInfo (const char * pWfsName, const char * pRecordPrefix, 
                            CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                            SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detSetWcs (const char * pWfsName, const char * pRecordPrefix, 
@@ -711,8 +718,8 @@ STATUS   detControl
    }
    else
    {
-      offset0 = 2560 ;
-      offset1 = 2320 ;
+      offset0 = 2400 ;
+      offset1 = 2398 ;
 
       MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
                     offset0, offset1);
@@ -983,6 +990,16 @@ STATUS   detControl
 
             errorNumber = 
             detObstype(pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
+                       sdsuId, obsId);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_DHSINFO)
+         {
+
+            /* Define quick look stream. */
+
+            errorNumber = 
+            setDhsInfo(pWfsName, pRecordPrefix, cadCmdContext, commandNumber,
                        sdsuId, obsId);
          }
 
@@ -1782,6 +1799,110 @@ uint32 detObstype
    return (errorNumber);
 }
 
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   setDhsInfo
+ *
+ *   INVOCATION:
+ *   setDhsInfo (pWfsName, pRecordPrefix, cadCmdContext, commandNumber, 
+ *               sdsuId, obsId)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   (>) pWfsName      (const char *)    Name of wavefront sensor hr
+ *   (>) pRecordPrefix (const char *)    Record name prefix
+ *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context structure
+ *   (>) commandNumber (int)             Command number
+ *   (>) sdsuId        (SDSU_ID)         Current SDSU context structure
+ *   (>) obsId         (OBS_ID)          Observation context structure
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Error number. 0 if command successful.
+ *
+ *   PURPOSE:
+ *   Execute detObstype command
+ *
+ *   DESCRIPTION:
+ *   This function sets the quick look stream.
+ *
+ *   EXTERNAL VARIABLES:
+ *   None. (The function needs to be reentrant)
+ *
+ *   PRIOR REQUIREMENTS:
+ *   None
+ *
+ *   INCLUDE FILES:
+ *   detControl.h
+ *
+ *   DEFICIENCIES:
+ *   None known
+ *-
+ */
+
+uint32 setDhsInfo
+   (
+   const char *    pWfsName,        /* Name of wavefront sensor.              */
+   const char *    pRecordPrefix,   /* Record name prefix.                    */
+   CAD_CMD_CONTEXT cadCmdContext,   /* CAD command context structure.         */
+   int             commandNumber,   /* Command number.                        */
+   SDSU_ID         sdsuId,          /* SDSU context structure.                */
+   OBS_ID          obsId            /* Observation context structure.         */
+   )
+{
+   uint32          errorNumber;     /* Error number reported by task.         */
+
+   char            qlStream[EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+                                    /* Quick look stream string.              */
+
+   /*
+    * Initialise the error number and obtain the attributes provided with 
+    * the command.
+    */
+
+   errorNumber = 0;
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, qlStream);
+
+   /*
+    * Check there are valid SDSU and observation context structures.
+    */
+
+   if ( sdsuId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "SDSU context not initialised", 
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   if ( obsId == NULL )
+   {
+      ERROR_SET (S_detControl_INTERNAL, "Observation context not initialised", 
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_INTERNAL;
+      return (errorNumber);
+   }
+
+   /*
+    * The command can only be used when an observation is not in progress.
+    */
+
+   if ( obsId->observing )
+   {
+      ERROR_SET (S_detControl_BUSY,
+                 "Observation in progress - abort observation and try again", 
+                 ERROR_LOG_NOW);
+      errorNumber = S_detControl_BUSY;
+      return (errorNumber);
+   }
+
+   strncpy (obsId->pQlStream, qlStream, EPICS_MAX_BYTES_STRING_ATTRIB);
+
+   printf ( "QUICK LOOK STREAM = %s\n" , obsId->pQlStream ) ; 
+   MESSAGE_LOG1 (MSG_LOG, "Quick look stream defined as %s", qlStream);
+
+   return (errorNumber);
+}
 
 /* -------------------------------------------------------------------------- */
 
@@ -3047,10 +3168,22 @@ uint32 detObserveStart
          contrib[0] = pDetDhsClientName; 
                                 /* a global variable, set in detDhsInit */
 
-         qlStreams[0] = "hrwfsScience"; 
-                                /* THIS IS A FUDGE. DEFINE IN setDhs command. */
+         qlStreams[0] = calloc ( EPICS_MAX_BYTES_STRING_ATTRIB+1, sizeof (char) ) ;
+
+         if ( strcmp (obsId->pQlStream , "" ) == 0 )
+            strcpy ( qlStreams[0] , "hrwfsScience") ;
+         else
+         {
+            strncpy ( qlStreams[0] , obsId->pQlStream , EPICS_MAX_BYTES_STRING_ATTRIB ) ;
+         }
+
+         printf ( "obsId->pQlStream=%s\n" , obsId->pQlStream ) ;
+         printf ( "qlStreams[0]=%s\n" , qlStreams[0] ) ;
+
+         /*qlStreams[0] = "hrwfsScience"; */
 
          wfsGetTelName ( telName ) ;
+         printf ( "telName=%s\n" , telName ) ;
 
          /* NOTE: Lifetime should be definable
           * PERMANENT for permanent data (e.g. calibrations)
@@ -3087,6 +3220,8 @@ uint32 detObserveStart
          dhsBdCtl(obsId->dhsConnection, DHS_BD_CTL_QLSTREAM, 
                   obsId->pDataLabel, 1, qlStreams, &dhsErrno);
          CHECK_DHS (dhsErrno);
+
+         free ( qlStreams[0] ) ;
 
          /* Create the DHS dataset and add the default attributes. */
 
@@ -7564,8 +7699,6 @@ uint32 detOffset
 
    long         offset0;         /* ADC offset for output 0.               */
    long         offset1;         /* ADC offset for output 1.               */
-   long         offset2;         /* ADC offset for output 2.               */
-   long         offset3;         /* ADC offset for output 3.               */
 
    /*
     * Initialise the error number and obtain the attributes provided with 
@@ -7575,8 +7708,6 @@ uint32 detOffset
    errorNumber = 0;
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, (char *) & offset0);
    EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 1, (char *) & offset1);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 2, (char *) & offset2);
-   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 3, (char *) & offset3);
 
    /*
     * Check there are valid SDSU and observation context structures.
@@ -7610,8 +7741,8 @@ uint32 detOffset
          "NOTE: Changing on-the-fly parameters while observation in progress.");
    }
 
-   MESSAGE_LOG4 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx %#lx %#lx",
-      offset0, offset1, offset2, offset3);
+   MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
+      offset0, offset1);
 
    /*
     * Set the offsets by writing the appropriate SDSU parameters.
@@ -7640,28 +7771,6 @@ uint32 detOffset
       }
    }
 
-   if ( offset2 != -1 )
-   {
-      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, 
-           "T_ADC_OS2", (uint32) offset2 ) == ERROR )
-      {
-         ERROR_LOG ("Error setting ADC offset 2 parameter");
-         errorNumber = S_detControl_SDSU_ERROR;
-         return (errorNumber);
-      }
-   }
-
-   if ( offset3 != -1 )
-   {
-      if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, 
-           "T_ADC_OS3", (uint32) offset3 ) == ERROR )
-      {
-         ERROR_LOG ("Error setting ADC offset 3 parameter");
-         errorNumber = S_detControl_SDSU_ERROR;
-         return (errorNumber);
-      }
-   }
-
    if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
    {
       ERROR_LOG ("Failed to activate TIMING DSP parameters with LDP command");
@@ -7671,7 +7780,6 @@ uint32 detOffset
 
    return (errorNumber);
 }
-
 
 /* -------------------------------------------------------------------------- */
 
