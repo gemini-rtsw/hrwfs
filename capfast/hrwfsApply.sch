@@ -1,7 +1,12 @@
 [schematic2]
-uniq 164
+uniq 171
 [tools]
 [detail]
+w 1874 1899 100 0 n#170 eaos.configBusy.FLNK 1824 1888 1984 1888 outhier.RESET.p
+w 642 2315 100 0 n#169 hrwfsCommands1.hrwfsCommands1#164.MESS 1200 1056 1312 1056 1312 1120 2144 1120 2144 2304 -800 2304 -800 1024 -432 1024 eapply.apply.INME
+w 650 2299 100 0 n#168 hrwfsCommands1.hrwfsCommands1#164.VAL 1200 1088 1280 1088 1280 1152 2128 1152 2128 2288 -768 2288 -768 1056 -432 1056 eapply.apply.INPE
+w 242 1035 100 0 n#167 eapply.apply.OCLE -48 1024 592 1024 592 1056 656 1056 hrwfsCommands1.hrwfsCommands1#164.ICID
+w 226 1067 100 0 n#166 eapply.apply.OUTE -48 1056 560 1056 560 1088 656 1088 hrwfsCommands1.hrwfsCommands1#164.DIR
 w -318 1627 100 0 n#163 eapply.apply.CLID -432 1376 -480 1376 -480 1616 -96 1616 outhier.CLID.p
 w 1024 619 100 0 n#162 esubcad2.configEnd.STLK 604 608 1504 608 1504 704 1600 704 eseqs.configIdle.SLNK
 w 2002 1035 100 0 n#161 eseqs.configIdle.LNK1 1920 1024 2144 1024 outhier.OLNK.p
@@ -19,8 +24,8 @@ w 314 907 100 0 n#145 eapply.apply.OCLG -48 896 736 896 736 480 800 480 hrwfsCom
 w 330 939 100 0 n#144 eapply.apply.OUTG -48 928 768 928 768 512 800 512 hrwfsCommands3.hrwfsCommands3#105.DIR
 w 50 171 100 0 n#130 esubcad2.configEnd.MARK 604 480 640 480 640 160 -480 160 -480 832 -432 832 eapply.apply.INMH
 w 50 155 100 0 n#129 esubcad2.configEnd.VAL 604 512 672 512 672 144 -512 144 -512 864 -432 864 eapply.apply.INPH
-w 658 2283 100 0 n#126 eapply.apply.INMD -432 1088 -736 1088 -736 2272 2112 2272 2112 1184 1200 1184 hrwfsCommands1.hrwfsCommands1#103.MESS
-w 658 2251 100 0 n#125 hrwfsCommands1.hrwfsCommands1#103.VAL 1200 1216 2080 1216 2080 2240 -704 2240 -704 1120 -432 1120 eapply.apply.INPD
+w 658 2283 100 0 n#126 eapply.apply.INMD -432 1088 -736 1088 -736 2272 2112 2272 2112 1184 1200 1184 hrwfsAgCommands.hrwfsAgCommands#165.MESS
+w 658 2251 100 0 n#125 hrwfsAgCommands.hrwfsAgCommands#165.VAL 1200 1216 2080 1216 2080 2240 -704 2240 -704 1120 -432 1120 eapply.apply.INPD
 w 658 2219 100 0 n#124 eapply.apply.INMC -432 1152 -672 1152 -672 2208 2048 2208 2048 1376 1984 1376 hrwfsSeqCommands2.hrwfsSeqCommands2#102.MESS
 w 658 2187 100 0 n#123 hrwfsSeqCommands2.hrwfsSeqCommands2#102.VAL 1984 1408 2016 1408 2016 2176 -640 2176 -640 1184 -432 1184 eapply.apply.INPC
 w 306 2155 100 0 n#122 hrwfsSeqCommands1.hrwfsSeqCommands1#101.MESS 1200 1376 1280 1376 1280 2144 -608 2144 -608 1216 -432 1216 eapply.apply.INMB
@@ -29,8 +34,8 @@ w 34 2091 100 0 n#120 esubcad2.configBegin.MESS 588 1728 672 1728 672 2080 -544 
 w 34 2059 100 0 n#119 esubcad2.configBegin.VAL 588 1792 640 1792 640 2048 -512 2048 -512 1312 -432 1312 eapply.apply.INPA
 w -22 1291 100 0 n#118 eapply.apply.OCLA -48 1280 64 1280 64 1856 160 1856 esubcad2.configBegin.ICID
 w 66 1899 100 0 n#117 eapply.apply.OUTA -48 1312 32 1312 32 1888 160 1888 esubcad2.configBegin.DIR
-w 210 1099 100 0 n#116 eapply.apply.OCLD -48 1088 528 1088 528 1184 656 1184 hrwfsCommands1.hrwfsCommands1#103.ICID
-w 194 1131 100 0 n#115 eapply.apply.OUTD -48 1120 496 1120 496 1216 656 1216 hrwfsCommands1.hrwfsCommands1#103.DIR
+w 210 1099 100 0 n#116 eapply.apply.OCLD -48 1088 528 1088 528 1184 656 1184 hrwfsAgCommands.hrwfsAgCommands#165.ICID
+w 194 1131 100 0 n#115 eapply.apply.OUTD -48 1120 496 1120 496 1216 656 1216 hrwfsAgCommands.hrwfsAgCommands#165.DIR
 w 882 1291 100 0 n#111 eapply.apply.OCLC -48 1152 464 1152 464 1280 1360 1280 1360 1376 1440 1376 hrwfsSeqCommands2.hrwfsSeqCommands2#102.ICID
 w 850 1323 100 0 n#110 eapply.apply.OUTC -48 1184 432 1184 432 1312 1328 1312 1328 1408 1440 1408 hrwfsSeqCommands2.hrwfsSeqCommands2#102.DIR
 w 146 1227 100 0 n#109 eapply.apply.OCLB -48 1216 400 1216 400 1376 656 1376 hrwfsSeqCommands1.hrwfsSeqCommands1#101.ICID
@@ -40,7 +45,7 @@ w -14 875 100 0 n#106 eapply.apply.OUTH -48 864 80 864 80 608 176 608 esubcad2.c
 s 1632 368 100 0 obtained even for an empty configuration
 s 1632 400 100 0 are to ensure a busy/idle transition is
 s 1632 432 100 0 N.B. the configBusy and configIdle records
-s 1552 2368 100 0 $Id: hrwfsApply.sch,v 1.1 2001-06-11 08:04:13 cjm Exp $
+s 1552 2368 100 0 $Id: hrwfsApply.sch,v 1.2 2001-06-24 18:51:54 gemvx Exp $
 s 1552 176 100 0 Copyright
 s 1552 144 100 0 Observatory
 s 1552 112 100 0 Sciences Ltd.
@@ -48,6 +53,12 @@ s 1840 176 100 0 HRWFS
 s 1552 64 100 0 Chris Mayer
 s 1808 112 100 0 Top level apply
 [cell use]
+use outhier 1952 1847 100 0 RESET
+xform 0 1968 1888
+use hrwfsAgCommands 656 1127 100 0 hrwfsAgCommands#165
+xform 0 928 1200
+use hrwfsCommands1 656 999 100 0 hrwfsCommands1#164
+xform 0 928 1072
 use outhier -128 1575 100 0 CLID
 xform 0 -112 1616
 use outhier 2112 983 100 0 OLNK
@@ -80,8 +91,6 @@ use hrwfsCommands3 800 423 100 0 hrwfsCommands3#105
 xform 0 1072 496
 use hrwfsCommands2 864 647 100 0 hrwfsCommands2#104
 xform 0 1136 720
-use hrwfsCommands1 656 1127 100 0 hrwfsCommands1#103
-xform 0 928 1200
 use hrwfsSeqCommands2 1440 1319 100 0 hrwfsSeqCommands2#102
 xform 0 1712 1392
 use hrwfsSeqCommands1 656 1319 100 0 hrwfsSeqCommands1#101
