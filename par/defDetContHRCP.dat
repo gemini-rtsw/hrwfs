@@ -13,3 +13,7 @@
 2335
 # Default serial number of the CCD - do not change
 xxxxxxxxx
+# Default instrument name - do not change
+hrwfs
+# Default port where A&G is located - do not change
+-1

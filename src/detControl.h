@@ -13,6 +13,8 @@
  *   *** THE SDSU CONTROLLERS AT YOUR SITE. SEE DEFINITIONS BELOW.
  *
  *   HISTORY MODIFICATION
+ *   05 Jun 2001 - cb add detTemp, instName, inport in obsId structure
+ *                 modify the ccdsec,...
  *   01 Jun 2001 - cb add oscan SIR record 
  *   30 May 2001 - cb add DET_CONTROL_HRWFS_MAX_XSIZE and 
  *                 DET_CONTROL_HRWFS_MAX_Y_SIZE and oscanNb
@@ -289,7 +291,7 @@ typedef   unsigned long   DHS_CONNECT;
 #define   DET_CCD_SN                          "8283-4-3"
                                     /* Define the SN of the CCD Chip          */
 
-#define   DET_BUNIT "SDSU ADC units"
+#define   DET_BUNIT 			      "SDSU ADC units"
                                     /* Define the units of CCD data           */
 
 /********************************************************************* Enum ***/
@@ -357,15 +359,24 @@ typedef   struct      /* Context structure used to describe an observation.   */
                            /* Fits keywords                                   */
                            /* -------------                                   */
 
-   char          dataSec[22];
+   char          ccdSize[22];
    char          ccdSec[22];
-   char          origSec[22];
+   char          ccdSec1[22];
+   char          ccdSec2[22];
+   char          dataSec1[22];
+   char          dataSec2[22];
+   char          biasSec1[22];
+   char          biasSec2[22];
    int           timeArrayStart[7];/* Array of year/month/day/hour/min/sec    */
    char          utStartString[24];/* String which contains UTSTART data      */
-   int           timeArrayEnd[7];  /* Array of year/month/day/hour/min/sec   */
-   char          utEndString[24];  /* String to contain UTEND data           */
+   char          utDateStartString[11];/* String which contains UTSTART date  */
+   char          utTimeStartString[13];/* String which contains UTSTART time  */
+   int           timeArrayEnd[7];  /* Array of year/month/day/hour/min/sec    */
+   char          utEndString[24];  /* String to contain UTEND data            */
    char          detType[16];
    char          detId[16];
+   char          instName[40];   /* Name of the instrument                  */
+   int           inport;           /* ISS port where AC/HRWFS is located      */
 
                            /* CCD geometry information.                       */
                            /* ------------------------                        */
@@ -432,6 +443,11 @@ typedef   struct      /* Context structure used to describe an observation.   */
                                        /* of the window                       */
    int         y1, y2 ;                /* In case of windowing y coordinates  */
                                        /* of the window                       */
+
+                           /* CCD global information                          */
+                           /* ----------------------                          */
+   double      detTemp;                /* Detector temperature                */
+
 
                            /* Time stamps.                                    */
                            /* ------------                                    */

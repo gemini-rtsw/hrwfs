@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="4860"
-	nwords_sta="2560"
+	nwords_dspy="4888"
+	nwords_sta="2584"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="3392"
-	osta="832"
-	odynamic="3392"
-	oplot="4688"
-	ord="4688"
-	oes="4848"
-	okd="4848"
-	opd="4860"
-	opo="4860"
+	odyng="3420"
+	osta="836"
+	odynamic="3420"
+	oplot="4716"
+	ord="4716"
+	oes="4876"
+	okd="4876"
+	opd="4888"
+	opo="4888"
 	opc="68"
 	ostr="256"
-	ocmap="832"
-	ocrules="832"
+	ocmap="836"
+	ocrules="836"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -64,11 +64,11 @@ display {
 }
 "rectangle" {
 	object {
-		x="442"
+		x="445"
 		y="509"
 		width="170"
 		height="118"
-		groupid="2"
+		groupid="0"
 	}
 }
 "<<basic attribute>>" {
@@ -663,35 +663,35 @@ display {
 }
 "text" {
 	object {
-		x="391"
-		y="654"
+		x="467"
+		y="652"
 		width="121"
 		height="12"
-		groupid="2"
+		groupid="0"
 	}
 	textix="overscan region"
 	align="horiz. left"
 }
 "line" {
 	object {
-		x="499"
-		y="630"
+		x="578"
+		y="628"
 		width="29"
 		height="30"
-		groupid="2"
+		groupid="0"
 	}
 	npoints="3"
 	point[0] {
-		x="499"
-		y="660"
+		x="578"
+		y="658"
 	}
 	point[1] {
-		x="528"
-		y="646"
+		x="607"
+		y="644"
 	}
 	point[2] {
-		x="528"
-		y="630"
+		x="607"
+		y="628"
 	}
 	orgpoint[0] {
 		x="0"
@@ -716,20 +716,11 @@ display {
 }
 "rectangle" {
 	object {
-		x="442"
+		x="443"
 		y="509"
 		width="79"
 		height="118"
-		groupid="2"
-	}
-}
-"rectangle" {
-	object {
-		x="533"
-		y="509"
-		width="79"
-		height="118"
-		groupid="2"
+		groupid="4"
 	}
 }
 "<<basic attribute>>" {
@@ -746,20 +737,9 @@ display {
 		y="519"
 		width="62"
 		height="12"
-		groupid="2"
+		groupid="0"
 	}
 	textix="output 1"
-	align="horiz. left"
-}
-"text" {
-	object {
-		x="546"
-		y="519"
-		width="62"
-		height="12"
-		groupid="2"
-	}
-	textix="output 2"
 	align="horiz. left"
 }
 "<<basic attribute>>" {
@@ -800,7 +780,7 @@ display {
 		height="13"
 		groupid="0"
 	}
-	textix="of the ovsercan region/output]"
+	textix="of the overscan region/output]"
 	align="horiz. left"
 }
 "<<basic attribute>>" {
@@ -836,6 +816,60 @@ display {
 		x="1000"
 		y="-1"
 	}
+}
+"rectangle" {
+	object {
+		x="442"
+		y="509"
+		width="81"
+		height="117"
+		groupid="4"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="24"
+		style="solid"
+		fill="solid"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="523"
+		y="509"
+		width="79"
+		height="118"
+		groupid="5"
+	}
+}
+"<<basic attribute>>" {
+	attr {
+		clr="12"
+		style="solid"
+		fill="outline"
+		width="0"
+	}
+}
+"rectangle" {
+	object {
+		x="522"
+		y="509"
+		width="81"
+		height="117"
+		groupid="5"
+	}
+}
+"text" {
+	object {
+		x="535"
+		y="520"
+		width="62"
+		height="12"
+		groupid="0"
+	}
+	textix="output 2"
+	align="horiz. left"
 }
 "message button" {
 	object {

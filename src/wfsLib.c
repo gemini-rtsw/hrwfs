@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: wfsLib.c,v 1.5 2000-02-03 01:19:26 cboyer Exp $"};
+   "$Id: wfsLib.c,v 1.6 2001-06-07 04:47:13 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -33,6 +33,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   wfsShow               - Display information about the current environment
  *   wfsInitTelName        - Init the telescope name from the TCS
  *   wfsGetTelName         - Get the local copy of the TCS Telescope name
+ *   wfsUpdateAg           - Update the local copy of the CC info from the AG 
+ *   showAcCCStruct        - Show the contents of the AC CC struct
  *
  *   IGNORED FUNCTION NAME(S):
  *   wfs_errorLogPipeSet   - Initialises the error logging pipe
@@ -50,6 +52,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   MODIFICATION
+ *   - 05 jun 2001 - cb - add wfsUpdateAg and showAcCCStruct
  *   - 10 dec 1999 - cb - tidy up
  *   - 22 Nov 1999 - cb - bug fixed into wfsInitTelName 
  *   - 9 Nov 1999 - cb - add wfsInitTelName and wfsGetTelName
@@ -78,6 +81,8 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 
 #include <sirRecord.h>
 #include <genSubRecord.h>
+#include <alarm.h>
+
 
 #define SYSEXT_MAX_N_PROC   15
 
@@ -111,6 +116,8 @@ IMPORT int errorCount;                   /* Current global error count.       */
 /* Global variables */
 
 char tcsTelName [40] ;
+
+AC_CC_STRUCT acCCId;
 
 /* -------------------------------------------------------------------------- */
 
@@ -876,9 +883,9 @@ STATUS   wfsInitTelName (struct genSubRecord *pgensub)
 {
 
     strcpy ( tcsTelName , (char *)pgensub->a ) ; 
-    if ( (strcmp ( tcsTelName , "Gemini North" ) != 0) && 
-         ( strcmp ( tcsTelName , "Gemini South" ) != 0) )
-       strcpy ( tcsTelName , "Gemini North" ) ;
+    if ( (strcmp ( tcsTelName , "Gemini-North" ) != 0) && 
+         ( strcmp ( tcsTelName , "Gemini-South" ) != 0) )
+       strcpy ( tcsTelName , "Gemini-North" ) ;
     return (OK) ;
 }
 
@@ -922,4 +929,147 @@ void   wfsGetTelName (char *pTelName)
     strcpy ( pTelName , tcsTelName ) ;
 
     return;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   wfsUpdateAg
+ *
+ *   INVOCATION:
+ *   wfsUpdateAg (pgensub)
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   None
+ *
+ *   FUNCTION VALUE:
+ *   (STATUS)   OK if successful, or ERROR if unsuccessful
+ *
+ *   PURPOSE:
+ *   Update the global AC Component Controller Data
+ *
+ *   DESCRIPTION:
+ *   This routine is called every 5 second and update the data from the CC
+ *
+ *   EXTERNAL VARIABLES:
+ *
+ *   PRIOR REQUIREMENTS:
+ *
+ *   INCLUDE FILES:
+ *
+ *   DEFICIENCIES:
+ *
+ *   BUGS:
+ *-
+ */
+
+STATUS   wfsUpdateAg (struct genSubRecord *pgensub)
+{
+   static BOOL agWasConnected = TRUE;
+                    /* Flag used to record changes in the AG connection state */
+   static BOOL firstTime = TRUE;
+
+   /*
+    * Don't do anything the first time this function is called to allow time for
+    * the database to settle down and all the connections to be made. This will
+    * prevent the output of a "AG database not connected" error followed
+    * immediately by a "AG database reconnected" message.
+    */
+
+   if ( firstTime )
+   {
+      firstTime = FALSE;
+      return (OK);
+   }
+
+   /*
+    * If the AG database is not connected it will not be possible to obtain
+    * values. Whenever the AG disconnects the genSub record changes its alarm
+    * severity to INVALID.
+    *
+    * This error message can get annoying if it repeats regularly, so only
+    * changes in status are recorded.
+    */
+
+   if ( pgensub->sevr == INVALID_ALARM )
+   {
+      if ( agWasConnected )
+      {
+         /* Commented because of epicsPrint data access error when AG
+          * disconnected
+          */
+         /*ERROR_SET (0, "**** TCS database not connected ****",
+                 ERROR_LOG_NOW);*/
+         printf ( "**** AG database not connected ****\n" ) ;
+         agWasConnected = FALSE;
+         return (ERROR);
+      }
+   }
+   else if ( !agWasConnected )
+   {
+      printf ( "**** AG database reconnected ****");
+      agWasConnected = TRUE;
+   }
+
+   /*
+    * Get the information from the different fields
+    */
+
+   strcpy ( acCCId.clFilterName , (char *)pgensub->a ) ; 
+   strcpy ( acCCId.ndFilterName , (char *)pgensub->b ) ; 
+   strcpy ( acCCId.lensName , (char *)pgensub->c ) ; 
+   strcpy ( acCCId.fldStopName , (char *)pgensub->d ) ; 
+   strcpy ( acCCId.calName , (char *)pgensub->e ) ; 
+
+   acCCId.focusPos = *((double *)pgensub->f); 
+
+   return (OK) ;
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   showAcCCStruct
+ *
+ *   INVOCATION:
+ *   showAcCCStruct ()
+ *
+ *   PARAMETERS: (">" input, "!" modified, "<" output)
+ *   None
+ *
+ *   FUNCTION VALUE:
+ *   (void)   
+ *
+ *   PURPOSE:
+ *   Show the contents of the acCCId structure
+ *
+ *   DESCRIPTION:
+ *   Show the contents of the acCCId structure
+ *
+ *   EXTERNAL VARIABLES:
+ *
+ *   PRIOR REQUIREMENTS:
+ *
+ *   INCLUDE FILES:
+ *
+ *   DEFICIENCIES:
+ *
+ *   BUGS:
+ *-
+ */
+
+void   showAcCCStruct ()
+{
+
+    printf ( "AC CC INFO:\n" );
+    printf ( "===========\n" );
+    printf ( "cl filter name: %s\n" , acCCId.clFilterName );
+    printf ( "nd filter name: %s\n" , acCCId.ndFilterName );
+    printf ( "lens name: %s\n" , acCCId.lensName );
+    printf ( "field stop name: %s\n" , acCCId.fldStopName );
+    printf ( "cal source name: %s\n" , acCCId.calName );
+    printf ( "focus pos: %f mm\n" , (float)(acCCId.focusPos) );
+    printf ( "\n" );
 }

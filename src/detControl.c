@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.15 2001-06-05 02:58:04 cboyer Exp $"};
+   "$Id: detControl.c,v 1.16 2001-06-07 04:47:12 cboyer Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -30,6 +30,10 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *   Steven Beard
  *
  *   HISTORY MODIFICATION
+ *   05 jun 2001 - cb add fits keywords:
+ *                 FILTER1, FILTER2, ACLENS, FLDSTOP, CALSRC, ACFOCUS, DETTEMP
+ *                 INPORT. Move some keywords to dataset, duplicate wcs keywords
+ *                 for dataset and dataframe. Modify ccdsec... keywords
  *   01 jun 2001 - cb add overscan region
  *   30 may 2001 - cb fix bug in detGeometry, and in detCheckGeometry, 
  *                 add DET_CONTROL_HRWFS_MAX_XSIZE, DET_CONTROL_HRWFS_MAX_YSIZE
@@ -189,6 +193,8 @@ int dhsTime2 ;
 
 extern int sdsuFrameLost ;
 
+extern AC_CC_STRUCT acCCId;     /* Contains all AG data - defined in wfsLib.c */
+
 /********************************* Private functions - one for each command ***/
 
 LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix, 
@@ -312,7 +318,8 @@ STATUS detReadFitsImageUint16 ( uint16 * pImageBuffer, char * fileName,
                                 int buffSize);
 uint32 detContInit (char * pInitFileName, uint32 * pTempCode,
                     uint32 * pTempCoeff, long *pOffsetFullVect, 
-                    long * pOffsetBinVect, char * pCcdSn);
+                    long * pOffsetBinVect, char * pCcdSn, char * pInstName,
+                    int * pPort);
 uint32 detGetSirContext (const char * pRecordPrefix, OBS_ID obsId);
 uint32 detWriteDefSirContext (OBS_ID obsId);
 
@@ -757,7 +764,8 @@ STATUS   detControl
       strcat ( detContInitFileName , defFileName ) ;
 
       if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
-                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+                         offsetFullVect, offsetBinVect, obsId->detId,
+                         obsId->instName, &(obsId->inport)) == ERROR )
       {
          MESSAGE_LOG ( MSG_LOG,
            "Failed to init detector controller default settings from file");
@@ -2797,6 +2805,7 @@ uint32 observeStart
 
    int            nPixels;         /* Total number of pixels descrambled      */
    int            nPixelsDhs;      /* Total number of pixels displayed        */
+   int            maxOutput;    
 
    /* SDSU parameters. */
 
@@ -2891,53 +2900,211 @@ uint32 observeStart
        * Initialize xPixelsDhs and yPixelsDhs 
        */
       
+      sprintf ( obsId->ccdSize , "[1:%d,1:%d]" ,
+                DET_CONTROL_HRWFS_XSIZE, DET_CONTROL_HRWFS_YSIZE );
+
       if ( obsId->fullImageFlag == TRUE )
       {
          obsId->xPixelsDhs = obsId->xPixels;
          obsId->yPixelsDhs = obsId->yPixels;
-         sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
-         sprintf ( obsId->ccdSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
-         sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
+
+         sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                   obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+         sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                   (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                   obsId->outputsNb), obsId->yPixels ) ;
+         sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                         obsId->outputsNb) + 1),
+                   obsId->xPixels - 2*(obsId->oscanNb),
+                   obsId->yPixels ) ;
+
+         sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                   (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                         obsId->outputsNb),
+                   obsId->yPixels ) ;
+         sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                         obsId->outputsNb) + 1),
+                   obsId->xPixels - 2*(obsId->oscanNb),
+                   obsId->yPixels ) ;
+
+         if ( obsId->oscanNb != 0 )
+         {
+            sprintf ( obsId->biasSec1, "[%d:%d,1:%d]" ,
+                      (obsId->xPixels - 2*(obsId->oscanNb)) + 1,
+                      obsId->xPixels - obsId->oscanNb , obsId->yPixels ) ;
+            sprintf ( obsId->biasSec2, "[%d:%d,1:%d]" ,
+                      obsId->xPixels - obsId->oscanNb + 1,
+                      obsId->xPixels , obsId->yPixels ) ;
+         }
+         else
+         {
+            strcpy ( obsId->biasSec1, "" );
+            strcpy ( obsId->biasSec2, "" );
+         }
       }
       else
       {
          if ( obsId->windowingFlag == TRUE )
          {
-            obsId->xPixelsDhs = obsId->x2 - obsId->x1 + 1;
-            obsId->yPixelsDhs = obsId->y2 - obsId->y1 + 1;
-            sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                      obsId->xPixelsDhs , obsId->yPixelsDhs ) ; 
-            sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" , 
-                      obsId->x1 , obsId->x2 , obsId->y1 , obsId->y2 ) ; 
-            if ( obsId->binningFlag == TRUE )
-               sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                         DET_CONTROL_HRWFS_XSIZE/(obsId->xBin) , 
-                         DET_CONTROL_HRWFS_YSIZE/(obsId->yBin) ) ; 
+            if ( obsId->oscanNb != 0 )
+            {
+               if ( obsId->oscanFlag == FULL )
+                  obsId->xPixelsDhs = 
+                  obsId->x2 - obsId->x1 + 1 + 2*obsId->oscanNb;
+               else
+                  obsId->xPixelsDhs = 
+                  obsId->x2 - obsId->x1 + 1 + obsId->oscanNb;
+            }
             else
-               sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                   DET_CONTROL_HRWFS_XSIZE , 
-                         DET_CONTROL_HRWFS_YSIZE ) ; 
+               obsId->xPixelsDhs = obsId->x2 - obsId->x1 + 1;
+
+            obsId->yPixelsDhs = obsId->y2 - obsId->y1 + 1;
+
+            maxOutput = 
+            (int)(DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb));
+
+            if ( obsId->x1 <= maxOutput )
+            {
+               if ( obsId->x2 <= maxOutput )
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  strcpy (obsId->ccdSec2 , "" );
+                  
+                  sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                            obsId->x2 - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1) ;
+                  strcpy (obsId->dataSec2 , "" );
+                   
+                  if ( obsId->oscanNb != 0 )
+                  {
+                     sprintf ( obsId->biasSec1 , "[%d:%d,1:%d]" ,
+                               obsId->x2 - obsId->x1 + 2, 
+                               obsId->x2 - obsId->x1 + 1 + obsId->oscanNb, 
+                               obsId->y2 - obsId->y1 + 1) ;
+                     strcpy (obsId->biasSec2 , "" );
+                  }
+                  else
+                  {
+                     strcpy ( obsId->biasSec1, "" );
+                     strcpy ( obsId->biasSec2, "" );
+                  }
+               }
+               else
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, maxOutput, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 ) ;
+
+                  sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                            maxOutput - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1 ) ;
+                  sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                            maxOutput - obsId->x1 + 2, 
+                            obsId->x2 - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1) ;
+
+                  if ( obsId->oscanNb != 0 )
+                  {
+                     sprintf ( obsId->biasSec1, "[%d:%d,1:%d]",
+                               obsId->x2 - obsId->x1 + 2, 
+                               obsId->x2 - obsId->x1 + 1 + obsId->oscanNb,
+                               obsId->y2 - obsId->y1 + 1);
+                     sprintf ( obsId->biasSec2, "[%d:%d,1:%d]",
+                               obsId->x2 - obsId->x1 + 2 + obsId->oscanNb,
+                               obsId->x2 - obsId->x1 + 1 + 2*obsId->oscanNb,
+                               obsId->y2 - obsId->y1 + 1);
+                  }
+                  else
+                  {
+                     strcpy ( obsId->biasSec1, "" );
+                     strcpy ( obsId->biasSec2, "" );
+                  }
+               }
+            }
+            else
+            {
+               sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               strcpy ( obsId->ccdSec1 , "" );
+               sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+
+               strcpy ( obsId->dataSec1 , "" );
+               sprintf ( obsId->dataSec2 , "[1:%d,1:%d]" ,
+                         obsId->x2 - obsId->x1 + 1, 
+                         obsId->y2 - obsId->y1 + 1) ;
+
+               if ( obsId->oscanNb != 0 )
+               {
+                  strcpy ( obsId->biasSec1, "" );
+                  sprintf ( obsId->biasSec2, "[%d:%d,1:%d]",
+                            obsId->x2 - obsId->x1 + 2,
+                            obsId->x2 - obsId->x1 + 1 + obsId->oscanNb,
+                            obsId->y2 - obsId->y1 + 1);
+               }
+               else
+               {
+                  strcpy ( obsId->biasSec1, "" );
+                  strcpy ( obsId->biasSec2, "" );
+               }
+            }
          }
          else
          {
             obsId->xPixelsDhs = obsId->xPixels;
             obsId->yPixelsDhs = obsId->yPixels;
-            sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
-            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
-            sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
+
+            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                      obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+            sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                      (int)((obsId->xPixels - 2*(obsId->oscanNb))
+                            /obsId->outputsNb),
+                      obsId->yPixels ) ;
+            sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))
+                      /obsId->outputsNb) + 1),
+                      obsId->xPixels - 2*(obsId->oscanNb),
+                      obsId->yPixels ) ;
+
+            sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                      (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                      obsId->outputsNb),
+                      obsId->yPixels ) ;
+            sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                      obsId->outputsNb) + 1),
+                      obsId->xPixels - 2*(obsId->oscanNb),
+                      obsId->yPixels ) ;
+
+            if ( obsId->oscanNb != 0 )
+            {
+               sprintf ( obsId->biasSec1, "[%d:%d,1:%d]" ,
+                         (obsId->xPixels - 2*(obsId->oscanNb)) + 1,
+                         obsId->xPixels - obsId->oscanNb , obsId->yPixels ) ;
+               sprintf ( obsId->biasSec2, "[%d:%d,1:%d]" ,
+                         obsId->xPixels - obsId->oscanNb + 1,
+                         obsId->xPixels , obsId->yPixels ) ;
+            }
+            else
+            {
+               strcpy ( obsId->biasSec1, "" );
+               strcpy ( obsId->biasSec2, "" );
+            }
          }
       }
          
-#ifdef DEBUG
-      printf ( "observeStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
+/*#ifdef DEBUG*/
+      printf ( "detObserveStart: xPixelDhs=%d, yPixelDhs=%d\n" , 
                obsId->xPixelsDhs , obsId->yPixelsDhs) ;
-#endif
+/*#endif*/
 
       /*
        * If a request has been made to send data to the DHS, check that the 
@@ -3497,15 +3664,27 @@ uint32 observeStart
             "Failed to convert time stamp at observation start to date/time",
             ERROR_LOG_NOW);
       }
-      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
-               obsId->timeArrayStart[0], obsId->timeArrayStart[1], obsId->timeArrayStart[2],
-               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5],
+      sprintf (obsId->utStartString, "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
+               obsId->timeArrayStart[0], obsId->timeArrayStart[1], 
+               obsId->timeArrayStart[2],
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], 
+               obsId->timeArrayStart[5],
                obsId->timeArrayStart[6]);
 
-      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, obsId->pUTstartContext ) == ERROR)
+      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, 
+                           obsId->pUTstartContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set UT at start of observation SIR record");
       }
+
+      sprintf (obsId->utDateStartString, "%04d-%02d-%02d",
+               obsId->timeArrayStart[0], obsId->timeArrayStart[1],
+               obsId->timeArrayStart[2]);
+
+      sprintf (obsId->utTimeStartString, "%02d:%02d:%02d.%03d",
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], 
+               obsId->timeArrayStart[5],
+               obsId->timeArrayStart[6]);
 
 #ifdef DEBUG
       printf ( "obsId->utStartString = %s\n" , obsId->utStartString ) ;
@@ -3590,13 +3769,46 @@ uint32 observeStart
          if (dhsErrno == DHS_S_SUCCESS)
          {
             dhsBdAttribAdd (obsId->dhsDataset, "instrument", 
-               DHS_DT_STRING, 0, NULL, pDetDhsClientName, &dhsErrno);
+               DHS_DT_STRING, 0, NULL, obsId->instName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "observatory", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FILTER1", DHS_DT_STRING, 
+                            0, NULL, acCCId.clFilterName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FILTER2", DHS_DT_STRING, 
+                            0, NULL, acCCId.ndFilterName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "aclens", DHS_DT_STRING, 
+                            0, NULL, acCCId.lensName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "fldstop", DHS_DT_STRING, 
+                            0, NULL, acCCId.fldStopName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "calsrc", DHS_DT_STRING, 
+                            0, NULL, acCCId.calName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "acfocus", DHS_DT_DOUBLE, 
+                            0, NULL, acCCId.focusPos, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "dettemp", DHS_DT_DOUBLE, 
+                            0, NULL, obsId->detTemp, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "INPORT", DHS_DT_INT32, 
+                            0, NULL, obsId->inport, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "obstype", DHS_DT_STRING, 0, 
+                            NULL, obsId->pObsType, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "exptime", DHS_DT_DOUBLE, 0, 
+                            NULL, obsId->exposed, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "darktime", DHS_DT_DOUBLE, 0, 
+                            NULL, obsId->exposed, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
 
@@ -3647,19 +3859,10 @@ uint32 observeStart
             CHECK_DHS (dhsErrno);
 
             bzero=(double)(32768.0) ;
-            dhsBdAttribAdd (obsId->dhsDataFrame, "bzero", DHS_DT_DOUBLE, 0,
+            /*dhsBdAttribAdd (obsId->dhsDataFrame, "bzero", DHS_DT_DOUBLE, 0,
                             NULL, bzero, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            CHECK_DHS (dhsErrno);*/
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "obstype", DHS_DT_STRING, 0, 
-                            NULL, obsId->pObsType, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "exptime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->exposed, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "darktime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->exposed, &dhsErrno);
-            CHECK_DHS (dhsErrno);
 
             /* WCS attributes */
 
@@ -3668,37 +3871,76 @@ uint32 observeStart
                dhsBdAttribAdd (obsId->dhsDataFrame, "ctype1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "ctype1", DHS_DT_STRING, 
+                               0, NULL, obsId->ctype1, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                crpix1Float = (float)(obsId->crpix1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRPIX1", DHS_DT_FLOAT, 
                                0, NULL, crpix1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRPIX1", DHS_DT_FLOAT, 
+                               0, NULL, crpix1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRVAL1", DHS_DT_DOUBLE, 
                                0, NULL, obsId->crval1, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRVAL1", DHS_DT_DOUBLE, 
+                               0, NULL, obsId->crval1, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "ctype2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "ctype2", DHS_DT_STRING, 
+                               0, NULL, obsId->ctype2, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                crpix2Float = (float)(obsId->crpix2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRPIX2", DHS_DT_FLOAT, 
                                0, NULL, crpix2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRPIX2", DHS_DT_FLOAT, 
+                               0, NULL, crpix2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRVAL2", DHS_DT_DOUBLE, 
                                0, NULL, obsId->crval2, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRVAL2", DHS_DT_DOUBLE, 
+                               0, NULL, obsId->crval2, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd1_1Float = (float)(obsId->cd1_1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD1_1", DHS_DT_FLOAT, 
                                0, NULL, cd1_1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD1_1", DHS_DT_FLOAT, 
+                               0, NULL, cd1_1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd1_2Float = (float)(obsId->cd1_2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD1_2", DHS_DT_FLOAT, 
                                0, NULL, cd1_2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD1_2", DHS_DT_FLOAT, 
+                               0, NULL, cd1_2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd2_1Float = (float)(obsId->cd2_1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD2_1", DHS_DT_FLOAT, 
                                0, NULL, cd2_1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD2_1", DHS_DT_FLOAT, 
+                               0, NULL, cd2_1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd2_2Float = (float)(obsId->cd2_2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD2_2", DHS_DT_FLOAT, 
+                               0, NULL, cd2_2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD2_2", DHS_DT_FLOAT, 
                                0, NULL, cd2_2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
             }
@@ -3706,49 +3948,70 @@ uint32 observeStart
             sprintf ( raString , "%f" , obsId->RA ) ;
             sprintf ( decString , "%f" , obsId->Dec ) ;
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "RA", DHS_DT_STRING, 0, NULL,
+            dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_STRING, 0, NULL,
                             raString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "DEC", DHS_DT_STRING, 0, NULL,
+            dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_STRING, 0, NULL,
                             decString, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "equinox", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "equinox", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->equinox, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "epoch", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "epoch", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->epoch, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "mjd-obs", DHS_DT_DOUBLE, 
+            dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             /* ADD MORE DATA FRAME HEADER ITEMS HERE. */
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "xbin", DHS_DT_INT32, 
+            dhsBdAttribAdd (obsId->dhsDataset, "xbin", DHS_DT_INT32, 
                             0, NULL, obsId->xBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "ybin", DHS_DT_INT32, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ybin", DHS_DT_INT32, 
                             0, NULL, obsId->yBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "datasec", DHS_DT_STRING, 
-                            0, NULL, obsId->dataSec, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsize", DHS_DT_STRING,
+                            0, NULL, obsId->ccdSize, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "ccdsec", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec", DHS_DT_STRING,
                             0, NULL, obsId->ccdSec, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "origsec", DHS_DT_STRING, 
-                            0, NULL, obsId->origSec, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec1", DHS_DT_STRING,
+                            0, NULL, obsId->ccdSec1, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "utstart", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec2", DHS_DT_STRING,
+                            0, NULL, obsId->ccdSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "datasec1", DHS_DT_STRING,
+                            0, NULL, obsId->dataSec1, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "datasec2", DHS_DT_STRING,
+                            0, NULL, obsId->dataSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "biassec1", DHS_DT_STRING,
+                            0, NULL, obsId->biasSec1, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "biassec2", DHS_DT_STRING,
+                            0, NULL, obsId->biasSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "utstart", DHS_DT_STRING, 
                             0, NULL, obsId->utStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "dettype", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DATE-OBS", DHS_DT_STRING, 
+                            0, NULL, obsId->utDateStartString, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "TIME-OBS", DHS_DT_STRING, 
+                            0, NULL, obsId->utTimeStartString, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "dettype", DHS_DT_STRING, 
                             0, NULL, obsId->detType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "detid", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "detid", DHS_DT_STRING, 
                             0, NULL, obsId->detId, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
@@ -3990,6 +4253,7 @@ uint32 detObserveStart
 
    int            nPixels;         /* Total number of pixels descrambled      */
    int            nPixelsDhs;      /* Total number of pixels displayed        */
+   int            maxOutput;    
 
    /* SDSU parameters. */
 
@@ -4208,16 +4472,49 @@ uint32 detObserveStart
        * Initialize xPixelsDhs and yPixelsDhs 
        */
       
+      sprintf ( obsId->ccdSize , "[1:%d,1:%d]" ,
+                DET_CONTROL_HRWFS_XSIZE, DET_CONTROL_HRWFS_YSIZE );
+
       if ( obsId->fullImageFlag == TRUE )
       {
          obsId->xPixelsDhs = obsId->xPixels;
          obsId->yPixelsDhs = obsId->yPixels;
-         sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
-         sprintf ( obsId->ccdSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
-         sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                   obsId->xPixels , obsId->yPixels ) ; 
+
+         sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                   obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+         sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                   (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                   obsId->outputsNb), obsId->yPixels ) ;
+         sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                   obsId->outputsNb) + 1),
+                   obsId->xPixels - 2*(obsId->oscanNb),
+                   obsId->yPixels ) ;
+
+         sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                   (int)((obsId->xPixels - 2*(obsId->oscanNb))
+                   /obsId->outputsNb),
+                   obsId->yPixels ) ;
+         sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                   (int)(((obsId->xPixels - 2*(obsId->oscanNb))
+                   /obsId->outputsNb) + 1),
+                   obsId->xPixels - 2*(obsId->oscanNb),
+                   obsId->yPixels ) ;
+
+         if ( obsId->oscanNb != 0 )
+         {
+            sprintf ( obsId->biasSec1, "[%d:%d,1:%d]" ,
+                      (obsId->xPixels - 2*(obsId->oscanNb)) + 1,
+                      obsId->xPixels - obsId->oscanNb , obsId->yPixels ) ;
+            sprintf ( obsId->biasSec2, "[%d:%d,1:%d]" ,
+                      obsId->xPixels - obsId->oscanNb + 1,
+                      obsId->xPixels , obsId->yPixels ) ;
+         }
+         else
+         {
+            strcpy ( obsId->biasSec1, "" );
+            strcpy ( obsId->biasSec2, "" );
+         }
       }
       else
       {
@@ -4236,29 +4533,143 @@ uint32 detObserveStart
                obsId->xPixelsDhs = obsId->x2 - obsId->x1 + 1;
 
             obsId->yPixelsDhs = obsId->y2 - obsId->y1 + 1;
-            sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                      obsId->xPixelsDhs , obsId->yPixelsDhs ) ; 
-            sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" , 
-                      obsId->x1 , obsId->x2 , obsId->y1 , obsId->y2 ) ; 
-            if ( obsId->binningFlag == TRUE )
-               sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                         DET_CONTROL_HRWFS_XSIZE/(obsId->xBin) , 
-                         DET_CONTROL_HRWFS_YSIZE/(obsId->yBin) ) ; 
+
+            maxOutput = 
+            (int)(DET_CONTROL_HRWFS_XSIZE / (obsId->xBin * obsId->outputsNb)) ;
+
+            if ( obsId->x1 <= maxOutput )
+            {
+               if ( obsId->x2 <= maxOutput )
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  strcpy (obsId->ccdSec2 , "" );
+                  
+                  sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                            obsId->x2 - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1) ;
+                  strcpy (obsId->dataSec2 , "" );
+                   
+                  if ( obsId->oscanNb != 0 )
+                  {
+                     sprintf ( obsId->biasSec1 , "[%d:%d,1:%d]" ,
+                               obsId->x2 - obsId->x1 + 2, 
+                               obsId->x2 - obsId->x1 + 1 + obsId->oscanNb, 
+                               obsId->y2 - obsId->y1 + 1) ;
+                     strcpy (obsId->biasSec2 , "" );
+                  }
+                  else
+                  {
+                     strcpy ( obsId->biasSec1, "" );
+                     strcpy ( obsId->biasSec2, "" );
+                  }
+               }
+               else
+               {
+                  sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                            obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec1 , "[%d:%d,%d:%d]" ,
+                            obsId->x1, maxOutput, obsId->y1, obsId->y2 ) ;
+                  sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                            maxOutput + 1, obsId->x2, obsId->y1, obsId->y2 ) ;
+
+                  sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                            maxOutput - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1 ) ;
+                  sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                            maxOutput - obsId->x1 + 2, 
+                            obsId->x2 - obsId->x1 + 1, 
+                            obsId->y2 - obsId->y1 + 1) ;
+
+                  if ( obsId->oscanNb != 0 )
+                  {
+                     sprintf ( obsId->biasSec1, "[%d:%d,1:%d]",
+                               obsId->x2 - obsId->x1 + 2, 
+                               obsId->x2 - obsId->x1 + 1 + obsId->oscanNb,
+                               obsId->y2 - obsId->y1 + 1);
+                     sprintf ( obsId->biasSec2, "[%d:%d,1:%d]",
+                               obsId->x2 - obsId->x1 + 2 + obsId->oscanNb,
+                               obsId->x2 - obsId->x1 + 1 + 2*obsId->oscanNb,
+                               obsId->y2 - obsId->y1 + 1);
+                  }
+                  else
+                  {
+                     strcpy ( obsId->biasSec1, "" );
+                     strcpy ( obsId->biasSec2, "" );
+                  }
+               }
+            }
             else
-               sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                   DET_CONTROL_HRWFS_XSIZE , 
-                         DET_CONTROL_HRWFS_YSIZE ) ; 
+            {
+               sprintf ( obsId->ccdSec , "[%d:%d,%d:%d]" ,
+                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+               strcpy ( obsId->ccdSec1 , "" );
+               sprintf ( obsId->ccdSec2 , "[%d:%d,%d:%d]" ,
+                         obsId->x1, obsId->x2, obsId->y1, obsId->y2 ) ;
+
+               strcpy ( obsId->dataSec1 , "" );
+               sprintf ( obsId->dataSec2 , "[1:%d,1:%d]" ,
+                         obsId->x2 - obsId->x1 + 1, 
+                         obsId->y2 - obsId->y1 + 1) ;
+
+               if ( obsId->oscanNb != 0 )
+               {
+                  strcpy ( obsId->biasSec1, "" );
+                  sprintf ( obsId->biasSec2, "[%d:%d,1:%d]",
+                            obsId->x2 - obsId->x1 + 2,
+                            obsId->x2 - obsId->x1 + 1 + obsId->oscanNb,
+                            obsId->y2 - obsId->y1 + 1);
+               }
+               else
+               {
+                  strcpy ( obsId->biasSec1, "" );
+                  strcpy ( obsId->biasSec2, "" );
+               }
+            }
          }
          else
          {
             obsId->xPixelsDhs = obsId->xPixels;
             obsId->yPixelsDhs = obsId->yPixels;
-            sprintf ( obsId->dataSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
-            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
-            sprintf ( obsId->origSec , "[1:%d,1:%d]" , 
-                      obsId->xPixels , obsId->yPixels ) ; 
+
+            sprintf ( obsId->ccdSec , "[1:%d,1:%d]" ,
+                      obsId->xPixels - 2*(obsId->oscanNb), obsId->yPixels ) ;
+            sprintf ( obsId->ccdSec1 , "[1:%d,1:%d]" ,
+                      (int)((obsId->xPixels - 2*(obsId->oscanNb))
+                      /obsId->outputsNb),
+                      obsId->yPixels ) ;
+            sprintf ( obsId->ccdSec2 , "[%d:%d,1:%d]" ,
+                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))
+                      /obsId->outputsNb) + 1),
+                      obsId->xPixels - 2*(obsId->oscanNb),
+                      obsId->yPixels ) ;
+
+            sprintf ( obsId->dataSec1 , "[1:%d,1:%d]" ,
+                      (int)((obsId->xPixels - 2*(obsId->oscanNb))/
+                      obsId->outputsNb),
+                      obsId->yPixels ) ;
+            sprintf ( obsId->dataSec2 , "[%d:%d,1:%d]" ,
+                      (int)(((obsId->xPixels - 2*(obsId->oscanNb))/
+                      obsId->outputsNb) + 1),
+                      obsId->xPixels - 2*(obsId->oscanNb),
+                      obsId->yPixels ) ;
+
+            if ( obsId->oscanNb != 0 )
+            {
+               sprintf ( obsId->biasSec1, "[%d:%d,1:%d]" ,
+                         (obsId->xPixels - 2*(obsId->oscanNb)) + 1,
+                         obsId->xPixels - obsId->oscanNb , obsId->yPixels ) ;
+               sprintf ( obsId->biasSec2, "[%d:%d,1:%d]" ,
+                         obsId->xPixels - obsId->oscanNb + 1,
+                         obsId->xPixels , obsId->yPixels ) ;
+            }
+            else
+            {
+               strcpy ( obsId->biasSec1, "" );
+               strcpy ( obsId->biasSec2, "" );
+            }
          }
       }
          
@@ -5007,12 +5418,24 @@ uint32 detObserveStart
             "Failed to convert time stamp at observation start to date/time",
             ERROR_LOG_NOW);
       }
-      sprintf (obsId->utStartString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
-               obsId->timeArrayStart[0], obsId->timeArrayStart[1], obsId->timeArrayStart[2],
-               obsId->timeArrayStart[3], obsId->timeArrayStart[4], obsId->timeArrayStart[5],
+      sprintf (obsId->utStartString, "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
+               obsId->timeArrayStart[0], obsId->timeArrayStart[1], 
+               obsId->timeArrayStart[2],
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], 
+               obsId->timeArrayStart[5],
                obsId->timeArrayStart[6]);
 
-      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, obsId->pUTstartContext ) == ERROR)
+      sprintf (obsId->utDateStartString, "%04d-%02d-%02d",
+               obsId->timeArrayStart[0], obsId->timeArrayStart[1],
+               obsId->timeArrayStart[2]);
+
+      sprintf (obsId->utTimeStartString, "%02d:%02d:%02d.%03d",
+               obsId->timeArrayStart[3], obsId->timeArrayStart[4], 
+               obsId->timeArrayStart[5],
+               obsId->timeArrayStart[6]);
+
+      if (epToVxPipeWrite( NULL, (char *)obsId->utStartString, 
+                           obsId->pUTstartContext ) == ERROR)
       {
          ERROR_LOG ("Failed to set UT at start of observation SIR record");
       }
@@ -5100,13 +5523,46 @@ uint32 detObserveStart
          if (dhsErrno == DHS_S_SUCCESS)
          {
             dhsBdAttribAdd (obsId->dhsDataset, "instrument", 
-               DHS_DT_STRING, 0, NULL, pDetDhsClientName, &dhsErrno);
+               DHS_DT_STRING, 0, NULL, obsId->instName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "telescope", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
             CHECK_DHS (dhsErrno);
             dhsBdAttribAdd (obsId->dhsDataset, "observatory", DHS_DT_STRING, 
                             0, NULL, telName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FILTER1", DHS_DT_STRING, 
+                            0, NULL, acCCId.clFilterName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "FILTER2", DHS_DT_STRING, 
+                            0, NULL, acCCId.ndFilterName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "aclens", DHS_DT_STRING, 
+                            0, NULL, acCCId.lensName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "fldstop", DHS_DT_STRING, 
+                            0, NULL, acCCId.fldStopName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "calsrc", DHS_DT_STRING, 
+                            0, NULL, acCCId.calName, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "acfocus", DHS_DT_DOUBLE, 
+                            0, NULL, acCCId.focusPos, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "dettemp", DHS_DT_DOUBLE, 
+                            0, NULL, obsId->detTemp, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "INPORT", DHS_DT_INT32, 
+                            0, NULL, obsId->inport, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "obstype", DHS_DT_STRING, 0, 
+                            NULL, obsId->pObsType, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "exptime", DHS_DT_DOUBLE, 0, 
+                            NULL, obsId->expTime, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "darktime", DHS_DT_DOUBLE, 0, 
+                            NULL, obsId->expTime, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
 
@@ -5157,58 +5613,88 @@ uint32 detObserveStart
             CHECK_DHS (dhsErrno);
 
             bzero=(double)(32768.0) ;
-            dhsBdAttribAdd (obsId->dhsDataFrame, "bzero", DHS_DT_DOUBLE, 0,
+            /*dhsBdAttribAdd (obsId->dhsDataFrame, "bzero", DHS_DT_DOUBLE, 0,
                             NULL, bzero, &dhsErrno);
-            CHECK_DHS (dhsErrno);
+            CHECK_DHS (dhsErrno);*/
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "obstype", DHS_DT_STRING, 0, 
-                            NULL, obsId->pObsType, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "exptime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->expTime, &dhsErrno);
-            CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "darktime", DHS_DT_DOUBLE, 0, 
-                            NULL, obsId->expTime, &dhsErrno);
-            CHECK_DHS (dhsErrno);
 
             /* WCS attributes */
 
             if ( wcsStatus == 0 )
             {
+               dhsBdAttribAdd (obsId->dhsDataset, "ctype1", DHS_DT_STRING, 
+                               0, NULL, obsId->ctype1, &dhsErrno);
+               CHECK_DHS (dhsErrno);
                dhsBdAttribAdd (obsId->dhsDataFrame, "ctype1", DHS_DT_STRING, 
                                0, NULL, obsId->ctype1, &dhsErrno);
                CHECK_DHS (dhsErrno);
+
                crpix1Float = (float)(obsId->crpix1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRPIX1", DHS_DT_FLOAT, 
                                0, NULL, crpix1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRPIX1", DHS_DT_FLOAT, 
+                               0, NULL, crpix1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRVAL1", DHS_DT_DOUBLE, 
                                0, NULL, obsId->crval1, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRVAL1", DHS_DT_DOUBLE, 
+                               0, NULL, obsId->crval1, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "ctype2", DHS_DT_STRING, 
                                0, NULL, obsId->ctype2, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "ctype2", DHS_DT_STRING, 
+                               0, NULL, obsId->ctype2, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                crpix2Float = (float)(obsId->crpix2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRPIX2", DHS_DT_FLOAT, 
                                0, NULL, crpix2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRPIX2", DHS_DT_FLOAT, 
+                               0, NULL, crpix2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                dhsBdAttribAdd (obsId->dhsDataFrame, "CRVAL2", DHS_DT_DOUBLE, 
                                0, NULL, obsId->crval2, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CRVAL2", DHS_DT_DOUBLE, 
+                               0, NULL, obsId->crval2, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd1_1Float = (float)(obsId->cd1_1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD1_1", DHS_DT_FLOAT, 
                                0, NULL, cd1_1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD1_1", DHS_DT_FLOAT, 
+                               0, NULL, cd1_1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd1_2Float = (float)(obsId->cd1_2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD1_2", DHS_DT_FLOAT, 
                                0, NULL, cd1_2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD1_2", DHS_DT_FLOAT, 
+                               0, NULL, cd1_2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd2_1Float = (float)(obsId->cd2_1);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD2_1", DHS_DT_FLOAT, 
                                0, NULL, cd2_1Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD2_1", DHS_DT_FLOAT, 
+                               0, NULL, cd2_1Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+
                cd2_2Float = (float)(obsId->cd2_2);
                dhsBdAttribAdd (obsId->dhsDataFrame, "CD2_2", DHS_DT_FLOAT, 
+                               0, NULL, cd2_2Float, &dhsErrno);
+               CHECK_DHS (dhsErrno);
+               dhsBdAttribAdd (obsId->dhsDataset, "CD2_2", DHS_DT_FLOAT, 
                                0, NULL, cd2_2Float, &dhsErrno);
                CHECK_DHS (dhsErrno);
             }
@@ -5216,49 +5702,70 @@ uint32 detObserveStart
             sprintf ( raString , "%f" , obsId->RA ) ;
             sprintf ( decString , "%f" , obsId->Dec ) ;
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "RA", DHS_DT_STRING, 0, NULL,
+            dhsBdAttribAdd (obsId->dhsDataset, "RA", DHS_DT_STRING, 0, NULL,
                             raString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "DEC", DHS_DT_STRING, 0, NULL,
+            dhsBdAttribAdd (obsId->dhsDataset, "DEC", DHS_DT_STRING, 0, NULL,
                             decString, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "equinox", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "equinox", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->equinox, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "epoch", DHS_DT_DOUBLE, 0, 
+            dhsBdAttribAdd (obsId->dhsDataset, "epoch", DHS_DT_DOUBLE, 0, 
                             NULL, obsId->epoch, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "mjd-obs", DHS_DT_DOUBLE, 
+            dhsBdAttribAdd (obsId->dhsDataset, "mjd-obs", DHS_DT_DOUBLE, 
                             0, NULL, obsId->mjdobs, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
             /* ADD MORE DATA FRAME HEADER ITEMS HERE. */
 
-            dhsBdAttribAdd (obsId->dhsDataFrame, "xbin", DHS_DT_INT32, 
+            dhsBdAttribAdd (obsId->dhsDataset, "xbin", DHS_DT_INT32, 
                             0, NULL, obsId->xBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "ybin", DHS_DT_INT32, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ybin", DHS_DT_INT32, 
                             0, NULL, obsId->yBin, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "datasec", DHS_DT_STRING, 
-                            0, NULL, obsId->dataSec, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsize", DHS_DT_STRING, 
+                            0, NULL, obsId->ccdSize, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "ccdsec", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec", DHS_DT_STRING, 
                             0, NULL, obsId->ccdSec, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "origsec", DHS_DT_STRING, 
-                            0, NULL, obsId->origSec, &dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec1", DHS_DT_STRING, 
+                            0, NULL, obsId->ccdSec1, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "utstart", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "ccdsec2", DHS_DT_STRING, 
+                            0, NULL, obsId->ccdSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "datasec1", DHS_DT_STRING, 
+                            0, NULL, obsId->dataSec1, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "datasec2", DHS_DT_STRING, 
+                            0, NULL, obsId->dataSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "biassec1", DHS_DT_STRING, 
+                            0, NULL, obsId->biasSec1, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "biassec2", DHS_DT_STRING, 
+                            0, NULL, obsId->biasSec2, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "utstart", DHS_DT_STRING, 
                             0, NULL, obsId->utStartString, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "dettype", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "DATE-OBS", DHS_DT_STRING, 
+                            0, NULL, obsId->utDateStartString, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "TIME-OBS", DHS_DT_STRING, 
+                            0, NULL, obsId->utTimeStartString, &dhsErrno);
+            CHECK_DHS (dhsErrno);
+            dhsBdAttribAdd (obsId->dhsDataset, "dettype", DHS_DT_STRING, 
                             0, NULL, obsId->detType, &dhsErrno);
             CHECK_DHS (dhsErrno);
-            dhsBdAttribAdd (obsId->dhsDataFrame, "detid", DHS_DT_STRING, 
+            dhsBdAttribAdd (obsId->dhsDataset, "detid", DHS_DT_STRING, 
                             0, NULL, obsId->detId, &dhsErrno);
             CHECK_DHS (dhsErrno);
 
@@ -5779,7 +6286,7 @@ void detObserveEnd
          ERROR_LOG_NOW);
       }
          
-      sprintf (obsId->utEndString, "%04d-%02d-%02d:%02d:%02d:%02d.%03d",
+      sprintf (obsId->utEndString, "%04d-%02d-%02dT%02d:%02d:%02d.%03d",
         obsId->timeArrayEnd[0], obsId->timeArrayEnd[1], obsId->timeArrayEnd[2],
         obsId->timeArrayEnd[3], obsId->timeArrayEnd[4], obsId->timeArrayEnd[5],
         obsId->timeArrayEnd[6]);
@@ -5810,7 +6317,7 @@ void detObserveEnd
 
          if ( obsId->totalFrames == 1 )
          {
-            dhsBdAttribAdd (obsId->dhsDataFrame, "utend", DHS_DT_STRING,
+            dhsBdAttribAdd (obsId->dhsDataset, "utend", DHS_DT_STRING,
                             0, NULL, obsId->utEndString, &dhsErrno);
             CHECK_DHS (dhsErrno);
          }
@@ -7258,7 +7765,8 @@ uint32 detInit
       strcat ( detContInitFileName , defFileName ) ;
 
       if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
-                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+                         offsetFullVect, offsetBinVect, obsId->detId,
+                         obsId->instName, &(obsId->inport)) == ERROR )
       {
          MESSAGE_LOG ( MSG_LOG,
            "Failed to init detector controller default settings from file");
@@ -7751,7 +8259,8 @@ uint32 detReset
       strcat ( detContInitFileName , defFileName ) ;
 
       if ( detContInit ( detContInitFileName, &tempCode, &tempCoeff,
-                         offsetFullVect, offsetBinVect, obsId->detId) == ERROR )
+                         offsetFullVect, offsetBinVect, obsId->detId,
+                         obsId->instName, &(obsId->inport)) == ERROR )
       {
          MESSAGE_LOG ( MSG_LOG,
            "Failed to init detector controller default settings from file");
@@ -10925,10 +11434,17 @@ STATUS detObsShow (
            obsId->pSimFileName,
            ((obsId->sdsuId == NULL) ? "DON'T KNOW" : (obsId->sdsuId->simulate ? "YES" : "NO")) );
 
-   printf ("dataSec[]                        : %s\n", obsId->dataSec);
+   printf ("ccdSize[]                        : %s\n", obsId->ccdSize);
    printf ("ccdSec[]                         : %s\n", obsId->ccdSec);
-   printf ("origSec[]                        : %s\n", obsId->origSec);
+   printf ("ccdSec1[]                        : %s\n", obsId->ccdSec1);
+   printf ("ccdSec2[]                        : %s\n", obsId->ccdSec2);
+   printf ("dataSec1[]                       : %s\n", obsId->dataSec1);
+   printf ("dataSec2[]                       : %s\n", obsId->dataSec2);
+   printf ("biasSec1[]                       : %s\n", obsId->biasSec1);
+   printf ("biasSec2[]                       : %s\n", obsId->biasSec2);
    printf ("utStartString                    : %s\n", obsId->utStartString);
+   printf ("utTimeStartString                : %s\n", obsId->utTimeStartString);
+   printf ("utDateStartString                : %s\n", obsId->utDateStartString);
    printf ("utEndString                      : %s\n", obsId->utEndString);
    printf ("detType                          : %s\n", obsId->detType);
    printf ("detId                            : %s\n", obsId->detId);
@@ -10980,6 +11496,8 @@ STATUS detObsShow (
       obsId->cd1_1, obsId->cd1_2, obsId->cd2_1, obsId->cd2_2);
    printf ("Radecsys, equinox, mjd           : %s %f %f\n",
       obsId->radecsys, obsId->equinox, obsId->mjdobs);
+   printf ("RA/DEC                           : %f %f\n",
+      obsId->RA, obsId->Dec);
    printf ("\n\n");
 
 
@@ -12536,6 +13054,10 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "UTSTART ='%20s'/                                                ", utStartReduceString);
    headerCount++;
+   fprintf (fp, "DATE-OBS='%20s'/                                                ", obsId->utDateStartString);
+   headerCount++;
+   fprintf (fp, "TIME-OBS='%20s'/                                                ", obsId->utTimeStartString);
+   headerCount++;
    fprintf (fp, "UTEND   ='%20s'/                                                ", utEndReduceString);
    headerCount++;
    fprintf (fp, "EXPTIME =      %15f /                                                ", obsId->expTime);
@@ -12546,9 +13068,25 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "TELESCOP='%20s'/                                                ", telName);
    headerCount++;
-   fprintf (fp, "INSTRUME='%20s'/                                                ", obsId->pWfsName);
+   fprintf (fp, "INSTRUME='%20s'/                                                ", obsId->instName);
    headerCount++;
    fprintf (fp, "OBSERVAT='%20s'/                                                ", telName);
+   headerCount++;
+   fprintf (fp, "FILTER1 ='%20s'/                                                ", acCCId.clFilterName);
+   headerCount++;
+   fprintf (fp, "FILTER2 ='%20s'/                                                ", acCCId.ndFilterName);
+   headerCount++;
+   fprintf (fp, "ACLENS  ='%20s'/                                                ", acCCId.lensName);
+   headerCount++;
+   fprintf (fp, "FLDSTOP ='%20s'/                                                ", acCCId.fldStopName);
+   headerCount++;
+   fprintf (fp, "CALSRC  ='%20s'/                                                ", acCCId.calName);
+   headerCount++;
+   fprintf (fp, "ACFOCUS =      %15f /                                                ", acCCId.focusPos);
+   headerCount++;
+   fprintf (fp, "DETTEMP =      %15f /                                                ", obsId->detTemp);
+   headerCount++;
+   fprintf (fp, "INPORT  =                %5d /                                                ", obsId->inport);
    headerCount++;
    fprintf (fp, "BUNIT   ='%20s'/                                                ", DET_BUNIT);
    headerCount++;
@@ -12595,11 +13133,21 @@ STATUS detWriteFitsUint16
    headerCount++;
    fprintf (fp, "YBIN    =                %5d /                                                ", obsId->yBin);
    headerCount++;
-   fprintf (fp, "DATASEC ='%20s'/                                                ", obsId->dataSec);
+   fprintf (fp, "CCDSIZE ='%20s'/                                                ", obsId->ccdSize);
    headerCount++;
    fprintf (fp, "CCDSEC  ='%20s'/                                                ", obsId->ccdSec);
    headerCount++;
-   fprintf (fp, "ORIGSEC ='%20s'/                                                ", obsId->origSec);
+   fprintf (fp, "CCDSEC1 ='%20s'/                                                ", obsId->ccdSec1);
+   headerCount++;
+   fprintf (fp, "CCDSEC2 ='%20s'/                                                ", obsId->ccdSec2);
+   headerCount++;
+   fprintf (fp, "DATASEC1='%20s'/                                                ", obsId->dataSec1);
+   headerCount++;
+   fprintf (fp, "DATASEC2='%20s'/                                                ", obsId->dataSec2);
+   headerCount++;
+   fprintf (fp, "BIASSEC1='%20s'/                                                ", obsId->biasSec1);
+   headerCount++;
+   fprintf (fp, "BIASSEC2='%20s'/                                                ", obsId->biasSec2);
    headerCount++;
    fprintf (fp, "DETTYPE ='%20s'/                                                ", obsId->detType);
    headerCount++;
@@ -14317,6 +14865,7 @@ STATUS detHeadTempGet
       printf ( "detHeadTempGet() : not observing -> val = %f\n" , sdsuTemp ) ;
 #endif
       *(double *)psir->val = sdsuTemp ;
+      detObsIdHr->detTemp = sdsuTemp;
    }
 #ifdef DEBUG
    else
@@ -14480,7 +15029,7 @@ uint32 detDhsReconnect
  *
  *   INVOCATION:
  *   detContInit (pInitFileName, pTempCode, pTempCoeff, pOffsetFullVect, 
- *                pOffsetBinVect, pCcdSn)
+ *                pOffsetBinVect, pCcdSn, pInstName, pPort)
  *
  *   PARAMETERS: (">" input, "!" modified, "<" output)
  *   (>) pInitFileName   (char *)   Init file Name
@@ -14489,6 +15038,8 @@ uint32 detDhsReconnect
  *   (>) pOffsetFullVect (long *)   ADC offset vector when no binning [2]
  *   (>) pOffsetBinVect  (long *)   ADC offset vector when binning [2]
  *   (>) pCcdSn          (char *)   CCD serial number
+ *   (>) pInstName       (char *)   Instrument name
+ *   (>) pPort           (int *)    AG ISS port
  *
  *   FUNCTION VALUE:
  *   (uint32)   Error number. 0 if command successful.
@@ -14517,12 +15068,14 @@ uint32 detDhsReconnect
 
 uint32 detContInit
    (
-   char *   pInitFileName,          /* Init file Name                         */
+   char   * pInitFileName,          /* Init file Name                         */
    uint32 * pTempCode,              /* Target temperature code                */
    uint32 * pTempCoeff,             /* Coefficient for temperature control    */
    long   * pOffsetFullVect,        /* ADC offset vector [2] - no binning     */
    long   * pOffsetBinVect,         /* ADC offset vector [2] - binning        */
-   char *   pCcdSn                  /* CCD serial number                      */
+   char   * pCcdSn,                 /* CCD serial number                      */
+   char   * pInstName,              /* Instrument name used for FITS header   */
+   int    * pPort                   /* AG ISS port used for FITS header       */
    )
 {
    FILE *       pFile;
@@ -14809,6 +15362,78 @@ uint32 detContInit
 
 #ifdef DEBUG
    printf ( "detContInit(): CCD serial number: %s\n", pCcdSn );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the instrument name from the file */
+
+   if ( fgets (pInstName, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the instrument name from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( pInstName[strlen(pInstName) - 1] == '\n' )
+   {
+      pInstName[strlen(pInstName) - 1] = '\0';
+#ifdef DEBUG
+      printf ( "detControlInit(): last character of %s was return\n",
+               pInstName );
+#endif
+
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): instrument name : %s\n", pInstName );
+#endif
+
+   /* Skip the next line of comment */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+         "Failed to read the second line of comments from the DC init file %s",
+         ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "detContInit(): %s\n", comment );
+#endif
+
+   /* Read the default ISS port from the file */
+
+   if ( (fscanf (pFile, "%d\n", &coeff)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+        "Failed to read the ISS port number from the DC init file %s",
+        ERROR_LOG_SAVE, pInitFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   *pPort = coeff;
+
+#ifdef DEBUG
+   printf ( "detContInit(): ISS port number = %d\n", coeff );
 #endif
 
    return (OK);

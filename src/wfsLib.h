@@ -65,6 +65,21 @@ typedef struct
    } WFS_ARCH_PROCESSOR;
 
 
+   /*
+    * The following defines a data structure to contain information about
+    * the Component Controller information
+    */
+
+typedef struct
+{
+   char   clFilterName [40];           /* AC/HRWFS Color filter name.         */
+   char   ndFilterName [40];           /* AC/HRWFS ND filter name.            */
+   char   lensName [40];               /* AC/HRWFS Lens name.                 */
+   char   fldStopName [40];            /* AC/HRWFS Field Stop name.           */
+   char   calName [40];                /* AC/HRWFS Calibration Source name.   */
+   double focusPos;                    /* AC/HRWFS Focus Position (mm).       */
+} AC_CC_STRUCT;
+
 /* function declarations */
 
 IMPORT STATUS wfsLibInit (void);
@@ -74,5 +89,6 @@ IMPORT STATUS wfsSysInit (const int processorNumber,
                           const BOOL redirectErrorLog);
 IMPORT STATUS wfsShow (void);
 IMPORT void   wfsGetTelName (char *pTelName);
+IMPORT void   showAcCCStruct ();
 
 #endif /* __INCwfsLibh */
