@@ -6,11 +6,11 @@ display {
 	majv="2"
 	mnrv="4"
 	ndyng="6"
-	npc="16"
-	nstr="67"
+	npc="14"
+	nstr="64"
 	ndynamic="5"
 	nplot="0"
-	nrd="3"
+	nrd="4"
 	nes="0"
 	nkd="1"
 	npd="0"
@@ -23,23 +23,23 @@ display {
 	}
 	clr="1"
 	bclr="13"
-	nwords_dspy="2202"
+	nwords_dspy="2308"
 	nwords_sta="140"
 	nwords_cmap="0"
 	nwords_crules="0"
-	odyng="1060"
-	osta="920"
-	odynamic="1380"
-	oplot="1710"
-	ord="1710"
-	oes="2190"
-	okd="2190"
-	opd="2202"
-	opo="2202"
+	odyng="1006"
+	osta="866"
+	odynamic="1326"
+	oplot="1656"
+	ord="1656"
+	oes="2296"
+	okd="2296"
+	opd="2308"
+	opo="2308"
 	opc="68"
-	ostr="256"
-	ocmap="920"
-	ocrules="920"
+	ostr="234"
+	ocmap="866"
+	ocrules="866"
 	style="solid"
 	fill="outline"
 	width="0"
@@ -52,7 +52,7 @@ display {
 	pixwid="1280"
 	pixht="1024"
 	mmwid="361"
-	mmht="289"
+	mmht="288"
 }
 "<<basic attribute>>" {
 	attr {
@@ -1076,6 +1076,140 @@ display {
 	clr="0"
 	bclr="6"
 	menu_title="HRWFS"
+	decorate="none"
+}
+"related display" {
+	object {
+		x="213"
+		y="215"
+		width="154"
+		height="22"
+		groupid="0"
+	}
+	selfkill="off"
+	display[0] {
+		label="HRWFS Mechanisms"
+		name="ag_main.dl"
+		args="top=$(top)dc:,hrwfs=hrwfs:"
+	}
+	display[1] {
+		label=""
+		name=""
+		args=""
+	}
+	display[2] {
+		label=""
+		name=""
+		args=""
+	}
+	display[3] {
+		label=""
+		name=""
+		args=""
+	}
+	display[4] {
+		label=""
+		name=""
+		args=""
+	}
+	display[5] {
+		label=""
+		name=""
+		args=""
+	}
+	display[6] {
+		label=""
+		name=""
+		args=""
+	}
+	display[7] {
+		label=""
+		name=""
+		args=""
+	}
+	display[8] {
+		label=""
+		name=""
+		args=""
+	}
+	display[9] {
+		label=""
+		name=""
+		args=""
+	}
+	display[10] {
+		label=""
+		name=""
+		args=""
+	}
+	display[11] {
+		label=""
+		name=""
+		args=""
+	}
+	display[12] {
+		label=""
+		name=""
+		args=""
+	}
+	display[13] {
+		label=""
+		name=""
+		args=""
+	}
+	display[14] {
+		label=""
+		name=""
+		args=""
+	}
+	display[15] {
+		label=""
+		name=""
+		args=""
+	}
+	display[16] {
+		label=""
+		name=""
+		args=""
+	}
+	display[17] {
+		label=""
+		name=""
+		args=""
+	}
+	display[18] {
+		label=""
+		name=""
+		args=""
+	}
+	display[19] {
+		label=""
+		name=""
+		args=""
+	}
+	display[20] {
+		label=""
+		name=""
+		args=""
+	}
+	display[21] {
+		label=""
+		name=""
+		args=""
+	}
+	display[22] {
+		label=""
+		name=""
+		args=""
+	}
+	display[23] {
+		label=""
+		name=""
+		args=""
+	}
+	clr="0"
+	bclr="6"
+	menu_title="HRWFS Mechanisms"
 	decorate="none"
 }
 "kill display" {
