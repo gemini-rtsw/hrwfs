@@ -872,7 +872,9 @@ STATUS   seqControl (void)
                if ( dhsErrno == DHS_S_SUCCESS )
                {
                   detDhsConnected = NOT_CONNECTED;
-                  MESSAGE_LOG (MSG_LOG, "Disconnected to DHS");
+                  strncpy (messageLog, "Disconnected to DHS",
+                           EPICS_MAX_BYTES_STRING_ATTRIB);
+                  printf ("seqControl: %s\n", messageLog);
                }
                else
                {
