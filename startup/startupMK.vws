@@ -1,4 +1,4 @@
-# $Id: startupMK.vws,v 1.7 2004-01-08 01:57:45 cboyer Exp $
+# $Id: startupMK.vws,v 1.8 2005-03-04 12:39:56 gemvx Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -21,7 +21,7 @@ pwd
 
 < $(version)/bin/$(arch)/local
 
-hostAdd ("archie","10.2.4.56")
+hostAdd ("acamar","10.2.2.52")
 
 # Load EPICS core, sequencer and pvload 
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore
@@ -113,7 +113,7 @@ epToVxCaInitRecords ()
 # (Uncomment this line to activate the DHS. Comment it to prevent the DHS 
 # from being used).
 
-detDhsParamInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+detDhsParamInit ("hrwfs", 16, "10.2.2.52", "dataServerAcamar")
 
 # Spawn generic-record i/o Daemon task after querying the number of processors
 NProc = 1
