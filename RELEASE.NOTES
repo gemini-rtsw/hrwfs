@@ -28,5 +28,20 @@ Modifications toward V0-5
   - FOUND A BUG A MEMORY LEAK WITH DHS (1456 bytes)
   - bug fixed into wfsInitTelName in wfsLib.c
 
+V0-7 5 Jan 2000 CB:
+-------------------
+  - in startup.vws slalib and timelib are now in /gemini directly
+  - in startup_MINIMAL.vws -> Minimal startup hrwfs
+  - tidy up the src directory:
+    Makefile2.Vx, config_hkbaja47.h, config_mv167_16MB.h, config_mv167_32MB.h,
+    detControl.c.uint, dhstests.c, drvVmi5588.c, epToVxLib2.c, epToVxLibHrwfs.c,
+    global_edit, makeLinks, simpleLog2.c, vmi5588.h, wfsDb.c, wfsDb.h, wfsDb2.c,
+    wfsDb2.h, wfsIndent, wfsPostscript, wfsPrint, simpleLog.c, hkbaja.h, mpPipeDrv.c, 
+    mpPipeDrv.h, mv167.h, sysLib_hkbaja47.c, sysLib_mv167_16MB.c, sysLib_mv167_32MB.c,
+    sysextLib.c, sysextLib.h.
+    + epToVxLib.c, .h modified
+  - continue tidy up the src directory: tesHarness.c, .h and testKit.c removed
+    Makefile.Vx and startup.vws modified in consequence
+
 dev
   - for the moment startup cd install instead of iocpath
