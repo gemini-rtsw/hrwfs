@@ -1,0 +1,27 @@
+[symbol2]
+bbox -288 32 256 128
+port -208 48 100 0 ICID symbol 1 -288 64 0
+port -208 96 100 0 DIR symbol 1 -288 96 0
+port 128 48 100 0 MESS symbol 2 256 64 0
+port 144 96 100 0 VAL symbol 2 256 96 0
+uniq 0
+[tools]
+[attributes]
+[layers]
+<symbol>
+l 100 0 0 -64 48 Commands 2
+l 100 0 0 -80 80 HRWFS Sequence
+r 0 -224 32 192 128
+v 0 -288 64
+-224 64
+_
+v 0 -288 96
+-224 96
+_
+v 0 192 64
+256 64
+_
+v 0 192 96
+256 96
+_
+[comments]
