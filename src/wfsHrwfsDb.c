@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.1.1.1 1999-03-17 03:14:23 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.2 1999-06-04 01:33:18 cboyer Exp $"};
 
 /*+
  *	MODULE NAME:
@@ -63,6 +63,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:23  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.32  1998/12/07 15:25:30  cics
  * Changed output options in observe command. Fixed some sdsuLib bugs related to continuous observing.
  *
@@ -510,7 +513,7 @@ CAD_RECORD pWfsDbCadList [] =
 		STOP_DIRECTIVE_UNSUPPORTED,
 		SIMULATION_MODE_SUPPORTED,
 		40.0,
-		CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE, 	"25",			{"-63", "25"},
+		CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE, 	"-20",			{"-63", "25"},
 		CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,		"0x80",			{NO_ATTRIBUTE_LIMITS}
 	},
 	{

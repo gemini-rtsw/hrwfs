@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: detControl.c,v 1.1.1.1 1999-03-17 03:14:22 cboyer Exp $"};
+	"$Id: detControl.c,v 1.2 1999-06-04 01:33:16 cboyer Exp $"};
 
 /*+
  *	MODULE NAME:
@@ -36,6 +36,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:22  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.49  1998/12/07 15:25:20  cics
  * Changed output options in observe command. Fixed some sdsuLib bugs related to continuous observing.
  *
@@ -238,7 +241,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include "sdsuLib.h"
 #include "osp.h"
 
-/* #define DEBUG */					/* Define this macro to enable debug messages.			*/
+/*#define DEBUG*/ 				/* Define this macro to enable debug messages.			*/
 
 /* #define SAVE_RAW_DATA */				/* Define this macro to save raw data.					*/
 
@@ -480,6 +483,11 @@ STATUS	detControl
 
 	uint32			detControlStopMask;			/* Mask for detecting which detControlStop	*/
 												/* bit refers to this detector controller.	*/
+
+        long              offset0;           /* ADC offset for output 0.           */
+        long              offset1;           /* ADC offset for output 1.           */
+        uint32            tempCode;          /* Target temperature code            */
+        uint32            tempCoeff;         /* Coefficient for temperature control*/
 
 	/* Variables used to define the buffer to be used for storing data.	*/
 
@@ -934,6 +942,77 @@ STATUS	detControl
 				initFailed = TRUE;
 			}
 		}
+
+                /* 
+                 * Set the default offsets for the HRWFS CCD sectors
+                 */
+
+                if (strcmp (pWfsName, "hr") == 0)
+                {
+                   if ( sdsuId == NULL )
+                   {
+                      ERROR_LOG ("Failed to set CCD default offset");
+                      initFailed = TRUE;
+                   }
+                   else
+                   {
+                     offset0 = 2560 ;
+                     offset1 = 2320 ;
+
+                     MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
+                                   offset0, offset1);
+
+                     if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
+                                        (uint32) offset0 ) == ERROR )
+                     {
+                        ERROR_LOG ("Error setting ADC offset 0 parameter");
+                        initFailed = TRUE;
+                     }
+                     if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS1",
+                                        (uint32) offset1 ) == ERROR )
+                     {
+                        ERROR_LOG ("Error setting ADC offset 1 parameter");
+                        initFailed = TRUE;
+                     }
+                     if (sdsuPrimitive (sdsuId, "LDP", SDSU_IDENT_TIM, NULL, NULL) == ERROR)
+                     {
+                        ERROR_LOG ("Failed to activate TIMING DSP parameters with LDP command");
+                        initFailed = TRUE;
+                     }
+                   }
+                } 
+
+                /* 
+                 * Set the default temperature for the HRWFS 
+                 */
+
+                if (strcmp (pWfsName, "hr") == 0)
+                {
+                   if ( sdsuId == NULL )
+                   {
+                      ERROR_LOG ("Failed to set CCD default temperature");
+                      initFailed = TRUE;
+                   }
+                   else
+                   {
+                      tempCode = (uint32)1282 ;
+                      tempCoeff = (uint32)128 ;
+                      
+                      MESSAGE_LOG2 (MSG_LOG, 
+                      "Defining temperature control parameters: %#lx %#lx",
+                      tempCode, tempCoeff);
+
+                      if ( (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", tempCode )
+                           == ERROR) ||
+                           (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_TCF", (uint32) tempCoeff )
+                           == ERROR)
+                         )
+                      {
+                        ERROR_LOG ("Error setting temperasture control parameters");
+                        initFailed = TRUE;
+                      }
+                   }
+                }
 
 		/*
 		 * Create a signal processing geometry structure and initialise it with
@@ -4030,8 +4109,8 @@ void detObserveEnd
 						outputTt = (int) obsId->coaddTimeout;
 						nCoadds = (int) obsId->nCoaddFrames;
 #ifdef DEBUG
-						printf ("ospTtCor: %p %d %d%p\n", obsId->pCurFrame, outputTt , ncoadds ,
-								obsId->ospFGContext);
+						/*printf ("ospTtCor: %p %d %d%p\n", obsId->pCurFrame, outputTt , ncoadds ,
+								obsId->ospFGContext);*/
 #endif
 						if ( obsId->ospFGContext == NULL )
 						{
@@ -4243,18 +4322,19 @@ void detObserveEnd
 			MESSAGE_LOG (MSG_MINDEBUG, "... file saved ok");
 		}
 
-		/*
-		 * If the DHS is not being used and the last frame has been received,
-		 * free the unscrambled data buffer.
-		 */
+	}
 
-		if ( obsId->outOptions != 1 )
+	/*
+	 * If the DHS is not being used and the last frame has been received,
+ 	 * free the unscrambled data buffer.
+	 */
+
+	if ( obsId->outOptions != 1 )
+	{
+		if ( (frameCount == 1) || (obsId->stopped) )
 		{
-			if ( (frameCount == 1) || (obsId->stopped) )
-			{
-				free (obsId->pCurFrame);
-				obsId->pCurFrame = NULL;
-			}
+			free (obsId->pCurFrame);
+			obsId->pCurFrame = NULL;
 		}
 	}
 
