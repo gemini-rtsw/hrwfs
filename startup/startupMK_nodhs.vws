@@ -1,0 +1,147 @@
+# $Id: startupMK_nodhs.vws,v 1.1 2001-08-17 02:39:11 cboyer Exp $
+#
+# VxWorks startup script to load and execute system (iocCore) software.
+#
+# GEMINI NORTH - HRWFS startup script.
+#
+
+shellPromptSet "hrwfs > "
+
+# Make delete key work for backspace
+tyBackspaceSet 0177
+
+# cd to application install directory (beware automounter problems)
+cd "$(iocpath)"
+#cd "$(install)"
+pwd
+
+# The local file contains site-specific information
+# such as the default router and the vxWorks password file.
+# This file also performs NFS mounts.
+
+< $(version)/bin/$(arch)/local
+
+hostAdd ("archie","10.2.4.56")
+
+# Load EPICS core and record stuff
+ld < $(epics)/base/bin/$(arch)/iocCore
+ld < $(epics)/base/bin/$(arch)/drvSup
+ld < $(epics)/base/bin/$(arch)/recSup
+ld < $(epics)/base/bin/$(arch)/devSup
+ld < $(epics)/extensions/bin/$(arch)/pvload
+
+# If using state programs, load the sequencer
+ld < $(epics)/base/bin/$(arch)/seq
+
+# Load the Gemini astrometric and time libraries
+ld < /gemini/slalib/bin/$(arch)/slalib
+ld < /gemini/timelib/bin/$(arch)/timelib
+ld < /gemini/astlib/bin/$(arch)/astlib
+ld < /gemini/cfitsio/cfitsio/bin/$(arch)/cFitsIo
+
+ld < /gemini/timelib/bin/$(arch)/timeSeq
+
+# Load the Gemini data handling libraries
+ld < /gemini/dhs/external/lib/$(arch)/libers.o
+ld < /gemini/dhs/external/lib/$(arch)/libimp.o
+ld < /gemini/dhs/external/lib/$(arch)/libsds.o
+ld < /gemini/dhs/lib/$(arch)/libgen.a
+ld < /gemini/dhs/lib/$(arch)/libdhs.a
+
+# Load the Gemini A&G wavefront processing software
+ld < $(version)/bin/$(arch)/wfsHrwfsDb
+ld < $(version)/bin/$(arch)/wfsSite
+ld < $(version)/bin/$(arch)/wfsLibrariesHrwfs
+ld < $(version)/bin/$(arch)/hrwfsConfig
+ld < $(version)/bin/$(arch)/detControl
+ld < $(version)/bin/$(arch)/seqControl
+ld < $(version)/bin/$(arch)/wfsResourceMonitor
+ld < $(version)/bin/$(arch)/simpleLogHrwfs
+ld < $(version)/bin/$(arch)/fpscr
+
+# Load sequences here
+# ld < $(version)/bin/$(arch)/testseq.o
+
+#Turn off floating point underflow for each tasks
+taskCreateHookAdd( usrFppCreateHook )
+
+# Initialise the Gemini time system (1=master, 1=simulate, intPerSecond, intperTick, timeOffset)
+timeClockInit (0, 0, 60, 1, 0)
+
+# Configure the Timestamp system (1=Master IOC, synch rate, clock rate, master, port, timeout, type)
+TSconfigure 1, 0, 0, 0, 0, 0, 0
+
+# Load one or more ASCII databases here
+dbLoad "$(version)/data/$(dctsdr).dctsdr"
+
+dbLoadRecords "$(version)/data/hrwfsTop.db"
+dbLoadRecords "$(version)/data/hrwfsSadTop.db"
+
+# This turns off logging
+# iocLogDisable=1
+
+# Set logErrorsToPipe = 1 to redirect error messages to the error-logging
+# pipe, logErrorsToPipe = 0 will cause errors to be printed at the VxWorks
+# console (The simpleLog task will wait indefinitely for its pipe to be
+# created when logErrorsToPipe = 0)
+logErrorsToPipe = 1
+
+# start the impmaster
+# (Comment this out if the DHS is not being used)
+#taskSpawn ( "ImpMaster", 100, 0x8, 20000, ImpMaster)
+
+# Initialise WFS system (processorNumber, redirectLog)
+wfsSysInit (0, logErrorsToPipe)
+
+iocInit ("$(version)/data/resource.def")
+# IOC Initialisation done
+
+#Configure the initial state of the system
+#dbpf "hrwfs:initialising.VAL","2"
+pvload "$(version)/data/hrwfsSeq.pv","top=hrwfs:, sadtop=hrwfs:"
+pvload "$(version)/data/hrwfsDet.pv","top=hrwfs:, sadtop=hrwfs:, wfs=dc:"
+
+# Initialise the database records not initialised by iocInit.
+epToVxCaInitRecords ()
+
+# Enable console output from error library if required. This is sometimes
+# useful if error messages are being diverted to a log file and you wish to
+# see a copy of them straight away.
+#errorLogConsoleEnable( 1 )
+
+# Initialise the DHS for the detector controllers (clientName, numConnect, hostName, serverName)
+# (Uncomment this line to activate the DHS. Comment it to prevent the DHS from being used).
+
+#detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+
+# Spawn generic-record i/o Daemon task after querying the number of processors
+NProc = 1
+#NProc = sysextNProcGet()
+taskSpawn ("recD", 97, 0x8, 8000, epToVxCaWriteDaemon, NProc)
+
+# Spawn command-control tasks (in stand-alone mode all the WFSs run
+# on processor 0)
+# NOTE - THE TASK NAMES MUST EXACTLY MATCH THOSE DEFINED IN HEADER FILES.
+# A taskDelay has been added after spawning each application task
+# to prevent the initialisation messages from getting garbled and
+# work around problems which happen when the detector controllers
+# try to initialise simulateously.
+taskSpawn ("simpleLog",       99, 0x8, 8000,  simpleLog, 0, 100)
+taskDelay(3 * sysClkRateGet())
+# To simulate the SDSU set the last parameter to 1
+taskSpawn ("hr:detControl",  100, 0x8, 100000, detControl, "hr", "dc", 0)
+taskDelay(10 * sysClkRateGet())
+taskSpawn ("seqControl",     100, 0x8, 6000,  seqControl)
+taskDelay(3 * sysClkRateGet())
+
+# Spawn CAR Daemon tasks
+taskSpawn ("hr:detControlD", 98, 0x8, 5000, epToVxCarDaemon, "hrwfs:dc:detC")
+taskSpawn ("seqControlD",    98, 0x8, 5000, epToVxCarDaemon, "hrwfs:controlC")
+
+# Spawn CPU-resource monitoring task
+taskSpawn ("wfsResMonitor", 255, 0x8, 4000, wfsResourceMonitor, 10000000, 200000)
+
+# Start sequences
+seq &timeSeq, "sys=hrwfs:"
+
+# End of standalone startup

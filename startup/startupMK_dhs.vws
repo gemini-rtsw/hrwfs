@@ -1,0 +1,15 @@
+# $Id: startupMK_dhs.vws,v 1.1 2001-08-17 02:39:10 cboyer Exp $
+#
+# VxWorks startup script to init dhs after startupMK_nodhs.vws has been loaded
+#
+# GEMINI NORTH - HRWFS startup dhs script.
+#
+
+# start the impmaster
+taskSpawn ( "ImpMaster", 100, 0x8, 20000, ImpMaster)
+
+# Initialise the DHS for the detector controllers (clientName, numConnect, hostName, serverName)
+detDhsInit ("hrwfs", 16, "10.2.4.56", "dataServerNS")
+
+# Init the detDhsConnected variable to NOT_CONNECTED
+detDhsConnected=2
