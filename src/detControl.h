@@ -14,6 +14,9 @@
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.1.1.1  1999/03/17 03:14:26  cboyer
+ * Initial creation of the Gemini HRWFS repository
+ *
  * Revision 1.31  1998/12/07 15:25:31  cics
  * Changed output options in observe command. Fixed some sdsuLib bugs related to continuous observing.
  *
@@ -242,7 +245,7 @@ typedef   unsigned long   DHS_CONNECT;
 #define   DET_CONTROL_OMF_FILE_PATH         "./bin/asm56000"
                                     /* Directory containing OMF files.      */
 
-#define   DET_CONTROL_OMF_VME_FILE         "vme.lod"
+#define   DET_CONTROL_OMF_VME_FILE         "vme-47.lod"
                                     /* OMF file to download to VME DSP.      */
 
 #define   DET_CONTROL_GBD_OMF_TIM_FILE      "tim-39.lod"
