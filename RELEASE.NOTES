@@ -229,3 +229,11 @@ V3-6 04 Mar 2005 - AAG
     IMP_StartupMK.hrwfs
     startup/startupMK.vws
     
+V3-7 28 Jul 2006 - AAG
+-----------------------
+  - ramdisk mounted from jughead (host added) in startupCP.vws 
+  - wfsHrwfsDb.c: Changed default target temp to -30 for CP site
+  - hrwfsDet.pv: updated version number
+  - hrwfsSeq.pv: updated version number
+  - detControl.c: Fixed definition of temp control parameters at detInit phase
+    according to defDetContHRCP.dat file
