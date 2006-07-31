@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: detControl.c,v 1.29 2004-01-08 01:57:44 cboyer Exp $"};
+   "$Id: detControl.c,v 1.30 2006-07-31 19:50:32 gemvx Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -822,10 +822,20 @@ STATUS   detControl
    else
    {
       MESSAGE_LOG2 (MSG_LOG, 
-                    "Defining temperature control parameters: %#lx %#lx",
+                    "Defining temperature control parameters at INIT: %#lx %#lx",
                     tempCode, tempCoeff);
 
-#ifdef TIM_EEPROM_PROGRAM
+   if ( (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", 
+                         tempCode ) == ERROR) ||
+        (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_TCF", 
+                         (uint32) tempCoeff ) == ERROR)
+      )
+   {
+         ERROR_LOG ("Error setting temperasture control parameters");
+         initFailed = TRUE;
+
+   }
+      /*#ifdef TIM_EEPROM_PROGRAM
       if ( (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_CCDT_TGT", tempCode )
             == ERROR) ||
            (sdsuParamWrite (sdsuId, SDSU_IDENT_UTL, "U_TCF", (uint32)tempCoeff )
@@ -834,7 +844,7 @@ STATUS   detControl
          ERROR_LOG ("Error setting temperasture control parameters");
          initFailed = TRUE;
       }
-#endif
+      #endif*/
       readTempReadyFlag = TRUE ;
    }
 
@@ -849,10 +859,11 @@ STATUS   detControl
    }
    else
    {
+
+#ifdef TIM_EEPROM_PROGRAM
       MESSAGE_LOG2 (MSG_LOG, "Defining new ADC offset levels: %#lx %#lx",
                     offsetVect[0], offsetVect[1]);
 
-#ifdef TIM_EEPROM_PROGRAM
       if ( sdsuParamWRP (sdsuId, SDSU_IDENT_TIM, "T_ADC_OS0",
                          (uint32) offsetVect[0] ) == ERROR )
       {

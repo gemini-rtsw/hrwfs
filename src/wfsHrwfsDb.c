@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.18 2003-10-27 19:53:06 cboyer Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.19 2006-07-31 19:50:33 gemvx Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -436,6 +436,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   NO_HI_LIMIT},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,    "-1",         {"-1",   NO_HI_LIMIT}
    },
+#if (MK)
    {
       RECORD_NAME ("dc:detTemp"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
@@ -446,6 +447,18 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE,    "-20",         {"-63", "25"},
       CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,      "0x80",         {NO_ATTRIBUTE_LIMITS}
    },
+#else
+   {
+      RECORD_NAME ("dc:detTemp"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_TEMP,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE,    "-30",         {"-63", "25"},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_LONG,      "0x80",         {NO_ATTRIBUTE_LIMITS}
+   },
+#endif
    {
       RECORD_NAME ("dc:detPowerOn"),
       TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
