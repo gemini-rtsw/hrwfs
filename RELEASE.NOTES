@@ -237,3 +237,5 @@ V3-7 28 Jul 2006 - AAG
   - hrwfsSeq.pv: updated version number
   - detControl.c: Fixed definition of temp control parameters at detInit phase
     according to defDetContHRCP.dat file
+
+  - par/defDetContHRMK.dat
