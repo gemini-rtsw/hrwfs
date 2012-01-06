@@ -1,4 +1,4 @@
-# $Id: startupCP.vws,v 1.12 2006-07-31 19:49:24 gemvx Exp $
+# $Id: startupCP.vws,v 1.13 2012-01-06 20:26:09 jluhrs Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -114,7 +114,7 @@ epToVxCaInitRecords ()
 # (Uncomment this line to activate the DHS. Comment it to prevent the DHS 
 # from being used).
 
-detDhsParamInit ("hrwfs", 16, "172.17.2.14", "dataServerSS")
+detDhsParamInit ("hrwfs", 16, "172.17.3.55", "dataServerWfsSS")
 
 # Spawn generic-record i/o Daemon task after querying the number of processors
 NProc = 1
