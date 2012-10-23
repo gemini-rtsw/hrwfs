@@ -1,4 +1,4 @@
-# $Id: startupMK.vws,v 1.8 2005-03-04 12:39:56 gemvx Exp $
+# $Id: startupMK.vws,v 1.9 2012-10-23 21:05:48 mrippa Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -21,7 +21,7 @@ pwd
 
 < $(version)/bin/$(arch)/local
 
-hostAdd ("acamar","10.2.2.52")
+hostAdd ("mkodhs2","10.2.2.41")
 
 # Load EPICS core, sequencer and pvload 
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore
