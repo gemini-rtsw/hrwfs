@@ -6,4 +6,4 @@
 
 Log startup sequence
 Use port 54322
-Pulse connections to 172.17.2.14 every 30 seconds
+Pulse connections to 10.2.2.41 every 15 seconds
