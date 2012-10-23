@@ -239,3 +239,13 @@ V3-7 28 Jul 2006 - AAG
     according to defDetContHRCP.dat file
 
   - par/defDetContHRMK.dat
+
+V3-8 23 Oct 2012 - mrippa
+-----------------------
+   - startupMK.vws --Now includes hostAdd("mkodhs2", "10.2.2.41") to support Linux DHS
+   - epToVxLib.c --Improve all pcad->mess strings to include "HRWFS:". This helps
+     identify the subsystem when this error message is propagated to the TCS->TCC.
+
+
+
+
