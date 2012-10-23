@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: epToVxLib.c,v 1.5 2001-10-26 03:28:09 cboyer Exp $"};
+   "$Id: epToVxLib.c,v 1.6 2012-10-23 21:20:19 mrippa Exp $"};
 
 /*+
  * MODULE NAME:
@@ -126,6 +126,9 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.5  2001/10/26 03:28:09  cboyer
+ * Port to epics3.13.4 version
+ *
  * Revision 1.4  2000/02/03 01:19:13  cboyer
  * New V0-8 release: a lot of tidy up + sequencer created
  *
@@ -2451,7 +2454,7 @@ long   epToVxCadExecute
 
    if (! pWfsDbRecInitialised [CAD_RECORD_TYPE])
    {
-      strncpy (pcad->mess, "CAD record not initialised", 
+      strncpy (pcad->mess, "HRWFS:CAD not initialised", 
                EPICS_MAX_BYTES_STRING_ATTRIB);
       ERROR_SET1 (S_epToVxLib_RECORD_UNINITIALISED, 
                   "CAD record \"%s\" not initialised",
@@ -2462,7 +2465,7 @@ long   epToVxCadExecute
             (SYM_TYPE *) & symType, (SYM_TYPE) CAD_RECORD_TYPE, SYM_TYPE_MASK) 
             == ERROR)
    {
-      strncpy (pcad->mess, "CAD record not implemented", 
+      strncpy (pcad->mess, "HRWFS:CAD not implemented", 
                EPICS_MAX_BYTES_STRING_ATTRIB);
       ERROR_SET1 (0, "Could not find CAD \"%s\" in symbol table", 
                   ERROR_LOG_NOW, pcad->name);
@@ -2513,7 +2516,7 @@ long   epToVxCadExecute
                 CAD_TO_TASK_PIPE_NAME_EXT, NULL, 0, 0, O_WRONLY, -1, 0.0, 0.0)) 
                 == ERROR)
             {
-               strncpy (pcad->mess, "Error opening CAD to task pipe",
+               strncpy (pcad->mess, "HRWFS:Error opening CAD to task pipe",
                         EPICS_MAX_BYTES_STRING_ATTRIB);
                ERROR_SET1 (0, "Error opening CAD to task pipe for %s", 
                            ERROR_LOG_NOW, pcad->name);
@@ -2534,7 +2537,7 @@ long   epToVxCadExecute
                CAD_TO_CAR_PIPE_NAME_EXT, NULL, 0, 0, O_WRONLY, FIOFLUSH, 
                0.0, 0.0)) == ERROR)
             {
-               strncpy (pcad->mess, "Error opening CAD to CAR pipe",
+               strncpy (pcad->mess, "HRWFS:Error opening CAD to CAR pipe",
                         EPICS_MAX_BYTES_STRING_ATTRIB);
                ERROR_SET1 (0, "Error opening CAD to CAR pipe for %s", 
                            ERROR_LOG_NOW, pcad->name);
@@ -2554,7 +2557,7 @@ long   epToVxCadExecute
 
          if (eptovx_saveAttribs (pcad, context, & offendingAttrib) == ERROR)
          {
-            sprintf (pMessage, "Attribute #%d %.*s", (int)offendingAttrib,
+            sprintf (pMessage, "HRWFS:Attribute #%d %.*s", (int)offendingAttrib,
                      EPICS_MAX_BYTES_STRING_ATTRIB, "conversion failure");
             strncpy (pcad->mess, pMessage, EPICS_MAX_BYTES_STRING_ATTRIB);
             returnValue = CAD_REJECT;
@@ -2562,7 +2565,7 @@ long   epToVxCadExecute
          else if (eptovx_checkAttribs (context, & offendingAttrib, pReason) 
                   == ERROR)
          {
-            sprintf (pMessage, "Attribute #%d %.*s", (int)offendingAttrib,
+            sprintf (pMessage, "HRWFS:Attribute #%d %.*s", (int)offendingAttrib,
                      EPICS_MAX_BYTES_STRING_ATTRIB, pReason);
             strncpy (pcad->mess, pMessage, EPICS_MAX_BYTES_STRING_ATTRIB);
             returnValue = CAD_REJECT;
@@ -2595,7 +2598,7 @@ long   epToVxCadExecute
              */
 
             ERROR_LOG ("CAD command pipe not ready to write");
-            strncpy (pcad->mess, "Can't write CAD command pipe", 
+            strncpy (pcad->mess, "HRWFS:Can't write CAD command pipe", 
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             returnValue = CAD_REJECT; /* Pipe isn't ready, reject this PRESET */
          }
@@ -2633,7 +2636,7 @@ long   epToVxCadExecute
             ERROR_SET1 (S_epToVxLib_menuDirectiveSTOP_UNSUPPORTED, 
                         "STOP directive not supported by %s",
                         ERROR_LOG_NOW, pcad->name);
-            strncpy (pcad->mess, "STOP directive not supported", 
+            strncpy (pcad->mess, "HRWFS:STOP directive not supported", 
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             returnValue = CAD_REJECT;
             break;
@@ -2647,7 +2650,7 @@ long   epToVxCadExecute
 
          if (context->cadToTaskPipeFd == ERROR)
          {
-            strncpy (pcad->mess, "No PRESET or START", 
+            strncpy (pcad->mess, "HRWFS:No PRESET or START", 
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             ERROR_SET (S_epToVxLib_menuDirectiveSTOP_UNSUPPORTED, 
                        "No PRESET or START issued first", ERROR_LOG_NOW);
@@ -2721,7 +2724,7 @@ long   epToVxCadExecute
          if (write (context->cadToCarPipeFd, context->pCmdPacket, 
                     CMD_PKT_HEADER_SIZE_BYTES) != CMD_PKT_HEADER_SIZE_BYTES)
          {
-            strncpy (pcad->mess, "Error writing CAD to CAR pipe", 
+            strncpy (pcad->mess, "HRWFS:Error writing CAD to CAR pipe", 
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             ERROR_SET (0, "Error writing to CAD to CAR pipe", ERROR_LOG_NOW);
             returnValue = CAD_REJECT;
@@ -2746,7 +2749,7 @@ long   epToVxCadExecute
                             nByte);
             if (status != nByte)
             {
-               strncpy (pcad->mess, "Error writing CAD command pipe",
+               strncpy (pcad->mess, "HRWFS:Error writing CAD command pipe",
                         EPICS_MAX_BYTES_STRING_ATTRIB);
                ERROR_SET (0, "Error writing to CAD command pipe", 
                           ERROR_LOG_NOW);
@@ -2775,7 +2778,7 @@ long   epToVxCadExecute
 
          /* Invalid directive received   */
 
-         strncpy (pcad->mess, "Invalid CAD directive", 
+         strncpy (pcad->mess, "HRWFS:Invalid CAD directive", 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
          ERROR_SET (S_epToVxLib_INVALID_CAD_DIRECTIVE, "Invalid CAD directive",                     ERROR_LOG_NOW);
          returnValue = CAD_REJECT;
@@ -3059,7 +3062,7 @@ long   epToVxCadCopy
 
          /* Reject a STOP with an explanatory message. */
 
-         strncpy (pcad->mess, "Cannot be stopped", 
+         strncpy (pcad->mess, "HRWFS:Cannot be stopped", 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
          ERROR_SET1 (S_epToVxLib_menuDirectiveSTOP_UNSUPPORTED, "%s - cannot be stopped",
                      ERROR_LOG_NOW, pcad->name);
@@ -3070,7 +3073,7 @@ long   epToVxCadCopy
 
          /* Invalid directive received   */
 
-         strncpy (pcad->mess, "Invalid CAD directive", 
+         strncpy (pcad->mess, "HRWFS:Invalid CAD directive", 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
          ERROR_SET (S_epToVxLib_INVALID_CAD_DIRECTIVE, 
                     "Invalid CAD directive", ERROR_LOG_NOW);
@@ -3175,7 +3178,7 @@ long   epToVxCadReject
 
          /* Reject a PRESET, START or STOP with an explanatory message. */
 
-         strncpy (pcad->mess, "Command not supported", 
+         strncpy (pcad->mess, "HRWFS:Command not supported", 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
          ERROR_SET1 (S_epToVxLib_CAD_CMD_UNSUPPORTED, 
              "%s - command not supported",
@@ -3187,7 +3190,7 @@ long   epToVxCadReject
 
          /* Invalid directive received   */
 
-         strncpy (pcad->mess, "Invalid CAD directive", 
+         strncpy (pcad->mess, "HRWFS:Invalid CAD directive", 
                   EPICS_MAX_BYTES_STRING_ATTRIB);
          ERROR_SET (S_epToVxLib_INVALID_CAD_DIRECTIVE, 
                     "Invalid CAD directive", ERROR_LOG_NOW);
