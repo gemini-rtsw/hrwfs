@@ -246,6 +246,6 @@ V3-8 23 Oct 2012 - mrippa
    - epToVxLib.c --Improve all pcad->mess strings to include "HRWFS:". This helps
      identify the subsystem when this error message is propagated to the TCS->TCC.
 
-
-
-
+V3-8-1 25 Oct 2012 - pgigoux
+-----------------------
+    Modified code to update ${top}dc:health when there's a thermistor error, as requested in REL-362
