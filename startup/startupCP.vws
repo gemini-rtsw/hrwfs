@@ -1,4 +1,4 @@
-# $Id: startupCP.vws,v 1.13 2012-01-06 20:26:09 jluhrs Exp $
+# $Id: startupCP.vws,v 1.14 2012-10-25 16:06:39 gemvx Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -21,8 +21,8 @@ pwd
 
 < $(version)/bin/$(arch)/local
 
-hostAdd ("jughead","172.17.2.14")
-nfsMount "jughead", "/ramdisk",      "/rtmp"
+#hostAdd ("jughead","172.17.2.14")
+#nfsMount "jughead", "/ramdisk",      "/rtmp"
 
 # Load EPICS core, sequencer and pvload
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore
