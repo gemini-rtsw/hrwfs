@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-   "$Id: epToVxLib.c,v 1.6 2012-10-23 21:20:19 mrippa Exp $"};
+   "$Id: epToVxLib.c,v 1.7 2012-11-09 18:29:39 mrippa Exp $"};
 
 /*+
  * MODULE NAME:
@@ -126,6 +126,11 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
  *
  *INDENT-OFF*
  * $Log: not supported by cvs2svn $
+ * Revision 1.6  2012/10/23 21:20:19  mrippa
+ * Improve all pcad->mess strings to include "HRWFS:".
+ * This helps identify the subsystem when this error message
+ * is propagated to the TCS->TCC.
+ *
  * Revision 1.5  2001/10/26 03:28:09  cboyer
  * Port to epics3.13.4 version
  *
@@ -612,7 +617,6 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
                                               /* for a CAD record.            */
 
 #endif /* NO_EPICS - END OF DEFINITIONS COMPILED ONLY FOR THE EPICS ENVIRONMENT */
-
 
 /* local function declarations and global variables */
 
@@ -2598,7 +2602,7 @@ long   epToVxCadExecute
              */
 
             ERROR_LOG ("CAD command pipe not ready to write");
-            strncpy (pcad->mess, "HRWFS:Can't write CAD command pipe", 
+            strncpy (pcad->mess, "HRWFS:Please Reboot. CAD pipe error", 
                      EPICS_MAX_BYTES_STRING_ATTRIB);
             returnValue = CAD_REJECT; /* Pipe isn't ready, reject this PRESET */
          }
