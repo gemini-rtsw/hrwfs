@@ -1,4 +1,4 @@
-# $Id: startupMK_dhs.vws,v 1.4 2005-03-04 12:40:17 gemvx Exp $
+# $Id: startupMK_dhs.vws,v 1.5 2012-11-09 18:30:38 mrippa Exp $
 #
 # VxWorks startup script to init dhs after startupMK_nodhs.vws has been loaded
 #
@@ -12,7 +12,7 @@ taskDelay (10*sysClkRateGet())
 
 # Initialise the DHS for the detector controllers 
 # (clientName, numConnect, hostName, serverName)
-detDhsParamInit ("hrwfs", 16, "10.2.2.52", "dataServerAcamar")
+detDhsParamInit ("hrwfs", 16, "10.2.2.41", "dataServerWfsNS")
 
 # Init the DHS
 detDhsInit() 
