@@ -7,9 +7,9 @@
 group {
 int $(top)$(wfs)initFrameSize.A = 0 ;
 int $(top)$(wfs)initFrameSize.B = 0 ;
-int $(top)$(wfs)initFrameSize.C = 512 ;
-int $(top)$(wfs)initFrameSize.D = 512 ;
-int $(top)$(wfs)initFrameSize.E = 100 ;
-int $(top)$(wfs)initFrameSize.F = 100 ;
+int $(top)$(wfs)initFrameSize.C = 452 ;
+int $(top)$(wfs)initFrameSize.D = 507 ;
+int $(top)$(wfs)initFrameSize.E = 200 ;
+int $(top)$(wfs)initFrameSize.F = 200 ;
 int $(top)$(wfs)initFrameSize.G = 0 ;
 };
