@@ -1,4 +1,4 @@
-# $Id: startupCP.vws,v 1.14 2012-10-25 16:06:39 gemvx Exp $
+# $Id: startupCP.vws,v 1.15 2015-05-20 14:21:45 rrojas Exp $
 #
 # VxWorks startup script to load and execute system (iocCore) software.
 #
@@ -145,5 +145,10 @@ taskSpawn ("wfsResMonitor", 255, 0x8, 4000, wfsResourceMonitor, 10000000, 200000
 
 # Start sequences
 seq &timeSeq, "sys=hrwfs:"
+
+dbpf "hrwfs:dc:detSetWcs.A","./data"
+dbpf "hrwfs:dc:detSetWcs.B","hrcalib.wcs"
+dbpf "hrwfs:dc:detSetWcs.DIR","0"
+dbpf "hrwfs:dc:detSetWcs.DIR","3"
 
 # End of standalone startup

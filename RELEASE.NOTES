@@ -249,3 +249,7 @@ V3-8 23 Oct 2012 - mrippa
 V3-8-1 25 Oct 2012 - pgigoux
 -----------------------
     Modified code to update ${top}dc:health when there's a thermistor error, as requested in REL-362
+
+V3-8-2 June Release 2015 - rrojas
+------------------------
+    REL-1923 HRWFS to start default WCS mode
