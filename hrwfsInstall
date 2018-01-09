@@ -46,7 +46,7 @@ cd startup
 editUAE
 cd ..
 
-gmake >> hrwfsBuild.log 2>&1
+# gmake >> hrwfsBuild.log 2>&1
 
 
 exit 0
