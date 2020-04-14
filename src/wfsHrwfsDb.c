@@ -1,5 +1,5 @@
 static struct {void *v; char *c;} rcsid = {&rcsid,
-	"$Id: wfsHrwfsDb.c,v 1.19 2006-07-31 19:50:33 gemvx Exp $"};
+	"$Id: wfsHrwfsDb.c,v 1.19 2006/07/31 19:50:33 gemvx Exp $"};
 
 /*+
  *   MODULE NAME:
@@ -112,6 +112,7 @@ static struct {void *v; char *c;} rcsid = {&rcsid,
 #include "seqControl.h"    /* This is where SEQ_CONTROL_ parameters come from.*/
 #include "errorLog.h"      /* This is where LOGTASK_ parameters comes from.   */
 
+char ioc_path[EPICS_MAX_BYTES_STRING_ATTRIB];
 
 /* The pWfsDbCadList data structure array contains information on the CAD 
  * records recognised by the system, and the commands associated with them. Each
@@ -284,7 +285,7 @@ CAD_RECORD pWfsDbCadList [] =
       SIMULATION_MODE_SUPPORTED,
       120.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG,   "1", {"0", "2"},
-      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, ioc_path, {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, "hrwfs.fits", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
    },
@@ -309,7 +310,7 @@ CAD_RECORD pWfsDbCadList [] =
       CAD_ATTRIB_C, EPICS_DATA_TYPE_LONG,   "1", {"0", "2"},
       CAD_ATTRIB_D, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_E, EPICS_DATA_TYPE_LONG,   "2", {"0", "3"},
-      CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_F, EPICS_DATA_TYPE_STRING, ioc_path, {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_G, EPICS_DATA_TYPE_STRING, "hrwfs.fits", {NO_ATTRIBUTE_LIMITS},
       CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING, "NONE", {NO_ATTRIBUTE_LIMITS}
    },

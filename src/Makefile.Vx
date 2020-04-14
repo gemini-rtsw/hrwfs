@@ -42,7 +42,8 @@ APPLSRCS.c      = \
         ../wfsResourceMonitor.c \
         ../wfsSite.c \
         ../sdsuRead.c \
-        ../fpscr.c
+        ../fpscr.c \
+	../autoPath.c
 
 SRCS.c  = $(LIBSRCS.c) $(APPLSRCS.c)
 

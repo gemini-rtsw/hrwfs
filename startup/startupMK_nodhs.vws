@@ -57,6 +57,7 @@ ld < $(version)/bin/$(arch)/seqControl
 ld < $(version)/bin/$(arch)/wfsResourceMonitor
 ld < $(version)/bin/$(arch)/simpleLogHrwfs
 ld < $(version)/bin/$(arch)/fpscr
+ld < $(version)/bin/$(arch)/autoPath
 
 #Turn off floating point underflow for each tasks
 taskCreateHookAdd( usrFppCreateHook )
@@ -144,4 +145,8 @@ taskSpawn ("wfsResMonitor", 255, 0x8, 4000, wfsResourceMonitor, 10000000, 200000
 # Start sequences
 seq &timeSeq, "sys=hrwfs:"
 
+taskDelay(1 * sysClkRateGet())
+taskSpawn("autoPath", 100, 0, 6000, autoPath)
+
 # End of standalone startup
+
