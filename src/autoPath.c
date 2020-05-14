@@ -67,7 +67,6 @@ static char *mdaytomonth[] = {"jan", "feb", "mar", "apr", "may", "jun", "jul", "
 #define SECSNADAY	(24 * 60 * 60)
 
 STATUS autoPath () {
-   char topName[64];
    struct tm *tmnow;
    time_t now;
    int secstomidnight;
@@ -77,8 +76,6 @@ STATUS autoPath () {
       printErr("autoPath: Failed to initialise error context structure.\n");
       return (ERROR);
    }
-
-   strncpy(topName, strtok(epToVxTopName, ":"), sizeof(topName));
 
    while (1) {
       now = time(NULL);
