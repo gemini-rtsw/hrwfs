@@ -62,7 +62,6 @@ extern int snprintf(char *str, size_t count, const char *fmt, ...);
 extern char ioc_path[EPICS_MAX_BYTES_STRING_ATTRIB];		/* Path to where to write images, cb's	*/
 
 extern char epToVxTopName[];					/* Name of pwfs				*/
-static char *mdaytomonth[] = {"jan", "feb", "mar", "apr", "may", "jun", "jul", "aug", "sep", "nov", "dec"};
 
 #define SECSNADAY	(24 * 60 * 60)
 
@@ -82,7 +81,7 @@ STATUS autoPath () {
       tmnow = gmtime(&now);
 
       sprintf(ioc_path, "%s/%d%s%d", DET_CONTROL_DATA_FILE_PATH,
-         1900 + tmnow->tm_year, (char *)mdaytomonth[tmnow->tm_mon], tmnow->tm_mday);
+         1900 + tmnow->tm_year, tmnow->tm_mon + 1, tmnow->tm_mday);
 
       printf("autoPath: Creating IOC path: \"%s\".\n", ioc_path);
 
