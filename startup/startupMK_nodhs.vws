@@ -145,6 +145,7 @@ taskSpawn ("wfsResMonitor", 255, 0x8, 4000, wfsResourceMonitor, 10000000, 200000
 # Start sequences
 seq &timeSeq, "sys=hrwfs:"
 
+# Spawn autoPath task to autocreate paths for CB's and wfs readout.
 taskDelay(1 * sysClkRateGet())
 taskSpawn("autoPath", 100, 0, 6000, autoPath)
 

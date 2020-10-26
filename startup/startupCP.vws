@@ -151,4 +151,8 @@ dbpf "hrwfs:dc:detSetWcs.B","hrcalib.wcs"
 dbpf "hrwfs:dc:detSetWcs.DIR","0"
 dbpf "hrwfs:dc:detSetWcs.DIR","3"
 
+# Spawn autoPath task to autocreate paths for CB's and wfs readout.
+taskDelay(1 * sysClkRateGet())
+taskSpawn("autoPath", 100, 0, 5000, autoPath)
+
 # End of standalone startup
