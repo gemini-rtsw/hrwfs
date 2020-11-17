@@ -66,9 +66,10 @@ extern char epToVxTopName[];					/* Name of pwfs				*/
 #define SECSNADAY	(24 * 60 * 60)
 
 STATUS autoPath () {
-   struct tm *tmnow;
+   struct tm *tmutc;	/* UTC tm struct */
+   struct tm *tmloc;	/* Localtime tm struct */
    time_t now;
-   int secstomidnight;
+   int twopm;
    struct stat sb;
 
    if (errorInit () == ERROR) {
@@ -78,12 +79,16 @@ STATUS autoPath () {
 
    while (1) {
       now = time(NULL);
-      tmnow = gmtime(&now);
+      tmutc = gmtime(&now);
+      tmloc = localtime(&now);
+
+      /* printf("autoPath: Localhour vs UTC %d %d\n", tmutc->tm_hour, tmloc->tm_hour); */
 
       sprintf(ioc_path, "%s/hrwfs/%04d%02d%02d", DET_CONTROL_DATA_FILE_PATH,
-         1900 + tmnow->tm_year, tmnow->tm_mon + 1, tmnow->tm_mday);
+         1900 + tmutc->tm_year, tmutc->tm_mon + 1, tmutc->tm_mday);
 
       printf("autoPath: Creating IOC path: \"%s\".\n", ioc_path);
+
 
       /*
        * Attempt to create the directory. On failure, wait 10 minutes and try again
@@ -101,11 +106,14 @@ STATUS autoPath () {
          printf("autoPath: Directory \"%s\" already exists.\n", ioc_path);
       }
 
-      now = time(NULL);
-      secstomidnight = SECSNADAY - (now % SECSNADAY);
-      /* secstomidnight = 30;	DEBUG */
-      printf("autoPath: waiting %d seconds to midnight UTC\n", secstomidnight);
-      taskDelay(secstomidnight * sysClkRateGet());	/* Wait until midnight */
+
+      twopm = tmutc->tm_hour - tmloc->tm_hour;	/* Get localtime hours delta from UTC	*/
+      if (twopm < 0) twopm += 24;		/* Handle crossing over to next day	*/
+      now -= twopm * (60 * 60);			/* Adjust "now" in UTC to localtime	*/
+      now = SECSNADAY - (now % SECSNADAY);	/* Seconds until midnight localtime	*/
+      now += (14 * 60 * 60);			/* Seconds until 2pm localtime		*/
+      printf("autoPath: waiting %d seconds to 2pm localtime\n", now);
+      taskDelay(now * sysClkRateGet());		/* Wait until midnight			*/
    }
 
    MESSAGE_LOG(MSG_WARNING, "autoPath task exited.");

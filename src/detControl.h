@@ -285,7 +285,7 @@ typedef   unsigned long   DHS_CONNECT;
                                     /* Define the name of the directory       */
                                     /* containing parameter files.            */
 
-#define   DET_CONTROL_DATA_FILE_PATH          "/gemdata/ioc_data/hrwfs"
+#define   DET_CONTROL_DATA_FILE_PATH          "/gemdata/ioc_data"
                                     /* Define the default directory to contain*/
                                     /* engineering data files.                */
 

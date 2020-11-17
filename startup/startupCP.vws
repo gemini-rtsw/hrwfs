@@ -24,6 +24,11 @@ pwd
 #hostAdd ("jughead","172.17.2.14")
 #nfsMount "jughead", "/ramdisk",      "/rtmp"
 
+# Hawaii:
+#putenv("TIMEZONE=hawaii::600:000000:000000")
+# Chile:
+putenv("TIMEZONE=chile::180:040402:090602")
+
 # Load EPICS core, sequencer and pvload
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore
 ld < /gemini/external/GEM7/base/bin/$(arch)/seq
@@ -58,6 +63,7 @@ ld < $(version)/bin/$(arch)/seqControl
 ld < $(version)/bin/$(arch)/wfsResourceMonitor
 ld < $(version)/bin/$(arch)/simpleLogHrwfs
 ld < $(version)/bin/$(arch)/fpscr
+ld < $(version)/bin/$(arch)/autoPath
 
 #Turn off floating point underflow for each tasks
 taskCreateHookAdd( usrFppCreateHook )
