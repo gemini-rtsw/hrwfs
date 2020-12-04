@@ -24,10 +24,7 @@ pwd
 #hostAdd ("jughead","172.17.2.14")
 #nfsMount "jughead", "/ramdisk",      "/rtmp"
 
-# Hawaii:
-#putenv("TIMEZONE=hawaii::600:000000:000000")
-# Chile:
-putenv("TIMEZONE=chile::180:040402:090602")
+putenv "SITE=CP"
 
 # Load EPICS core, sequencer and pvload
 ld < /gemini/external/GEM7/base/bin/$(arch)/iocCore

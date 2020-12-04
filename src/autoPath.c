@@ -60,17 +60,22 @@ extern int snprintf(char *str, size_t count, const char *fmt, ...);
 
 /* Note that EPICS_MAX_BYTES_STRING_ATTRIB == 40, and the current path is at 32 chars */
 extern char ioc_path[EPICS_MAX_BYTES_STRING_ATTRIB];		/* Path to where to write images, cb's	*/
+extern char data_filename[EPICS_MAX_BYTES_STRING_ATTRIB];
 
 extern char epToVxTopName[];					/* Name of pwfs				*/
 
-#define SECSNADAY	(24 * 60 * 60)
 
 STATUS autoPath () {
    struct tm *tmutc;	/* UTC tm struct */
-   struct tm *tmloc;	/* Localtime tm struct */
    time_t now;
-   int twopm;
+   int offset;
    struct stat sb;
+   char *site = getenv("SITE");
+
+   if (site == NULL)                 offset = 10 * 60 * 60;	/* Default HST */
+   else if (strcmp("MK", site) == 0) offset = 10 * 60 * 60;	/* -10 hours UTC */
+   else if (strcmp("CP", site) == 0) offset =  3 * 60 * 60;	/* -3  hours UTC, ignore CLST */
+   else                              offset = 10 * 60 * 60;	/* Default HST */
 
    if (errorInit () == ERROR) {
       printErr("autoPath: Failed to initialise error context structure.\n");
@@ -80,9 +85,8 @@ STATUS autoPath () {
    while (1) {
       now = time(NULL);
       tmutc = gmtime(&now);
-      tmloc = localtime(&now);
 
-      /* printf("autoPath: Localhour vs UTC %d %d\n", tmutc->tm_hour, tmloc->tm_hour); */
+      /* printf("autoPath: Localhour vs UTC %d\n", tmutc->tm_hour); */
 
       sprintf(ioc_path, "%s/hrwfs/%04d%02d%02d", DET_CONTROL_DATA_FILE_PATH,
          1900 + tmutc->tm_year, tmutc->tm_mon + 1, tmutc->tm_mday);
@@ -106,12 +110,8 @@ STATUS autoPath () {
          printf("autoPath: Directory \"%s\" already exists.\n", ioc_path);
       }
 
-
-      twopm = tmutc->tm_hour - tmloc->tm_hour;	/* Get localtime hours delta from UTC	*/
-      if (twopm < 0) twopm += 24;		/* Handle crossing over to next day	*/
-      now -= twopm * (60 * 60);			/* Adjust "now" in UTC to localtime	*/
-      now = SECSNADAY - (now % SECSNADAY);	/* Seconds until midnight localtime	*/
-      now += (14 * 60 * 60);			/* Seconds until 2pm localtime		*/
+      now = now % (24 * 60 * 60);		/* Get seconds into the current day	*/
+      now = offset + (14 * 60 * 60) - now;	/* Get seconds until 2pm tomorrow	*/
       printf("autoPath: waiting %d seconds to 2pm localtime\n", now);
       taskDelay(now * sysClkRateGet());		/* Wait until midnight			*/
    }
