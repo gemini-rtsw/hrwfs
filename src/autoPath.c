@@ -112,7 +112,7 @@ STATUS autoPath () {
 
       now = now % (24 * 60 * 60);		/* Get seconds into the current day	*/
       now = offset + (14 * 60 * 60) - now;	/* Get seconds until 2pm tomorrow	*/
-      printf("autoPath: waiting %d seconds to 2pm localtime\n", now);
+      printf("autoPath: waiting %ld seconds to 2pm localtime\n", now);
       taskDelay(now * sysClkRateGet());		/* Wait until midnight			*/
    }
 
