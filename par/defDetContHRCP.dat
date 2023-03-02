@@ -3,7 +3,7 @@
 -30.0
 # Default temperature coefficient - do not change
 128
-# Default ADC offset for output 0 - no binning 
+# Default ADC offset for output 0 - no binning (Updated with CR-23 3925) 
 2355
 # Default ADC offset for output 1 - no binning
 2335
