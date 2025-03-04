@@ -253,3 +253,7 @@ V3-8-1 25 Oct 2012 - pgigoux
 V3-8-2 June Release 2015 - rrojas
 ------------------------
     REL-1923 HRWFS to start default WCS mode
+
+V3-8-5 04 March 2025 - currutia
+------------------------
+    startup updated for Epics 7 rtconfig
