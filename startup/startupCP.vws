@@ -24,6 +24,9 @@ pwd
 #hostAdd ("jughead","172.17.2.14")
 #nfsMount "jughead", "/ramdisk",      "/rtmp"
 
+hostAdd "cportnfs-lv1", "172.17.71.21"
+nfsMount "cportnfs-lv1", "/gem_conf/rt/tuning", "/rtconfig"
+
 putenv "SITE=CP"
 
 # Load EPICS core, sequencer and pvload
