@@ -1,0 +1,16 @@
+
+< /gemini/external/vxWorks/tornado2.0/vxUsers
+
+routeAdd "0.0.0.0" , "10.2.2.1"
+routeAdd "0.0.0.0" , "10.1.2.1"
+routeAdd "0.0.0.0" , "10.1.5.1"
+
+hostAdd ("pisces-control","10.2.2.57")
+
+nfsMount "pisces-control", "/export/gemini", "/gemini"
+nfsMount "pisces-control", "/export/gemdata", "/gemdata"
+
+
+nfsAuthUnixSet "pisces-control", 2966, 10, 0
+
+cd "$(iocpath)"
