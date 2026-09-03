@@ -1,0 +1,54 @@
+# Ported verbatim from gmoscc/db (REL-4693). This directory is named by
+# Makefile.Dirs and by hrwfsInstall's -I list, but was never committed to
+# hrwfs-rt -- so no checkout of this project could build the two files
+# startup.vws loads unconditionally:
+#
+#     dbLoadDatabase "./dbd/gemini.dbd"
+#     ld < ./bin/ppc604/gemini.Support
+#
+# Nothing here is hrwfs-specific. APPLIC_DBNAME is empty for both gmoscc and
+# hrwfs, so both build the same unsuffixed names, and the DBFILES below name
+# only stock GEM tree files -- all five confirmed present in GEM7 at
+# /usr/software/dev/packages/epics/epics3.13.4GEM7 (2026-09-02).
+#
+# Validation: dbExpand over these inputs must reproduce the deployed
+# dbd/gemini.dbd byte-for-byte -- 340726 bytes, md5
+# d2dd08d4919b6b776e9a3155381d7c6c. If it does not, this port is wrong.
+
+
+include ../.applTop
+include $(APPLIC_TOP)/config/CONFIG
+
+DBFILES = $(strip   $(wildcard $(EPICS_BASE)/templates/makeBaseApp/top/exampleApp/src/base.dbd) \
+		    $(wildcard $(EPICS_BASE)/dbd/geminiRec.dbd)         \
+		    $(wildcard $(EPICS_BASE)/dbd/geminiBancommDev.dbd)  \
+		    $(wildcard $(EPICS_BASE)/dbd/geminiSoftDev.dbd)     \
+		    $(wildcard $(EPICS_BASE)/dbd/geminiDrv.dbd)         \
+		    $(shell if [ -d $(APPLIC_INSTALL)/dbd ] ; then          \
+			       find $(APPLIC_INSTALL)/dbd -name "*.dbd" -print; \
+			    fi ) )
+
+include $(EPICS_BASE)/templates/makeBaseApp/top/exampleApp/src/baseLIBOBJS
+include $(EPICS_BASE)/dbd/geminiRecLIBOBJS
+include $(EPICS_BASE)/dbd/geminiBancommDevLIBOBJS
+include $(EPICS_BASE)/dbd/geminiSoftDevLIBOBJS
+include $(EPICS_BASE)/dbd/geminiDrvLIBOBJS
+
+DBDINSTALL = gemini$(APPLIC_DBNAME).dbd
+
+LIBNAME = gemini$(APPLIC_DBNAME).Support
+
+include $(APPLIC_TOP)/config/RULES.Build
+
+#----------------------------------------
+#  ADD RULES AFTER THIS LINE
+
+$(LIBNAME): $(EPICS_BASE)/templates/makeBaseApp/top/exampleApp/src/baseLIBOBJS	\
+	    $(EPICS_BASE)/dbd/geminiRecLIBOBJS					\
+	    $(EPICS_BASE)/dbd/geminiBancommDevLIBOBJS				\
+	    $(EPICS_BASE)/dbd/geminiSoftDevLIBOBJS				\
+	    $(EPICS_BASE)/dbd/geminiDrvLIBOBJS
+ 
+$(DBDINSTALL) : $(DBFILES)
+	$(EPICS_BASE)/bin/$(HOST_ARCH)/dbExpand \
+		-I$(APPLIC_INSTALL)/dbd -I$(EPICS_BASE)/dbd $(DBFILES) > $(@F)

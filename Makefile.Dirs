@@ -1,4 +1,3 @@
-DIRS += db 
 DIRS += capfast
 DIRS += src
 DIRS += dspsrc
