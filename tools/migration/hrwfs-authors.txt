@@ -1,0 +1,13 @@
+aebbers = aebbers <aebbers@gemini.edu>
+cboyer = cboyer <cboyer@gemini.edu>
+cjm = cjm <cjm@gemini.edu>
+gemvx = gemvx <gemvx@gemini.edu>
+hawi.stecher = Hawi Stecher <hawi.stecher@noirlab.edu>
+jluhrs = jluhrs <jluhrs@gemini.edu>
+miguel.gomez = miguel.gomez <miguel.gomez@gemini.edu>
+mrippa = mrippa <mrippa@gemini.edu>
+(no author) = Unknown (pre-cvs2svn) <noreply@gemini.edu>
+pedro = pedro <pedro@gemini.edu>
+rrojas = rrojas <rrojas@gemini.edu>
+tcumming = tcumming <tcumming@gemini.edu>
+tgagg = tgagg <tgagg@gemini.edu>
