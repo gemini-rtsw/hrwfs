@@ -48,7 +48,7 @@ check)
     # Anything that looks like an hrwfs checkout: has src/ and capfast/.
     for base in $HOME /home /export/home /usr/local/src /opt /var/tmp /gemsoft; do
         [ -d "$base" ] || continue
-        find "$base" -maxdepth 4 -type d -name capfast 2>/dev/null \
+        find "$base" -type d -name capfast 2>/dev/null \
           | while read c; do
                 w=`dirname "$c"`
                 [ -d "$w/src" ] || continue

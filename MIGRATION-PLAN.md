@@ -63,20 +63,21 @@ gcc 2.7.2 against gcc 2.96: five years and a major version apart. The
 validation method still works but loses most of its force, because wholesale
 differences are expected rather than suspicious.
 
-Three options, and the choice is operational rather than technical:
+### Where this stands after checking polaris
 
-| | approach | cost | risk |
-|---|---|---|---|
-| **A** | Build the Tornado 2.0 GNU tools (gcc 2.7.2) for Linux from Wind River's GPL sources, as ANL did for 2.2 | high — gcc 2.7.2 does not compile on a modern toolchain without an intermediate bootstrap; ANL's scripts target 2.2 sources | low once done: same compiler, so the object comparison regains full force |
-| **B** | Use ANL's gcc 2.96 against Tornado 2.0 headers, load into the 5.4 kernel | low | **highest** — a 5.5-era compiler's output loaded by a 5.4 kernel; PowerPC EABI is largely stable across those gcc versions, but this is exactly where subtle runtime faults live, and the validation cannot distinguish them from expected churn |
-| **C** | Move hrwfs to Tornado 2.2 / vxWorks 5.5, matching gmoscc | medium — new kernel and BSP on the crate, full hrwfs retest | low technically: reuses `gem-tornado22-linux` and `gem-vxworks-tornado22` unchanged, the same compiler already validated at Gemini, and the same mv2700 board family gmoscc already boots under 2.2 |
+`$WIND_BASE/host` holds `sun4-solaris2`, `x86-win32`, `parisc-hpux10` — no
+Linux. And `host/src` is **282 KB** of `demo`, `gnu.cpp`, `hutils`, `windview`:
+host utilities and WindView sources, **not** the GNU compiler sources. So the
+GPL sources are not on this installation.
 
-**Leaning C**, because it is the only option whose toolchain is already proven
-on Linux here, and because `gem-vxworks-tornado22` already ships an mv2700
-vxWorks 5.5 kernel — hrwfs's crate is the same board family (its BSP dirs are
-`target/config/mv2700*`, and the DHS libraries it loads are `mv2700T2`). But it
-buys that by moving the crate to a new kernel, which is a testing and downtime
-decision, not mine.
+| | approach | verdict |
+|---|---|---|
+| **A** | Build gcc 2.7.2 for Linux from Wind River's GPL sources, as ANL did for 2.2 | **Blocked on inputs.** Worth one question: does Gemini still hold the Tornado 2.0.2 media, or an entitlement to request the GNU sources? If yes this is the best path — it keeps production's exact compiler, so the object comparison regains full force. gcc 2.7.2 (Jan 1996) will not build on a modern toolchain, so expect an old container or a two-stage bootstrap. |
+| **B** | ANL's gcc 2.96 against Tornado 2.0.2 headers, loaded by the 5.4 kernel | Plausible — both ELF PowerPC, same EABI — but needs crate testing, and the validation cannot separate a real fault from expected churn. Touches the instrument. |
+| **C** | Move hrwfs to Tornado 2.2 / vxWorks 5.5 | **Larger than first assessed.** Not just a kernel swap: the EPICS target objects at `/gemini/external/GEM7` were built for 5.4 and would need rebuilding, cascading into moving hrwfs to GEM8.6. An EPICS upgrade project, not a build port. |
+| **D** | Migrate everything except the ppc cross-compile | **Recommended now.** Host tools, the `gemini.dbd` byte-exact validation, the specs, dependency RPMs, history and deploy story all move to Linux/CI; ppc objects still come from a polaris build. No crate risk, nothing wasted if A later succeeds — same pipeline, one input swapped. This is the state gmoscc's rehost occupied at first (its §10 called CI output "verification-grade" and kept deploying from Solaris).
+
+B versus C is an operational decision: both touch a running instrument.
 
 Note either way: hrwfs targets `ppc604`, gmoscc `ppc604_long` — a different
 data model, so the CONFIG differs regardless of which option is chosen.
