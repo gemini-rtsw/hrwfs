@@ -204,13 +204,49 @@ class of divergence. The historical gcc 2.7-to-2.9x PowerPC gotchas are
 struct-return conventions and bitfield allocation, which is where to look if
 something misbehaves.
 
-Two consequences:
+### Update 4: the ABI risk is low, measured
 
-1. **The crate test must be functional, not a boot test.** "It boots and the
+Checked rather than assumed, and it walks back most of the warning above.
+The two known gcc 2.7-to-2.9x PowerPC divergences are bitfield allocation and
+struct-return conventions. Neither is in play:
+
+- **Zero bitfields** in the DHS headers or in hrwfs's cross-boundary headers
+  (`dbTypes.h`, `detControl.h`, `epToVxLib.h`, `gemTypes.h`).
+- **Zero functions returning a struct by value** in the DHS headers.
+- **No `long long`** in the shared types.
+- The DHS interface is entirely **opaque scalar handles** plus enums:
+  `DHS_AV_ID`/`DHS_AV_LIST` are `long`, `DHS_BD_DATASET`/`_FRAME`/`_OBJECT`
+  alias `DHS_AV_LIST`, `DHS_CONNECT`/`DHS_TAG` are `unsigned long`. **No struct
+  crosses the boundary at all.**
+
+`long`, `unsigned long` and `enum` pass in registers identically under the
+PowerPC EABI in both compiler versions. So the mixed-generation runtime is far
+less dangerous than the raw fact "our modules are 2.96, everything else is
+2.7.2" suggests.
+
+(Correcting an earlier count in this document's history: `dhsDataset` and
+`dhsDataFrame`, which looked like a wide type boundary at 107 and 36
+occurrences, are hrwfs's own *variable* names. The real type surface is the
+seven typedefs above.)
+
+**What this means for the two options.** Option 2 -- rebuild the EPICS runtime
+and support libraries with 2.96 -- is still worth doing, but for the reasons
+Hawi gave rather than as ABI mitigation: it is needed anyway if the mixed
+approach fails, and ~25 IOCs on this tree need the same builds, so doing it
+once serves all of them. Framing it as risk reduction overstates a risk that
+measurement says is small.
+
+Residual items to keep an eye on, both cheap: that no build passes
+`-fshort-enums` (nothing does), and varargs across the boundary if any is
+added later.
+
+1. **The crate test should still be functional, not a boot test** -- not
+   because of ABI fear, but because a boot test exercises almost none of the
+   detector, DHS and astrometry paths that a release needs verified anyway. "It boots and the
    IOC initialises" exercises almost none of the boundary. Exercising the CAD/CAR
    records, a real detector exposure through DHS, and the WCS/astrometry paths
    does.
-2. **There is a more coherent variant worth considering.** Rebuild the EPICS
+2. **The coherent variant, now agreed as worthwhile.** Rebuild the EPICS
    runtime *and* the support libraries with gcc 2.96 as well, so the whole
    loaded set is one generation, keeping the 5.4 kernel. The EPICS source is in
    the staged tree (2715 files under `base/src`), so `iocCore`/`seq`/`pvload`
