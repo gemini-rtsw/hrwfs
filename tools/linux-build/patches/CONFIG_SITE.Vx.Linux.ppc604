@@ -1,0 +1,22 @@
+# Site overrides for cross-building vxWorks/ppc604 from a Linux host.
+#
+# Install into $EPICS/base/config/. This is the override point EPICS 3.13.4
+# already documents: CONFIG_SITE.Vx.Linux ends with
+#   -include $(EPICS_BASE)/config/CONFIG_SITE.$(BUILD_TYPE).$(HOST_ARCH).$(T_A)
+# and ships commented-out ORNL SNS examples of exactly this, for Tornado 2.0
+# on Linux with a self-built powerpc-wrs-vxworks gcc.
+#
+# WHY IT IS NEEDED. CONFIG_HOST_ARCH.Linux line 8 sets
+#     WIND_HOST_TYPE = Linux
+# and CONFIG.Vx line 20 derives
+#     VX_GNU_YES = $(VX_DIR)/host/$(WIND_HOST_TYPE)
+# so the build looks for $WIND_BASE/host/Linux/bin/ccppc. ANL's Linux rebuild
+# of the Wind River tools unpacks into host/x86-linux, not host/Linux, so the
+# compile fails with "No such file or directory ... Error 127" -- and setting
+# WIND_HOST_TYPE in the environment does not help, because an assignment in a
+# makefile beats the environment.
+#
+# Overriding VX_GNU_YES rather than WIND_HOST_TYPE keeps the change scoped to
+# where the toolchain is looked up; WIND_HOST_TYPE is also used to name host
+# tool directories, which we do not want to move.
+VX_GNU_YES = $(VX_DIR)/host/x86-linux

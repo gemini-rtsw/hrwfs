@@ -177,6 +177,76 @@ faithful UAE build reproduces production's modules. That needs the real
 
 Then, and only then, the crate test.
 
+### Update 7: THE FULL UAE BUILD WORKS
+
+`./tools/linux-build/setup.sh && gmake` completes with **exit 0** in
+`rockylinux:9`, descending into all five directories (`capfast db par src
+startup`) and producing the **complete payload** — every file production has in
+`bin/ppc604`, `dbd`, `data` and `include`, with nothing missing and nothing
+extra.
+
+Three things had to be fixed to get there, all recorded in the scripts:
+
+1. **`CONFIG_SITE.Vx.Linux.ppc604`** (new, in `tools/linux-build/patches/`).
+   Upstream `CONFIG_HOST_ARCH.Linux:8` sets `WIND_HOST_TYPE = Linux`, and
+   `CONFIG.Vx:20` derives `VX_GNU_YES = $(VX_DIR)/host/$(WIND_HOST_TYPE)`, so
+   the build looks for `host/Linux/bin/ccppc` while ANL's toolchain unpacks
+   into `host/x86-linux` — `Error 127`. Setting `WIND_HOST_TYPE` in the
+   environment does not help: a makefile assignment beats the environment.
+   This is the override point EPICS 3.13.4 already documents, with
+   commented-out ORNL SNS examples of exactly this case.
+2. **`applSetup.pl` must be invoked through `perl`.** Its shebang is the
+   Solaris path `/usr/software/dev/solaris/bin/perl`. A symlink works, but not
+   when `/usr/software` is a bind mount — the mount hides whatever the image
+   put underneath it.
+3. **`gmake` needs `HOST_ARCH` in the environment** (hence
+   `tools/linux-build/gem-env.sh`), or the build resolves
+   `CONFIG_HOST_ARCH.unsupported`. And when `applSetup.pl` fails, the
+   top-level `Makefile` uses `-include $(APPLIC_TOP)/config/CONFIG`, so
+   `gmake` silently falls through to its first target — `release` — and tars
+   the source tree, **exiting 0**. `setup.sh` now asserts `config/CONFIG`,
+   `config/CONFIG.Defs` and `config/RULES.Dirs` exist rather than letting that
+   happen.
+
+Confirmed incidentally: `APPLIC_VERSION = .` (which is why the generated
+scripts use relative `./bin/ppc604/...`), `APPLIC_INSTALL = <checkout>`, and
+`APPLIC_IOCPATH` empty — so re-homing for the RPM is setting `APPLIC_IOCPATH`,
+exactly as §1b predicted.
+
+### Update 8: the build is faithful — validated against production
+
+**The code is equivalent, and the size difference is fully explained.**
+
+With debug sections excluded, `.text` and `.data` are **identical sizes**:
+`fpscr` `.text=92` both; `wfsSite` `.data=124+24` both. The whole raw-size
+delta is stabs debug info that production carries and this build does not
+(`fpscr`: 15,693 bytes of `.stab`/`.stabstr` in production, 0 here).
+
+Stripped of debug and `.comment`, the built objects are consistently *slightly
+larger* — `wfsHrwfsDb` 324268 vs 324420 (1.0005x), `detControl` 228036 vs
+237428 (1.04x), `wfsLibrariesHrwfs` 241360 vs 261048 (1.08x). Disassembly shows
+why, and it is the same cause gmoscc characterized:
+
+| module | production `bl` | built `bl` | production `blrl` | built `blrl` |
+|---|---|---|---|---|
+| `wfsResourceMonitor` | 2 | **0** | 33 | 35 |
+| `detControl` | 28 | **0** | 2195 | 2275 |
+| `seqControl` | 0 | 0 | 220 | 237 |
+
+gcc 2.7.2 emitted some direct `bl` despite `-mlongcall`; ANL's gcc 2.96 routes
+**every** call through a register. Zero direct `bl` anywhere in the built
+modules. A direct `bl` has only ±32 MB reach, so the newer behaviour is
+*stricter and safer* — gmoscc's exact conclusion, now reproduced independently
+on a second IOC across a wider compiler gap. `fpscr`'s instruction-mnemonic
+histogram is byte-for-byte identical between the two builds.
+
+**One deliberate difference to decide on:** this build emits no stabs debug
+info where production has it. Not needed functionally, and gmoscc's §8 notes
+that debug sections embed build paths (which is why its comparison stripped
+them) — so leaving them out gives a smaller, more reproducible payload. But it
+also means a Tornado target-server debugging session against a deployed crate
+would have no symbols beyond the symbol table. Add `-gstabs` if that matters.
+
 ### Update 5: the EPICS host tools build for Linux
 
 All seven directories (`tools include libCom toolsComm dbStatic sequencer
