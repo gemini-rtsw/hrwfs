@@ -1,3 +1,14 @@
+#
+# Site-specific information: routes, the NFS server that exports /gemini, and
+# the unix identity VxWorks presents over NFS.
+#
+# Recovered from the deployed bin/ppc604/local (MK, Dec 2020 build) and then
+# re-homed from pisces-control to mkotcsbootv2-lv1, matching the boot-server
+# migration gmoscc already made (its commit "Migrate off pisces").
+#
+# NOTE the export path changes with the server: pisces-control exported
+# /export/gemini, mkotcsbootv2-lv1 exports /gemini (see gmoscc/startup/
+# local.vws). Same for gemdata -- see the FIXME below.
 
 < /gemini/external/vxWorks/tornado2.0/vxUsers
 
@@ -5,12 +16,25 @@ routeAdd "0.0.0.0" , "10.2.2.1"
 routeAdd "0.0.0.0" , "10.1.2.1"
 routeAdd "0.0.0.0" , "10.1.5.1"
 
-hostAdd ("pisces-control","10.2.2.57")
+hostAdd ("mkotcsbootv2-lv1","10.2.2.145")
 
-nfsMount "pisces-control", "/export/gemini", "/gemini"
-nfsMount "pisces-control", "/export/gemdata", "/gemdata"
+nfsMount "mkotcsbootv2-lv1", "/gemini", "/gemini"
 
+# FIXME -- unconfirmed. detControl.h:288 defines
+#   DET_CONTROL_DATA_FILE_PATH "/gemdata/ioc_data"
+# so the detector writes here and the mount is not optional. pisces-control
+# exported it as /export/gemdata; whether mkotcsbootv2-lv1 exports gemdata at
+# all is unknown -- gmoscc does not mount it, because GMOS does not use it.
+# Confirm the export before the first boot on the new server.
+nfsMount "mkotcsbootv2-lv1", "/gemdata", "/gemdata"
 
-nfsAuthUnixSet "pisces-control", 2966, 10, 0
+# Tell VxWorks the unix user ID and group ID of "gemvx",
+# so that file access over NFS works.
 
+nfsAuthUnixSet "mkotcsbootv2-lv1", 2966, 10, 0
+
+# Left as the macro, not hardcoded as gmoscc does: the spec sets
+# APPLIC_IOCPATH to the deploy path, so a developer build cd's into its own
+# checkout while the RPM's copy cd's into /gemini/epics3.13.4/hrwfs/hrwfs.
+# Hardcoding would point every developer build at production.
 cd "$(iocpath)"
