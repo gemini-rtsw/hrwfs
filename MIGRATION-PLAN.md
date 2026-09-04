@@ -177,6 +177,48 @@ faithful UAE build reproduces production's modules. That needs the real
 
 Then, and only then, the crate test.
 
+### Update 3: what the crate test actually has to prove
+
+Every other module the crate loads at boot was built with **the same compiler
+production's hrwfs was** — checked, not assumed:
+
+```
+iocCore     GCC: (GNU) cygnus-2.7.2-960126
+seq         GCC: (GNU) cygnus-2.7.2-960126
+astlib      GCC: (GNU) cygnus-2.7.2-960126
+slalib      GCC: (GNU) cygnus-2.7.2-960126
+timelib     GCC: (GNU) cygnus-2.7.2-960126
+libdhs.a    GCC: (GNU) cygnus-2.7.2-960126
+```
+
+So under option B the risk is sharper than "does it run on a 5.4 kernel". Our
+gcc 2.96 modules would be loaded into a runtime where **everything else is
+gcc 2.7.2**, and hrwfs calls across that boundary constantly — into iocCore
+for record processing, `seq` for the sequencer, astlib/slalib/timelib for
+astrometry, DHS for data handling — with callbacks coming back the other way.
+
+That is a cross-generation ABI interop question at every call. Mostly it should
+hold: the PowerPC EABI calling convention is stable across those versions,
+`-mstrict-align` is already forced, and `--no-builtin`/`-fno-builtin` remove a
+class of divergence. The historical gcc 2.7-to-2.9x PowerPC gotchas are
+struct-return conventions and bitfield allocation, which is where to look if
+something misbehaves.
+
+Two consequences:
+
+1. **The crate test must be functional, not a boot test.** "It boots and the
+   IOC initialises" exercises almost none of the boundary. Exercising the CAD/CAR
+   records, a real detector exposure through DHS, and the WCS/astrometry paths
+   does.
+2. **There is a more coherent variant worth considering.** Rebuild the EPICS
+   runtime *and* the support libraries with gcc 2.96 as well, so the whole
+   loaded set is one generation, keeping the 5.4 kernel. The EPICS source is in
+   the staged tree (2715 files under `base/src`), so `iocCore`/`seq`/`pvload`
+   are rebuildable; the support-library sources are not staged and would have
+   to be found. More work, but it removes the mixing rather than testing
+   around it. The kernel itself stays 2.7.2-built, but the kernel/module
+   boundary is a documented stable ABI, which library interop is not.
+
 ### Two operational gotchas worth keeping
 
 **The 32-bit cross-compiler cannot read files on a filesystem with 64-bit
@@ -379,6 +421,29 @@ is still unconfirmed. Second, it means the recommended deploy path
 `/gemini/epics3.13.4/hrwfs/hrwfs` is *already* a working path: the RPM would
 replace a symlink with a real directory of the same name, exactly the
 transition gmoscc made.
+
+### The DHS tree has no version, so the RPM has to become its version
+
+`/gemini/dhs/dhs` is a **real directory**, not a selector symlink — owner
+`ssa:gemini`, dated 10 Jun 2013 — sitting beside seven siblings (`dhs-0.19`,
+`dhs-0.19b`, `dhs-0.19bDebug`, `dhs-0.19c`, `dhs-0.19c-hbf`, `dhs-2.0`,
+`dhs-to`). Nothing in it declares a version: no RCS `$Id`, no version macro.
+The only trace is three headers commenting "Initial install into CVS of
+dhs-0.16", so the lineage is 0.16-era despite the 2013 date.
+
+Same situation as gmoscc's `gem-vxworks-tornado22`, whose spec says it plainly:
+binaries with no internal version marker, "which is the reason for packaging
+them rather than copying: after this, `rpm -q` identifies which kernel a crate
+loaded." Follow that — version by date, and record the hashes in the changelog
+so the package becomes the version of record:
+
+```
+libers.o     7590  fab652769e6d6447...
+libimp.o   244650  2c7220dd8b395834...
+libsds.o    74357  ab39cb37b69f1de7...
+libdhs.a   177014  ebe830f62270bd77...
+libgen.a    22018  4548eccbfb306659...
+```
 
 ### These deplibs are shared platform, not hrwfs's
 
