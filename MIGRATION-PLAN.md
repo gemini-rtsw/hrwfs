@@ -87,6 +87,62 @@ Incidental, and useful: the production objects name their build directory as
 deployed `gemini.Support`, so it is the best remaining candidate to hold a
 real `db/` directory.
 
+## 0b-RESULT. The gcc 2.96 experiment: it works
+
+Run 2026-09-03. ANL's Linux gcc 2.96 (`gnu-tools.tor2_2-ppc-rhel5.tgz`, sha256
+`b9881437...`, the same tarball gmoscc pins) against the staged Tornado 2.0.2
+`target/h`, in `rockylinux:9` with `glibc.i686`, using the flags the EPICS
+config actually specifies:
+
+```
+CONFIG.Vx:98            OP_SYS_CFLAGS = -DvxWorks -DV5_vxWorks -fno-builtin
+CONFIG.Vx:105           -include $(VX_INCLUDE)/vxWorks.h
+CONFIG.Vx.ppc604        -DCPU=PPC604 -D_GNU_TOOL -DTRUE=1
+                        -mcpu=604 --no-builtin -mstrict-align
+CONFIG_SITE.Vx.ppc604   -mlongcall,  VX_DIR_YES = .../tornado2.0/ppc
+```
+
+**13 of 19 sources compiled**, emitting `ELF 32-bit MSB relocatable, PowerPC`
+— including the large ones (`sdsuLib.o` 124 KB, `epToVxLib.o` 92 KB,
+`errorLib.o`). **Not one compiler or header incompatibility.** The 6 failures
+are missing support-library headers only: `astLib.h`, `slalib.h`, `timeLib.h`,
+`dhs.h`, `fitsio.h` — the five `-d` deplibs in `hrwfsInstall`, which are not
+yet staged.
+
+Warnings are cosmetic or pre-existing: `_BIG_ENDIAN` redefined (19x — gcc 2.96
+predefines it, `types/vxArch.h:46` defines it again), 5 `cast to pointer from
+integer of different size`, 2 const-qualifier warnings.
+
+Also note `VX_GNU = $(VX_DIR)/host/$(WIND_HOST_TYPE)`, and `VX_DIR_YES` in
+`CONFIG_SITE.Vx.ppc604` already names the tornado2.0 tree. So selecting the
+Linux toolchain needs only `WIND_HOST_TYPE=x86-linux` and `HOST_ARCH=Linux`
+— no new `CONFIG_SITE.Vx.Linux.ppc604` for the compiler path. The mechanism
+ORNL SNS documented is doing exactly what it was designed for.
+
+**So option B is viable at the compile level.** What remains unproven is
+linking (`ldppc -r`, needs the deplib archives) and that the objects load and
+run on the 5.4 kernel — which is the crate test, required for any hrwfs
+release regardless of how it was built.
+
+### Two operational gotchas worth keeping
+
+**The 32-bit cross-compiler cannot read files on a filesystem with 64-bit
+inode numbers.** `cpp` was built without large-file support, so `stat()`
+returns `EOVERFLOW` and the error is the deeply unhelpful
+
+```
+cpp: .../archPpc.h: Value too large for defined data type
+```
+
+which looks like a header incompatibility and is not. It cost the first two
+runs of this experiment. NFS-backed home directories hit it, which is most
+Gemini workstations, so **a developer checkout on NFS will fail this way.**
+Stage the trees on local disk or a tmpfs. CI is probably unaffected (fresh
+ext4 on the runner), but it is worth a note in the build README.
+
+**Docker `--tmpfs` defaults to `noexec`**, so the staged `ccppc` gives
+`Permission denied`. Use `--tmpfs /build:size=2g,exec`.
+
 ## 0c. Build vs runtime — where the Tornado conflict actually is
 
 Worth stating plainly, because it is easy to conflate:
