@@ -1,0 +1,20 @@
+# Build environment for the hrwfs Linux rehost: EPICS 3.13.4GEM7 host tools
+# (native gcc) plus the Tornado 2.0.2 ppc cross-toolchain (32-bit i386, hence
+# glibc.i686).
+FROM rockylinux:9
+
+RUN dnf -y install --setopt=install_weak_deps=False \
+        gcc gcc-c++ make binutils \
+        perl perl-FindBin perl-lib perl-File-Compare perl-Data-Dumper \
+        tcsh flex byacc bison \
+        glibc.i686 libstdc++.i686 glibc-devel.i686 libstdc++-devel.i686 \
+        findutils diffutils which sed gawk grep tar gzip file patch \
+    && dnf clean all \
+    && ln -sf /usr/bin/make /usr/local/bin/gmake
+
+# applSetup.pl carries a Solaris perl shebang; the rest use /usr/bin/perl.
+RUN mkdir -p /usr/software/dev/solaris/bin \
+    && ln -sf /usr/bin/perl /usr/software/dev/solaris/bin/perl
+
+# Some Solaris CONFIG.Defs referred to the automounter path.
+RUN mkdir -p /export && ln -sf /usr/software /export/software
