@@ -17,7 +17,16 @@ target name (tn)     : hrwfs
 startup script (s)   : /gemini/epics3.13.4/hrwfs/hrwfs/bin/ppc604/startup
 ```
 
-## After the migration (mkotcsbootv2-lv1)
+## After the migration (mkotcsbootv2-lv1) — PLANNED, not yet precedented
+
+**Status caveat.** The gmoscc parameters this is modelled on were a *Technical
+Release* configuration that was **rolled back**: gmoscc still boots from
+pisces-control (10.2.2.57), and `bootsmith/profiles/MKO-PROD-GMOSCC.json`
+correctly records that. So moving hrwfs to mkotcsbootv2-lv1 is a planned
+change following an *intended* pattern, not a repeat of something already
+running in production. Worth knowing why the gmoscc TR was rolled back before
+hrwfs follows the same path — if it surfaced a problem with the new server,
+hrwfs will meet it too.
 
 Only the boot server changes. The kernel stays Tornado 2.0 — hrwfs is
 vxWorks 5.4 and is not moving to 2.2 — and the startup path does not change
