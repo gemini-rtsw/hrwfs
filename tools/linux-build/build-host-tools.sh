@@ -52,10 +52,10 @@ echo
 #   SHRLIB_VERSION=               avoids an install rule that self-links .a
 #                                 files ("Too many levels of symbolic links")
 # --- 32-bit host tools -------------------------------------------------
-# EPICS 3.13.4 is 1990s code that assumes a 32-bit host. Built x86-64, the
-# dbStatic parser silently drops field attributes: dbExpand emits a database
-# with no asl() or extra() declarations at all and exits 0. The Solaris tools
-# are 32-bit SPARC, so 32-bit is the faithful choice.
+# OPTIONAL and off by default. Native x86-64 works: the full dbExpand output
+# is byte-identical either way (333265 bytes, md5 cefca987ee6789fce07b82677db
+# 11800 from both). Kept only because matching the Solaris tools' 32-bit-ness
+# is defensible if a discrepancy ever turns up.
 #
 # Passed as WRAPPER SCRIPTS rather than 'ACC=gcc -m32', for two reasons:
 # a make command-line assignment is one word (an embedded space makes make

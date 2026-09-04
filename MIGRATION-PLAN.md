@@ -177,50 +177,48 @@ faithful UAE build reproduces production's modules. That needs the real
 
 Then, and only then, the crate test.
 
-### Update 5: the EPICS host tools build for Linux — and must be 32-bit
+### Update 5: the EPICS host tools build for Linux
 
 All seven directories (`tools include libCom toolsComm dbStatic sequencer
 uae`) build cleanly with gcc 11.5.0 and **no source patches** — better than the
 GEM8.6 tree, which needed two. We now have `dbExpand`, `macTest`, `snc`,
 `antelope`, `e_flex`, `dbToRecordtypeH`, `dbToMenuH` plus the perl/sh helpers
 including `applSetup.pl`. (`sf2db` is absent; it is the Capfast tool we do not
-need.)
+need.) Native x86-64 is fine.
 
-**They must be built 32-bit, and getting this wrong fails silently.** Built
-x86-64, `dbExpand` exits 0 and emits a database containing **zero** `asl()` and
-**zero** `extra()` declarations — from an input carrying 1 and 13 respectively
-for a single record; 388 lines short overall. The emit guard is
-`if(pdbFldDes->extra)`, so the *parser* is not populating the field: EPICS
-3.13.4 is 1990s code that assumes a 32-bit host, and the Solaris tools it was
-built with are 32-bit SPARC. Rebuilt 32-bit, the same command emits
-`asl:151 extra:600`. Same family as defect #2 in the DHS port
-("`SIZEOF_LONG=8` on a 32-bit build ... wrong struct layouts").
+> **Retracted:** an earlier version of this section claimed the tools had to be
+> built 32-bit because a 64-bit `dbExpand` silently emitted a database with no
+> `asl()`/`extra()` declarations, and suggested gmoscc might carry the same
+> latent bug. **That was wrong, and gmoscc is unaffected.** Three things
+> establish it: the full expansion produces *byte-identical* output from 64-bit
+> and 32-bit tools (333265 bytes, md5 `cefca987ee6789fce07b82677db11800` from
+> both); the 0-of-each measurement came from expanding `aiRecord.dbd` alone,
+> which errors with "menu not found" and writes a 0-byte file — the 32-bit
+> tools behave identically on that input; and the apparent shortfall was a
+> misread **sorted** diff, where one extra record type's repeated `dbCommon`
+> lines looked like missing declarations. Real counts: mine `asl 151 /
+> extra 600 / 35 recordtypes`, production `asl 152 / extra 615 / 36`. The delta
+> is exactly the one `cmdTimeout` record type.
+>
+> `build-host-tools.sh` still carries an optional `M32=yes` path, since
+> matching the Solaris tools' 32-bit-ness is defensible, but it is **not
+> required** and is off by default.
 
-Nothing warns. A 64-bit host-tool build produces a plausible database missing
-every private field declaration. **Worth checking whether gmoscc has the same
-latent bug** — its rehost validated files *copied* from the EPICS tree, not a
-*generated* `gemini.dbd`.
-
-The override point is `GCC`/`G++`, not `ACC`/`CCC`: `CONFIG_COMMON` has
-`CC = $($(ANSI)_$(CMPLR))` with `ANSI=GCC` and `CMPLR=STRICT`, so
-`CC = $(GCC_STRICT) = $(GCC) -ansi -pedantic`. This tree ships no
-`CONFIG_SITE.Host.Linux`, so one is added
-(`tools/linux-build/patches/CONFIG_SITE.Host.Linux`) setting `GCC = gcc32`,
-`G++ = g++32` — wrapper scripts, because a make command-line assignment must be
-a single word and because `g++ -m32` does not search the i686 multilib C++
-include directory on Rocky 9.
-
-Two more traps hit along the way, both recorded in the script:
+Two real traps hit along the way, both worth keeping:
 
 - **Never pass `USR_LDFLAGS=` on the make command line.** A command-line
   assignment overrides in-makefile `+=` appends, so `USR_LDFLAGS=-m32` wiped
   the `-L` paths `CONFIG.Host.UnixCommon` appends and every link died with
   `cannot find -lDb -lCom` — while the libraries sat in `lib/Linux`.
-- **The build tree must live on a filesystem with 32-bit inode numbers.** The
-  earlier `EOVERFLOW` ("Value too large for defined data type", reported
-  against a *header*) was not NFS: `/home` here is xfs with 64-bit inodes
-  (`15572935680`), and the 32-bit tools have no large-file support. `/tmp` is
-  `268436222`, so the tree is staged there.
+- **The build tree must live on a filesystem with 32-bit inode numbers**, for
+  the *cross*-compiler (which really is 32-bit). The `EOVERFLOW` — "Value too
+  large for defined data type", reported against a *header* — was not NFS:
+  `/home` here is xfs with 64-bit inodes (`15572935680`), while `/tmp` is
+  `268436222`. The tree is staged on `/tmp`.
+
+If the compiler ever does need overriding, the point is `GCC`/`G++`, not
+`ACC`/`CCC`: `CONFIG_COMMON` has `CC = $($(ANSI)_$(CMPLR))` with `ANSI=GCC`
+and `CMPLR=STRICT`.
 
 ### Update 6: production's `gemini.dbd` is a foreign artifact
 
