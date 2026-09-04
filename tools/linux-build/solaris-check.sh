@@ -26,7 +26,7 @@ check)
     # test -w only stats; it does not create anything.
     for d in /gemini /gemini/epics3.13.4 $PROD $PROD/V3-8-5 \
              $PROD/V3-8-5/bin $PROD/V3-8-5/bin/ppc604 $PROD/V3-8-5/data; do
-        if [ -e "$d" ]; then
+        if [ -d "$d" ] || [ -f "$d" ]; then
             if [ -w "$d" ]; then echo "  WRITABLE   $d   <-- danger"
             else                 echo "  read-only  $d"; fi
         else

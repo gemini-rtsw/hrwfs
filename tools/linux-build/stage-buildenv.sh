@@ -105,7 +105,10 @@ runtime)
     stage() {
         name=$1; shift
         for p in "$@"; do
-            [ -e "$p" ] || { echo "  MISSING: $p"; return 1; }
+            # No -e: SVR4 test does not have it. -f or -d covers what we stage.
+            if [ ! -f "$p" ] && [ ! -d "$p" ]; then
+                echo "  MISSING: $p"; return 1
+            fi
         done
         echo "-> $name.tar.gz"
         tar cf - "$@" 2>/dev/null | gzip -c > $OUT/$name.tar.gz
@@ -141,7 +144,7 @@ runtime)
     echo
     echo "Record the version symlinks -- the RPM pins what these point at:"
     for l in /gemini/epics3.13.4/*/*; do
-        [ -h "$l" ] && printf "  %-46s -> %s\n" "$l" "$(readlink $l)"
+        [ -h "$l" ] && printf "  %-46s -> %s\n" "$l" "`readlink $l`"
     done
     ;;
 
