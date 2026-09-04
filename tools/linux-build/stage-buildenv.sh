@@ -160,10 +160,18 @@ runtime)
         echo "  MISSING: no deplib versions resolved"
     fi
 
-    # hrwfs-dhs-vxlibs: the DHS client libraries, arch mv2700T2 (not ppc604)
-    stage hrwfs-dhs-vxlibs \
-        /gemini/dhs/dhs/external/lib/mv2700T2 \
-        /gemini/dhs/dhs/lib/mv2700T2
+    # hrwfs-dhs-vxlibs: the DHS client libraries, arch mv2700T2 (not ppc604),
+    # PLUS include/ -- dhs.h is needed to COMPILE (detControl.h:61 and three
+    # other sources include it), so staging only the libraries leaves four
+    # sources unbuildable. Found the hard way.
+    DHSSETS="/gemini/dhs/dhs/external/lib/mv2700T2 /gemini/dhs/dhs/lib/mv2700T2"
+    if [ -d /gemini/dhs/dhs/include ]; then
+        DHSSETS="$DHSSETS /gemini/dhs/dhs/include"
+    else
+        echo "  WARNING: /gemini/dhs/dhs/include absent -- dhs.h will be missing." >&2
+        echo "           Locate it with: find /gemini/dhs -name dhs.h" >&2
+    fi
+    stage hrwfs-dhs-vxlibs $DHSSETS
 
     # vxUsers + the kernel. gem-vxworks-tornado22 already ships tornado2.0
     # and tornado2.2 for gmoscc; staged here only to confirm this server's

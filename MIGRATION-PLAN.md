@@ -119,10 +119,23 @@ Linux toolchain needs only `WIND_HOST_TYPE=x86-linux` and `HOST_ARCH=Linux`
 — no new `CONFIG_SITE.Vx.Linux.ppc604` for the compiler path. The mechanism
 ORNL SNS documented is doing exactly what it was designed for.
 
-**So option B is viable at the compile level.** What remains unproven is
-linking (`ldppc -r`, needs the deplib archives) and that the objects load and
-run on the 5.4 kernel — which is the crate test, required for any hrwfs
-release regardless of how it was built.
+### Update: compile AND link both work
+
+With the support libraries staged (astlib V1-4, slalib V1-9-4, timelib V1-8-6,
+cfitsio V4-1), **15 of 19 sources compile** and **`ldppc -r` links them into a
+252 KB relocatable `wfsLibrariesHrwfs.o`** — the exact module `startup.vws`
+does `ld <` on. The undefined symbols left are what a vxWorks partial link
+should leave: `__errno`, `__ctype`, `bzero`, `ca_array_get` (channel access),
+`astSetctx` (astlib), `aio_read`. All are resolved at boot by the kernel,
+`iocCore` and the deplibs the startup loads before this module.
+
+The 4 remaining failures are **one missing header**, `dhs.h` — `autoPath`,
+`detControl`, `seqControl` and `wfsHrwfsDb` include it via `detControl.h:61`.
+Nothing else.
+
+**So option B is proven through link.** The single remaining unknown is whether
+the objects load and run on the vxWorks 5.4 kernel, which is the crate test —
+required for any hrwfs release regardless of how it was built.
 
 ### Two operational gotchas worth keeping
 
