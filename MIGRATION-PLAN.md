@@ -304,6 +304,43 @@ currently point at, and make the spec fail if the staged tree disagrees.
 `nfsMount "cportnfs-lv1", "/gem_conf/rt/tuning", "/rtconfig"` (CP, added in
 V3-8-5) is a live host dependency, not a package. It stays as-is.
 
+### The versions to pin (read off the live symlinks, 2026-09-03)
+
+```
+/gemini/epics3.13.4/astlib/astlib   -> V1-4
+/gemini/epics3.13.4/slalib/slalib   -> V1-9-4
+/gemini/epics3.13.4/timelib/timelib -> V1-8-6
+/gemini/epics3.13.4/cfitsio/cfitsio -> V4-1
+```
+
+**astlib is V1-4, not gmoscc's V1-6** — different EPICS generations, so they
+co-install without conflict, but the pin must not be copied from gmoscc.
+slalib and timelib happen to match gmoscc's versions exactly.
+
+**`/gemini/epics3.13.4/hrwfs/hrwfs -> V3-8-5` exists.** So hrwfs has the same
+version-selecting symlink gmoscc called `setgmos` and removed. Two things
+follow. First, the generated startup scripts `cd` to the *versioned* path
+(`.../hrwfs/V3-8-5`), not through the symlink, so for the IOC boot the symlink
+is currently vestigial -- but the crate's boot parameters may name it, which
+is still unconfirmed. Second, it means the recommended deploy path
+`/gemini/epics3.13.4/hrwfs/hrwfs` is *already* a working path: the RPM would
+replace a symlink with a real directory of the same name, exactly the
+transition gmoscc made.
+
+### These deplibs are shared platform, not hrwfs's
+
+The same listing shows ~25 IOCs on this tree -- `ag`, `agSeq`, `crcs`, `ecs`,
+`gcal`, `gis`, `gmos`, `gmosdc`, `gnirs`, `gws`, `lis`, `ltcss`, `mchCCS`,
+`mcs`, `niri`, `oiwfs`, `pcs`, `prm`, `pwfs`, `pwfs1`, `pwfs2`, `scs`, `tcs`
+-- all resolving astlib/slalib/timelib through the *same* shared symlinks. So
+`gem7-epics-runtime` and the support libraries are groundwork for every future
+GEM7 port, not hrwfs-private work.
+
+Follow gmoscc's reasoning on naming anyway: it made `gmos-deplibs` private
+precisely because a shared symlink hid which version was running, and these
+are `ld`'d at boot, so the version on the server *is* the version running. An
+hrwfs-private path with exact pins keeps that property.
+
 ### 1f. The deploy directory name has drifted from the SVN tag
 
 `/gemini/epics3.13.4/hrwfs/V3-8-5` does **not** contain V3-8-5:

@@ -111,7 +111,17 @@ runtime)
             fi
         done
         echo "-> $name.tar.gz"
-        tar cf - "$@" 2>/dev/null | gzip -c > $OUT/$name.tar.gz
+        # .part until proven complete: a full filesystem otherwise leaves a
+        # 0-byte archive behind an encouraging "->" line, and scp-ing that
+        # yields a silently truncated tree.
+        tar cf - "$@" 2>/dev/null | gzip -c > $OUT/$name.tar.gz.part
+        if [ $? -ne 0 ]; then
+            echo "  FAILED (disk full?) -- removing partial archive" >&2
+            rm -f $OUT/$name.tar.gz.part
+            df -k $OUT | tail -1 >&2
+            return 1
+        fi
+        mv $OUT/$name.tar.gz.part $OUT/$name.tar.gz
     }
 
     # gem7-epics-runtime: iocCore, seq, pvload for ppc604
