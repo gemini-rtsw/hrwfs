@@ -133,9 +133,49 @@ The 4 remaining failures are **one missing header**, `dhs.h` — `autoPath`,
 `detControl`, `seqControl` and `wfsHrwfsDb` include it via `detControl.h:61`.
 Nothing else.
 
-**So option B is proven through link.** The single remaining unknown is whether
-the objects load and run on the vxWorks 5.4 kernel, which is the crate test —
-required for any hrwfs release regardless of how it was built.
+### Update 2: 19 of 19 compile, all 10 modules link
+
+With `dhs.h` staged (`/gemini/dhs/dhs/include`, 44 headers), **every source
+compiles and every module `startup.vws` loads links**:
+
+```
+wfsLibrariesHrwfs  252514      wfsResourceMonitor   5633
+wfsHrwfsDb         324520      hrwfsConfig          2369
+detControl         234384      wfsSite              1129
+seqControl          16962      fpscr                 801
+simpleLogHrwfs       8355      autoPath             2998
+```
+
+The module grouping is not guesswork: `src/Makefile.Vx` puts `LIBSRCS.c`
+(cicsCarHealth, cicsLib, epToVxLib, errorLib, sdsuLib, timeoutLib, wfsLib,
+wfsWcs) into `LIBNAME = wfsLibrariesHrwfs`, and each `APPLSRCS.c` entry becomes
+its own `PROD` module.
+
+**But this is not yet a faithful build, and the sizes prove it.** Against
+production:
+
+| module | production | mine | ratio |
+|---|---|---|---|
+| wfsHrwfsDb | 394285 | 324520 | 1.2x |
+| detControl | 422049 | 234384 | 1.8x |
+| wfsLibrariesHrwfs | 676104 | 252514 | 2.7x |
+| seqControl | 97263 | 16962 | 5.7x |
+| wfsSite | 24186 | 1129 | 21x |
+| fpscr | 16622 | 801 | 21x |
+
+`LD = ldppc -r` and `LINK.c = $(LD) $(LDFLAGS) -o`, so the mechanism is right,
+but the real `PROD` rule evidently links in more than one object — most likely
+`DEPLIBS` members, the `munch`-generated C++ constructor table (`RULES.Vx:114`
+builds `%.out` from `nm | munch`), or debug sections. A 20x ratio on a
+one-object module cannot be explained by flags alone.
+
+**So what is proven is the toolchain, not the build.** gcc 2.96 accepts the
+Tornado 2.0.2 headers, compiles all 19 sources, and `ldppc` links them — no
+compiler or header incompatibility exists. What is *not* yet proven is that a
+faithful UAE build reproduces production's modules. That needs the real
+`gmake`, which needs the EPICS host tools built for `HOST_ARCH=Linux`.
+
+Then, and only then, the crate test.
 
 ### Two operational gotchas worth keeping
 
