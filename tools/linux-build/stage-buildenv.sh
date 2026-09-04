@@ -130,13 +130,35 @@ runtime)
         /gemini/external/GEM7/extensions/bin/ppc604
 
     # hrwfs-deplibs: astlib/slalib/timelib/cfitsio, EPICS 3.13.4 generation.
-    # NOTE the double directory: /gemini/epics3.13.4/slalib/slalib -- the inner
-    # one is the version-selecting symlink, exactly as gmoscc's was.
-    stage hrwfs-deplibs \
-        /gemini/epics3.13.4/astlib \
-        /gemini/epics3.13.4/slalib \
-        /gemini/epics3.13.4/timelib \
-        /gemini/epics3.13.4/cfitsio
+    #
+    # Stage ONLY the version each symlink points at, not the whole library
+    # directory. /gemini/epics3.13.4/slalib holds every release ever cut
+    # (V1-3 ... V1-9-4), so tarring the directory is both far larger than
+    # needed and what filled polaris's /var/tmp on the first attempt. The
+    # pinned version is also the only one the RPM will package, so this
+    # matches what actually ships.
+    DEPDIRS=""
+    for lib in astlib slalib timelib cfitsio; do
+        d=/gemini/epics3.13.4/$lib
+        v=`readlink $d/$lib 2>/dev/null`
+        if [ -z "$v" ]; then
+            echo "  WARNING: $d/$lib is not a symlink -- skipping $lib" >&2
+            continue
+        fi
+        # The selector may be "./V2-5" or even an absolute path elsewhere.
+        v=`basename "$v"`
+        if [ ! -d "$d/$v" ]; then
+            echo "  WARNING: $d/$v missing (symlink -> $v) -- skipping $lib" >&2
+            continue
+        fi
+        echo "  $lib -> $v"
+        DEPDIRS="$DEPDIRS $d/$v $d/$lib"
+    done
+    if [ -n "$DEPDIRS" ]; then
+        stage hrwfs-deplibs $DEPDIRS
+    else
+        echo "  MISSING: no deplib versions resolved"
+    fi
 
     # hrwfs-dhs-vxlibs: the DHS client libraries, arch mv2700T2 (not ppc604)
     stage hrwfs-dhs-vxlibs \
