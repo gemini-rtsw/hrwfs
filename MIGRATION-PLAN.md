@@ -759,6 +759,70 @@ production's `dbd/gemini.dbd` byte-for-byte — 340726 bytes, md5
 the right one. That is a stronger check than anything available for the
 compiled objects.
 
+## 2d. Support-library packaging: one macro, no special cases
+
+The four support libraries (astlib, slalib, timelib, cfitsio) **build from CVS
+source** — verified: slalib V1-9-4 compiles clean and its debug-stripped object
+is 557612 vs the deployed 544576, the same ~1.02x `-mlongcall` ratio hrwfs
+showed. So unlike gmoscc's locked prebuilt `gmos-deplibs`, these get real repos
+and go through the full pipeline (pipeline Workflow A, "EPICS support module").
+
+**The constraint that shapes everything:** VxWorks has no shared libraries, so
+the crate `ld <`s these at boot — the version on the file server *is* the
+version running. Different IOCs may need different versions **resident at the
+same time**, which RTEMS IOCs never require because they link theirs in.
+
+RPM permits only one version per package *name*, so a plain
+`Name: gem7-slalib` + `Version: 1.9.4` cannot co-exist with 1.9.7 no matter how
+the paths are arranged. Two ways out, both tested:
+
+| | same name + `Provides: installonlypkg(kernel)` | version in the name |
+|---|---|---|
+| co-installs | yes (that provide is in dnf's default `installonlypkgs`) | yes |
+| auto-prunes | **yes — `installonly_limit=3` silently removed the oldest** | no |
+| `dnf remove` | takes every version at once | exactly one |
+| host config | needs `installonly_limit=0` to be safe; dnf4 on EL9 has no drop-in for `[main]` | none |
+
+Both were measured in a container, not assumed. The first is rejected because
+its failure mode is a running instrument losing the library it boots, with
+nothing linking cause to effect.
+
+**So: version in the name, derived from one macro.**
+
+```spec
+%global libver 1.9.4
+%global libdir V%(echo %{libver} | tr . -)
+Name:          gem7-slalib-%{libdir}
+Version:       %{libver}
+%global instdir /gemini/epics3.13.4/support/slalib/%{libdir}
+Provides:      gem7-slalib = %{version}
+```
+
+Bumping `%global libver` moves the package name, the version, and the install
+path together. The name mirrors the deployed directory exactly
+(`gem7-slalib-V1-9-4` -> `.../slalib/V1-9-4`), so `dnf` output and the `.vws`
+`ld <` line read the same. Otherwise it is an ordinary spec — no special
+handling for anyone.
+
+**This needs a two-line fix to `gemini-rtsw-ci/build_rpm.sh`**, in
+`docs/gemini-rtsw-ci-macro-name.patch`. The script reads the name by grepping
+the spec as *text* (lines 133-137), so a macro-derived Name arrives unexpanded
+and becomes the GHCR image tag verbatim. `PACKAGE_VERSION` already has an
+`rpmspec` fallback for precisely this reason — its comment says "the version
+living in ONE place" — and the patch gives Name the same treatment. It only
+fires when the value still contains a `%`, so `gmoscc`, `slalib` and every
+other existing spec are untouched (verified against all three shapes).
+
+**The residual catch, and it is the important one.** The pin does not control
+what runs. `BuildRequires` gets headers, `Requires` gets the tree onto the
+server, but the crate loads whatever literal path is in the `.vws` — **30
+references across 6 startup files**. Bump the pin without the `.vws` and the
+crate boots the old library silently, or fails if the directory is gone. Fix it
+the way gmoscc fixed its version string: put `@SLALIB_VER@` in the startup
+sources, substitute from the spec in `%build`, and fail the build if any
+placeholder survives. Then one macro drives the pin *and* every load path, and
+divergence is a build error rather than a boot failure.
+
 ## 3. Work plan
 
 ### Phase 0 — history to GitHub (independent of everything else)

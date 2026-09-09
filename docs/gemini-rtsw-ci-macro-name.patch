@@ -1,0 +1,27 @@
+--- a/build_rpm.sh	2026-09-08 14:20:32.696997592 -1000
++++ b/build_rpm.sh	2026-09-08 14:20:32.714997649 -1000
+@@ -136,6 +136,24 @@
+     PACKAGE_NAME=$(grep "^Name:" $SPEC_FILE | awk '{print $2}' | sed 's/%{name}/gis_mk/')
+ fi
+ 
++# The greps above read the spec as TEXT, so a Name built from a macro comes
++# back with the macro unexpanded -- "gem7-slalib-%{libver}" -- which then
++# becomes the GHCR image tag. rpmspec expands macros, exactly as it already
++# does for PACKAGE_VERSION further down, so a package whose name and version
++# both derive from ONE %global resolves correctly and an engineer bumps a
++# single line. Only fires when the value still contains a '%', so specs that
++# name themselves literally are untouched.
++if [ -n "$PACKAGE_NAME" ] && [ "${PACKAGE_NAME#*%}" != "$PACKAGE_NAME" ]; then
++    _expanded=$(rpmspec -q --queryformat "%{name}\n" "$SPEC_FILE" 2>/dev/null | head -1)
++    if [ -n "$_expanded" ]; then
++        echo "Package name '$PACKAGE_NAME' contains a macro; rpmspec resolves it to '$_expanded'"
++        PACKAGE_NAME=$_expanded
++    else
++        echo "ERROR: package name '$PACKAGE_NAME' contains an unexpanded macro and rpmspec could not resolve it" >&2
++        exit 1
++    fi
++fi
++
+ # If package name is empty, try git (for local builds)
+ if [ -z "$PACKAGE_NAME" ]; then
+     PACKAGE_NAME=$(basename -s .git $(git config --get remote.origin.url))
