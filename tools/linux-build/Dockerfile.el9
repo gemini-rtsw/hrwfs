@@ -1,13 +1,22 @@
 # Build environment for the hrwfs Linux rehost: EPICS 3.13.4GEM7 host tools
-# (native gcc) plus the Tornado 2.0.2 ppc cross-toolchain (32-bit i386, hence
-# glibc.i686).
+# (native x86-64 gcc) plus the Tornado 2.0.2 ppc cross-toolchain.
+#
+# glibc.i686 and libstdc++.i686 are RUNTIME support for the cross-compiler --
+# ccppc and friends are 32-bit i386 ELF. The 32-bit *devel* packages are
+# deliberately NOT installed: they are only needed to compile 32-bit code, we
+# compile none, and installing libstdc++-devel.i686 satisfies gcc-c++'s
+# dependency so the x86_64 one never lands -- leaving no 64-bit
+# bits/c++config.h and breaking every C++ host-tool build with a misleading
+# "No such file or directory". libstdc++-devel is named explicitly for the
+# same reason.
 FROM rockylinux:9
 
 RUN dnf -y install --setopt=install_weak_deps=False \
         gcc gcc-c++ make binutils \
         perl perl-FindBin perl-lib perl-File-Compare perl-Data-Dumper \
         tcsh flex byacc bison \
-        glibc.i686 libstdc++.i686 glibc-devel.i686 libstdc++-devel.i686 \
+        libstdc++-devel \
+        glibc.i686 libstdc++.i686 \
         findutils diffutils which sed gawk grep tar gzip file patch \
     && dnf clean all \
     && ln -sf /usr/bin/make /usr/local/bin/gmake

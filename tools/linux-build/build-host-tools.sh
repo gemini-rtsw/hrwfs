@@ -51,31 +51,16 @@ echo
 #   CROSS_COMPILER_TARGET_ARCHS=  stops base also cross-building for ppc604
 #   SHRLIB_VERSION=               avoids an install rule that self-links .a
 #                                 files ("Too many levels of symbolic links")
-# --- 32-bit host tools -------------------------------------------------
-# OPTIONAL and off by default. Native x86-64 works: the full dbExpand output
-# is byte-identical either way (333265 bytes, md5 cefca987ee6789fce07b82677db
-# 11800 from both). Kept only because matching the Solaris tools' 32-bit-ness
-# is defensible if a discrepancy ever turns up.
-#
-# Passed as WRAPPER SCRIPTS rather than 'ACC=gcc -m32', for two reasons:
-# a make command-line assignment is one word (an embedded space makes make
-# read -m32 as an option), and a command-line assignment also overrides
-# in-makefile '+=' appends -- setting USR_LDFLAGS=-m32 silently wiped the
-# -L paths that CONFIG.Host.UnixCommon appends, so every link failed with
-# "cannot find -lDb -lCom".
+# The host tools are built native x86-64. An earlier version of this script
+# had an M32 path, on the theory that the 32-bit Solaris originals mattered;
+# they do not -- dbExpand's full output is byte-identical either way (333265
+# bytes, md5 cefca987ee6789fce07b82677db11800 from both builds). Removed,
+# because carrying it required the 32-bit devel packages, and those break the
+# native C++ build by evicting libstdc++-devel.x86_64.
 MAKE_ARCH_FLAGS=""
-if [ "${M32:-no}" = yes ]; then
-    mkdir -p /usr/local/bin
-    printf '#!/bin/sh\nexec gcc -m32 "$@"\n' > /usr/local/bin/gcc32
-    # g++ -m32 does not search the i686 multilib C++ include dir on Rocky 9,
-    # so bits/c++config.h is not found; add it here rather than globally.
-    printf '#!/bin/sh\nexec g++ -m32 -I/usr/include/c++/11/i686-redhat-linux "$@"\n' > /usr/local/bin/g++32
-    chmod +x /usr/local/bin/gcc32 /usr/local/bin/g++32
-    MAKE_ARCH_FLAGS="ACC=gcc32 CCC=g++32"
-fi
 
 echo "=============== building host tools ==============="
-echo "arch flags: ${MAKE_ARCH_FLAGS:-<native 64-bit>}"
+echo "compiler: native $(gcc -dumpmachine)"
 rc_all=0
 if [ "${CLEAN_FIRST:-no}" = yes ]; then
     echo "  cleaning previous O.Linux output and bin/Linux ELF binaries"

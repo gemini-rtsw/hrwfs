@@ -60,6 +60,15 @@ perl "$APPLSETUP" -T ppc604 -I adl -I capfast -I src -I startup \
 # (gmoscc drops `adl` from Makefile.Dirs for the same reason.)
 sed -i '/^DIRS += dspsrc$/d' Makefile.Dirs
 
+# Match production's debug format: gcc 2.7.2 emitted stabs, gcc 2.96 defaults
+# to DWARF, and every deployed GEM7 object carries .stab/.stabstr. Runtime is
+# unaffected either way (vxWorks ld ignores debug sections, and .symtab is
+# present regardless) but the Tornado 2.0 debugger reads stabs, so DWARF would
+# cost source lines and locals when debugging a crate. DEBUG_CFLAGS is in the
+# CFLAGS chain and assigned nowhere, so it is a free hook; it goes in the
+# generated config so a plain `make` picks it up as well as the spec's.
+echo "DEBUG_CFLAGS = -gstabs" >> config/CONFIG.Defs
+
 # applSetup failing leaves no config/, and the top-level Makefile uses
 # `-include $(APPLIC_TOP)/config/CONFIG` -- so gmake would silently fall
 # through to its first target, `release`, and tar the source tree instead of
