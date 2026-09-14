@@ -31,3 +31,7 @@ rpms/
 # repo (~/work/hrwfs-production, ~/work/hrwfs-migration), never committed.
 *.dump
 *.dump.gz
+
+# build-dep-rpms.sh stages patches/ here at build time
+tools/linux-build/rpm/staged-patches/
+tools/linux-build/rpm/out/
