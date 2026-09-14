@@ -70,13 +70,25 @@ BuildRequires:  make, gcc, perl, tcsh
 # anything this host executes -- AutoReqProv finds none of them, because the
 # consumer is a vxWorks target reading them over NFS. Listed explicitly so
 # that installing hrwfs on the file server pulls everything a crate needs.
-# Pinned to the SAME versions built against: an unpinned dep means a crate can
-# boot different code than was tested, with nothing to show for it.
+#
+# Named WITHOUT an exact release, deliberately. The package name already
+# encodes the library version -- gem7-slalib-V1-9-4 can only ever be V1-9-4 --
+# and rpm permits one release of a given name at a time, so pinning the
+# release makes two consumers built against different REBUILDS of the same
+# library version mutually uninstallable:
+#
+#   cannot install both gem7-slalib-V1-9-4-...git4a156f2 and ...git008125e
+#
+# The pipeline README says exactly this: "leave runtime Requires loose ...
+# pinning their runtime deps only creates conflicts when many are
+# co-installed". What must be pinned is the library VERSION, and the name
+# does that. BuildRequires above stays exact, where reproducibility matters
+# and nothing is co-installed.
 Requires:       gem7-epics-runtime = 3.13.4
-Requires:       gem7-slalib-%{slalib_ver} = %{slalib_nvr}
-Requires:       gem7-timelib-%{timelib_ver} = %{timelib_nvr}
-Requires:       gem7-astlib-%{astlib_ver} = %{astlib_nvr}
-Requires:       gem7-cfitsio-%{cfitsio_ver} = %{cfitsio_nvr}
+Requires:       gem7-slalib-%{slalib_ver}
+Requires:       gem7-timelib-%{timelib_ver}
+Requires:       gem7-astlib-%{astlib_ver}
+Requires:       gem7-cfitsio-%{cfitsio_ver}
 Requires:       hrwfs-dhs-vxlibs
 Requires:       gem-vxworks-tornado20 >= 2.0.2
 
