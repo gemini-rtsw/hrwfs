@@ -81,3 +81,49 @@ to be split out into its own package both depend on.
 defines `DET_CONTROL_DATA_FILE_PATH "/gemdata/ioc_data"`, so this mount is not
 optional for hrwfs. gmoscc does not mount it and GMOS does not use it, so it
 may not be exported on mkotcsbootv2-lv1 at all. Confirm before the first boot.
+
+## The kernel is selected by a symlink, and that is worth changing
+
+The `file name (f)` parameter names
+
+    /gemini/external/vxWorks/tornado2.0/mv2700/vxWorks
+
+which is **not a file**. It is a symlink, set on 31 Jul 2008, choosing between
+four kernels that sit beside it:
+
+| image | date | size | Bancomm support |
+|---|---|---|---|
+| `STNDvxWorks` | Dec 2001 | 1433117 | no |
+| **`BCvxWorks`** *(current target)* | Jan 2002 | 1435143 | yes |
+| `BCNETvxWorks` | Feb 2002 | 1498381 | yes |
+| `T2vxWorks` | Nov 2005 | 1531013 | yes |
+
+`BC` is Bancomm: `STNDvxWorks` contains no Bancomm symbols and the other three
+do. hrwfs needs it -- the startup calls `timeClockInit` and `TSconfigure`, and
+the GEM7 EPICS tree carries `geminiBancommDev.dbd` -- so the choice was
+deliberate. Nothing recorded that, and the next person to look would have to
+rediscover it the same way.
+
+`gem-vxworks-tornado20` packages the symlink as it stands, so behaviour is
+unchanged and `rpm -V` will at least report if it moves. But the kernel a
+crate boots is still chosen by a link rather than stated, which is the same
+class of problem the support-library versioning was done to remove:
+
+- the support libraries now name their version explicitly in the `ld <` path
+- the deploy directory is a real directory, not the old `hrwfs -> V3-8-5` link
+- the kernel is still a link
+
+**Recommended, needs a boot-parameter change so it is deliberately not done
+here:** point the parameter at the image directly.
+
+    file name (f): /gemini/external/vxWorks/tornado2.0/mv2700/BCvxWorks
+
+Then the boot parameters say which kernel runs, `rpm -q gem-vxworks-tornado20`
+says where it came from, and nothing depends on a link set eighteen years ago
+for reasons that were never written down. The generic `vxWorks` symlink can
+stay for anything else that expects it.
+
+Worth deciding alongside: `T2vxWorks` (2005) is four years newer than the
+selected `BCvxWorks` (2002) and also has Bancomm support. Whether the crate
+should be on it is a separate question, but the fact that nobody can say why
+it is not is the same problem.
