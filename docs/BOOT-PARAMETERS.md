@@ -82,48 +82,50 @@ defines `DET_CONTROL_DATA_FILE_PATH "/gemdata/ioc_data"`, so this mount is not
 optional for hrwfs. gmoscc does not mount it and GMOS does not use it, so it
 may not be exported on mkotcsbootv2-lv1 at all. Confirm before the first boot.
 
-## The kernel is selected by a symlink, and that is worth changing
+## The kernel: was a symlink, now a real file
 
 The `file name (f)` parameter names
 
     /gemini/external/vxWorks/tornado2.0/mv2700/vxWorks
 
-which is **not a file**. It is a symlink, set on 31 Jul 2008, choosing between
-four kernels that sit beside it:
+In the source tree that is **not a file**. It is a symlink, set on 31 Jul
+2008, choosing between four kernels that sit beside it:
 
 | image | date | size | Bancomm support |
 |---|---|---|---|
 | `STNDvxWorks` | Dec 2001 | 1433117 | no |
-| **`BCvxWorks`** *(current target)* | Jan 2002 | 1435143 | yes |
+| **`BCvxWorks`** *(the link's target)* | Jan 2002 | 1435143 | yes |
 | `BCNETvxWorks` | Feb 2002 | 1498381 | yes |
 | `T2vxWorks` | Nov 2005 | 1531013 | yes |
 
 `BC` is Bancomm: `STNDvxWorks` contains no Bancomm symbols and the other three
 do. hrwfs needs it -- the startup calls `timeClockInit` and `TSconfigure`, and
 the GEM7 EPICS tree carries `geminiBancommDev.dbd` -- so the choice was
-deliberate. Nothing recorded that, and the next person to look would have to
-rediscover it the same way.
+deliberate. It was recorded nowhere, and had to be reconstructed from symbol
+tables.
 
-`gem-vxworks-tornado20` packages the symlink as it stands, so behaviour is
-unchanged and `rpm -V` will at least report if it moves. But the kernel a
-crate boots is still chosen by a link rather than stated, which is the same
-class of problem the support-library versioning was done to remove:
+**`gem-vxworks-tornado20` resolves it.** The package installs `vxWorks` and
+`vxWorks.sym` as real files copied from `BCvxWorks`, matching what gmoscc's
+`gem-vxworks-tornado22` ships at the equivalent path, and fails the build if
+either is still a link. So:
 
-- the support libraries now name their version explicitly in the `ld <` path
-- the deploy directory is a real directory, not the old `hrwfs -> V3-8-5` link
-- the kernel is still a link
+- the boot parameter names a file, not a link -- **no boot-parameter change
+  needed**
+- `rpm -V gem-vxworks-tornado20` detects it changing
+- the changelog records the sha256 of exactly which image it is
+- the other three images stay in the package for anyone who needs them
 
-**Recommended, needs a boot-parameter change so it is deliberately not done
-here:** point the parameter at the image directly.
+```
+vxWorks     (from BCvxWorks)     1435143  sha256 2b838e55154418d2...
+vxWorks.sym (from BCvxWorks.sym)  196952  sha256 57bbd4f91358003b...
+```
 
-    file name (f): /gemini/external/vxWorks/tornado2.0/mv2700/BCvxWorks
+Five symlinks remain in the package, all for other boards -- `mv167/{debug,
+vxWorks,vxWorks.sym}` and `mv2700-niri/{vxWorks,vxWorks.sym}`. They are not on
+hrwfs's boot path and are left as they are, but they are the same class of
+problem for whichever crates do boot them.
 
-Then the boot parameters say which kernel runs, `rpm -q gem-vxworks-tornado20`
-says where it came from, and nothing depends on a link set eighteen years ago
-for reasons that were never written down. The generic `vxWorks` symlink can
-stay for anything else that expects it.
-
-Worth deciding alongside: `T2vxWorks` (2005) is four years newer than the
-selected `BCvxWorks` (2002) and also has Bancomm support. Whether the crate
-should be on it is a separate question, but the fact that nobody can say why
-it is not is the same problem.
+Worth deciding separately: `T2vxWorks` (2005) is four years newer than the
+selected image and also has Bancomm support. Whether the crate should be on it
+is an operational question, but the fact that nobody can say why it is not is
+the same gap this change closes.
