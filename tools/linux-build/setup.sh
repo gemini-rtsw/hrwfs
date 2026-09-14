@@ -46,12 +46,22 @@ cp -f IMP_Startup$SITE.hrwfs IMP_Startup.hrwfs
 # underneath it, which is exactly how this failed the first time.
 APPLSETUP="$EPICS_BASE/bin/$HOST_ARCH/applSetup.pl"
 [ -f "$APPLSETUP" ] || { echo "ERROR: $APPLSETUP not found -- build the host tools first" >&2; exit 1; }
+# -d names the PACKAGED support-library paths, not the old shared
+# /gemini/epics3.13.4/<lib>/<lib> symlinks. Those still serve the ~25 other
+# GEM7 IOCs and must not be what this build resolves against; they also record
+# nothing, which is the problem the packaging exists to fix.
+#
+# These versions also appear in hrwfs.spec's %global block. The spec is
+# authoritative: it substitutes them into the generated startup scripts and
+# fails the build if the result does not name the pinned versions, so the two
+# cannot silently diverge.
+SUP=/gemini/epics3.13.4/support
 perl "$APPLSETUP" -T ppc604 -I adl -I capfast -I src -I startup \
              -I docs -I dspsrc -I par -I db \
-             -d /gemini/epics3.13.4/astlib/astlib \
-             -d /gemini/epics3.13.4/slalib/slalib \
-             -d /gemini/epics3.13.4/timelib/timelib \
-             -d /gemini/epics3.13.4/cfitsio/cfitsio \
+             -d $SUP/astlib/V1-4 \
+             -d $SUP/slalib/V1-9-4 \
+             -d $SUP/timelib/V1-8-6 \
+             -d $SUP/cfitsio/V4-1 \
              -d /gemini/dhs/dhs -S "$SITE"
 
 # dspsrc needs Motorola's asm56000/dsplnk/cldlod/srec, which exist only as
