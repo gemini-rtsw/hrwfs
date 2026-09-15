@@ -964,3 +964,85 @@ Two more, lower priority:
     So this is not uncommitted drift — it is a committed 2023 change that was
     never deployed, because production is a Dec 2020 build (§1f). SVN is
     authoritative.
+
+
+---
+
+# Status as of 2026-09-15
+
+## Done
+
+**History.** All five repos on GitHub with full history, converted with cvs2git
+/ svnrdump and verified tag-by-tag against `cvs export`:
+
+| repo | commits | tags | span |
+|---|---|---|---|
+| `hrwfs` | 191 + packaging | 31 | 1999-2025 |
+| `gem7-slalib` | 50 | 15 | 1998-2016 |
+| `gem7-timelib` | 56 | 13 | 1998-2016 |
+| `gem7-astlib` | 40 | 6 | 1998-2003 |
+| `gem7-cfitsio` | 7 | 6 | 1999-2001 |
+
+**Toolchain.** ANL's Linux gcc 2.96 against Tornado 2.0.2 headers compiles all
+19 hrwfs sources and links all 10 modules. Objects are equivalent to
+production: identical `.text`/`.data` sizes, differing only because 2.96
+applies `-mlongcall` consistently where 2.7.2 emitted some direct `bl` (28 in
+detControl, 0 in ours) -- the same benign difference gmoscc characterised, and
+the stricter direction. Built with `-gstabs` so the debug format matches every
+deployed GEM7 object.
+
+**Packaging.** Four support libraries and five dependency RPMs built,
+published and resolving from rpm-repo. hrwfs builds and publishes.
+
+**Boot server.** `nfsv2-bootserver` carries the hrwfs crate in exports and
+rhosts plus the `/gemdata` export the detector needs, tagged
+`gmos-prod-verified` at the last GMOS-tested state as a rollback point. Pushed,
+not yet installed.
+
+## Open: the generated `local` does not match its source
+
+`bin/ppc604/local` ships with `pisces-control` / `/export/gemini`, no
+`hostAdd` line, and `vxUsers` missing its `tornado2.0/` component. The source
+`startup/local.vws` says `mkotcsbootv2-lv1` / `/gemini`, has the `hostAdd`,
+and has the full vxUsers path.
+
+Eliminated so far, each tested in isolation:
+
+- **The source is right** in the built commit (`git show <sha>:startup/local.vws`).
+- **macTest is innocent.** Run by hand with the build's exact flags it
+  reproduces the source faithfully, including `tornado2.0/`, the `hostAdd`
+  line and the correct `cd`.
+- **The tarball staging is right.** Reproducing `build_rpm.sh`'s
+  `find | xargs cp --parents` stages `local.vws` with the correct content.
+- **It is not the `iocpath` fix.** The `cd` in that same generated file is now
+  correct; only the other lines are wrong.
+- **It reproduces.** Two independent builds -- CI and local -- produce the
+  same wrong output.
+
+Remaining hypothesis: a stale build tree inside the committed build-environment
+image, so `rpmbuild` extracts or reuses an older `local.vws` than the one
+staged. The next test is a plain `setup.sh && make` outside `rpmbuild`: if that
+produces the correct `local`, the fault is in the rpmbuild path rather than the
+UAE build.
+
+Noted separately and worth chasing: that same staging reproduction copied **276
+of 457 files**. Some of the difference is the `gemini-rtsw-ci` submodule, but
+not obviously all of it, and a tarball that silently drops files would affect
+every repo on this pipeline.
+
+**Do not boot a crate off the current RPM.** The `cd` is now right but the NFS
+mounts still name pisces-control, so it would mount the wrong server.
+
+## Remaining after that
+
+1. Resolve the `local` discrepancy and republish.
+2. Install the boot-server config (pushed, not deployed).
+3. **Crate test** -- and it needs to be functional, not just a boot. The
+   gcc 2.96 modules call into gcc 2.7.2 `iocCore`, `seq`, astrometry and DHS at
+   every boundary, and that is verified only by static analysis: no bitfields,
+   no struct-by-value returns, no `long long`, and the DHS interface is opaque
+   scalar handles. Exercise a real exposure through DHS, the CAD/CAR paths and
+   the WCS/astrometry calls.
+4. **CP.** Five `#if (MK)` blocks mean the objects genuinely differ, so CP
+   needs its own package built `-S CP`. No CP production tree has been
+   captured, so its `local.vws` and `resource.def` are unknown.
