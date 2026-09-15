@@ -40,6 +40,9 @@
 
 %global supdir  /gemini/epics3.13.4/support
 %global deploy  /gemini/epics3.13.4/hrwfs/hrwfs
+# Host half of APPLIC_IOCPATH. Only the path half reaches the startup scripts;
+# this exists because CONFIG_APPLIC splits the value on a colon.
+%global iocpath_host mkotcsbootv2-lv1
 
 # $GIT_HASH first: build_rpm.sh computes it on the HOST and passes it in.
 %define git_hash %(if [ -n "$GIT_HASH" ]; then echo "$GIT_HASH"; else git rev-parse --short HEAD 2>/dev/null || echo nogit; fi)
@@ -119,6 +122,29 @@ Pulls the pinned hrwfs build dependencies into a dev container.
 # in: five #if (MK) blocks in the sources mean MK and CP objects genuinely
 # differ, so one package cannot serve both.
 APPLIC_SITE=%{?site}%{!?site:MK} ./tools/linux-build/setup.sh
+
+# Re-home APPLIC_IOCPATH to the deploy path BEFORE building. This is the path
+# the IOC cd's into at boot -- $(iocpath) in the .vws sources -- and
+# applSetup.pl leaves it empty, which makes macTest fall back to
+# APPLIC_INSTALL. Under rpmbuild that is /root/rpmbuild/BUILD/..., a directory
+# that exists on no crate, so the generated startup and local would cd into
+# nothing and the boot would stop there with no clue why.
+#
+# It is deliberately NOT set by setup.sh: a developer build wants to cd into
+# its own checkout, and only the packaged copy should name the deploy path.
+#
+# The value must be HOST:PATH, not a bare path. CONFIG_APPLIC derives
+#     DIST_PATH = $(word 2, $(subst :, ,$(APPLIC_IOCPATH)))
+# and VWS_FLAGS then passes iocpath=$(DIST_PATH) to macTest, so a value with
+# no colon yields an empty word 2 and the startup gets `cd ""` -- which fails
+# as surely as the build path did, just less visibly. The host half is
+# vestigial (it was rdist's target and nothing uses rdist now) but it has to
+# be there for the split.
+sed -i 's|^APPLIC_IOCPATH *=.*|APPLIC_IOCPATH = %{iocpath_host}:%{deploy}|' config/CONFIG.Defs
+grep -q "^APPLIC_IOCPATH = %{iocpath_host}:%{deploy}$" config/CONFIG.Defs || {
+    echo "ERROR: APPLIC_IOCPATH was not re-homed" >&2
+    grep '^APPLIC_' config/CONFIG.Defs >&2; exit 1; }
+
 make
 
 # Substitute the support-library versions into the generated startup scripts.
@@ -147,6 +173,18 @@ for v in %{slalib_ver} %{timelib_ver} %{astlib_ver} %{cfitsio_ver}; do
     grep -q "%{supdir}/[a-z]*/$v/" bin/ppc604/startup || {
         echo "ERROR: bin/ppc604/startup does not reference $v" >&2; exit 1; }
 done
+
+# The boot cd must name the deploy path, not the build directory. This is the
+# check that would have caught the rpmbuild path shipping in the startup.
+for f in bin/ppc604/startup bin/ppc604/local; do
+    grep -q 'cd "%{deploy}"' "$f" || {
+        echo "ERROR: $f does not cd to %{deploy}:" >&2
+        grep '^cd ' "$f" >&2; exit 1; }
+done
+if grep -rlI '/root/rpmbuild' bin 2>/dev/null | grep -q .; then
+    echo "ERROR: the rpmbuild directory appears in files that will ship:" >&2
+    grep -rlI '/root/rpmbuild' bin >&2; exit 1
+fi
 
 # The ten modules the startup script loads. A missing one is a crate that
 # stops mid-boot.
