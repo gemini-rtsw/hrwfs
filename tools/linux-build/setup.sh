@@ -56,6 +56,32 @@ APPLSETUP="$EPICS_BASE/bin/$HOST_ARCH/applSetup.pl"
 # fails the build if the result does not name the pinned versions, so the two
 # cannot silently diverge.
 SUP=/gemini/epics3.13.4/support
+# applSetup OVERWRITES the application's own startup files from the site
+# templates. In an existing startup directory it copies, unconditionally:
+#
+#   templates/uae/startup/local<SITE>.vws  -> startup/local.vws
+#   templates/uae/startup/resource<SITE>.def -> startup/resource.def
+#   templates/uae/startup/UAE.dist         -> startup/UAE.dist
+#
+# (GEM7 applSetup.pl lines 571 and 592; GEM8.4 is the same when APPLIC_SITE is
+# set, which it always is here.) So a customised local.vws is silently
+# reverted to the template on every build -- and because the template is a
+# plausible-looking site file, the result boots and mounts from the WRONG file
+# server rather than failing. That is exactly how this bit hrwfs: its
+# local.vws had been re-homed to mkotcsbootv2-lv1 and every RPM shipped the
+# template's pisces-control instead.
+#
+# Evidence this has bitten people before: pwfs1's SVN tree still carries
+# startup/local.vws_BACKUP and startup/resource.def_BACKUP.
+#
+# So: stash whatever the repository actually versions, and put it back after.
+# Only files that existed BEFORE are restored -- if a file legitimately comes
+# from the template, it is not in the stash and is left alone.
+STASH=$(mktemp -d)
+for f in local.vws resource.def UAE.dist; do
+    [ -f "startup/$f" ] && cp -p "startup/$f" "$STASH/$f"
+done
+
 perl "$APPLSETUP" -T ppc604 -I adl -I capfast -I src -I startup \
              -I docs -I dspsrc -I par -I db \
              -d $SUP/astlib/V1-4 \
@@ -63,6 +89,28 @@ perl "$APPLSETUP" -T ppc604 -I adl -I capfast -I src -I startup \
              -d $SUP/timelib/V1-8-6 \
              -d $SUP/cfitsio/V4-1 \
              -d /gemini/dhs/dhs -S "$SITE"
+
+# Put back the versioned startup files applSetup just overwrote (see above).
+for f in local.vws resource.def UAE.dist; do
+    if [ -f "$STASH/$f" ]; then
+        if ! cmp -s "$STASH/$f" "startup/$f"; then
+            echo "  restoring startup/$f (applSetup replaced it with the site template)"
+            cp -p "$STASH/$f" "startup/$f"
+        fi
+    fi
+done
+
+# Verify BEFORE discarding the stash: shipping the template's file server
+# instead of ours is a silent, bootable, wrong result, so a failed restore
+# must stop the build rather than be discovered at a crate.
+for f in local.vws resource.def UAE.dist; do
+    if [ -f "$STASH/$f" ] && ! cmp -s "$STASH/$f" "startup/$f"; then
+        echo "ERROR: startup/$f was not restored after applSetup" >&2
+        rm -rf "$STASH"; exit 1
+    fi
+done
+rm -rf "$STASH"
+
 
 # dspsrc needs Motorola's asm56000/dsplnk/cldlod/srec, which exist only as
 # SPARC Solaris binaries -- it cannot build on Linux at all. Its ten generated

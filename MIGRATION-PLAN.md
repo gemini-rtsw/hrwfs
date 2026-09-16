@@ -970,6 +970,48 @@ Two more, lower priority:
 
 # Status as of 2026-09-15
 
+### RESOLVED: the generated `local` did not match `startup/local.vws`
+
+**Root cause: `applSetup.pl` overwrites the application's own startup files
+from the site templates.** In an existing `startup/` directory it copies,
+unconditionally (GEM7 `applSetup.pl` lines 571 and 592):
+
+```perl
+copy( "resource$defs{APPLIC_SITE}.def", "$todir/resource.def" );
+copy( "local$defs{APPLIC_SITE}.vws",    "$todir/local.vws" );
+copy( "UAE.dist", $todir );
+```
+
+`base/templates/uae/startup/localMK.vws` (md5 `8dbce9d8`) is byte-for-byte the
+file that appeared in the build tree, and byte-for-byte what every RPM shipped
+as `bin/ppc604/local`. The committed `startup/local.vws` was never used.
+
+Why it resisted diagnosis: the source tree, the `git archive`, the
+`find | xargs cp --parents` staging and macTest were each verified correct in
+isolation, and they *were* correct. The substitution happens between them,
+inside `setup.sh`, during applSetup -- a step none of those checks covered.
+The `cd` line looked right throughout because it comes from `APPLIC_IOCPATH`
+in `config/CONFIG.Defs`, which the spec rewrites after applSetup runs.
+
+**This was production-affecting.** The template names `pisces-control` and
+`/export/gemini`, so the shipped RPM would have booted the crate against the
+OLD file server, silently undoing the migration to `mkotcsbootv2-lv1` -- a
+bootable, plausible, wrong result rather than a failure.
+
+Fixed in `tools/linux-build/setup.sh`: the versioned copies of `local.vws`,
+`resource.def` and `UAE.dist` are stashed before applSetup and restored after,
+and a mismatch after restore fails the build. Only files that existed
+beforehand are restored, so anything that legitimately comes from the template
+is left alone.
+
+Not unique to hrwfs. GEM8.4 behaves identically, so pwfs carries the same fix;
+it had not bitten there only because pwfs's `local.vws` happens to be
+byte-identical to the GEM8.4 `localMK.vws` template. And the workaround is
+visible in the archaeology: pwfs1's SVN tree still carries
+`startup/local.vws_BACKUP` and `startup/resource.def_BACKUP`, and hrwfs's own
+tree carries `startup/resource.def_BACKUP`.
+
+
 ## Done
 
 **History.** All five repos on GitHub with full history, converted with cvs2git
