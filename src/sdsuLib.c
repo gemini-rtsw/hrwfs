@@ -7370,6 +7370,18 @@ void   sdsu_simpleTask
                  (!sdsuReadContext->fatal));
                  frame++)
             {
+               /*
+                * Insert the requested settle delay between two consecutive
+                * images. No delay is applied before the first frame or when
+                * no pause was requested. This lets M1/M2 finish moving into
+                * position (e.g. during tuning) before the next image starts.
+                */
+
+               if ( (frame > 0) && (sdsuReadContext->interFrameDelayTicks > 0) )
+               {
+                  taskDelay (sdsuReadContext->interFrameDelayTicks);
+               }
+
 #ifdef DEBUG
                printf ("sdsu_simpleTask: Set FBA \n");
 #endif
