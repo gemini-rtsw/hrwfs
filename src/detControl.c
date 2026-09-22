@@ -210,8 +210,17 @@ extern AC_CC_STRUCT acCCId;     /* Contains all AG data - defined in wfsLib.c */
 
 /********************************* Private functions - one for each command ***/
 
-LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix, 
-                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber, 
+/*
+ * REL-845 signal processing (STUB). The real signal-processing handlers will
+ * live in a new aoHrwfsLib.c (ported from pwfs/src/aoPWLib.c). For now this
+ * single stub lets the CAD commands and dm screens be exercised end to end:
+ * it logs the command and completes successfully without doing any processing.
+ */
+
+LOCAL uint32   detSigStub (const char * pCommandName, int commandNumber);
+
+LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix,
+                         CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
                          SDSU_ID sdsuId, OBS_ID obsId);
 LOCAL uint32   detExposure (const char * pWfsName, const char * pRecordPrefix, 
                             CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
@@ -1595,9 +1604,45 @@ STATUS   detControl
             }
          }
 
+         else if (commandNumber == DET_CONTROL_CMD_SIG_RESET)
+         {
+            /* REL-845: reset signal processing (stub). */
+            errorNumber = detSigStub ("detSigReset", commandNumber);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIG_INIT)
+         {
+            /* REL-845: initialise signal processing (stub). */
+            errorNumber = detSigStub ("detSigInit", commandNumber);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_NONE)
+         {
+            /* REL-845: set processing mode to none (stub). */
+            errorNumber = detSigStub ("detSigModeNone", commandNumber);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_DARK)
+         {
+            /* REL-845: set processing mode to sky/dark subtraction (stub). */
+            errorNumber = detSigStub ("detSigModeDark", commandNumber);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ_DARK)
+         {
+            /* REL-845: set processing mode to sequence sky/dark (stub). */
+            errorNumber = detSigStub ("detSigModeSeqDark", commandNumber);
+         }
+
+         else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ)
+         {
+            /* REL-845: set processing mode to sequence closed loop (stub). */
+            errorNumber = detSigStub ("detSigModeSeq", commandNumber);
+         }
+
          else
          {
-            ERROR_SET1 (S_detControl_BAD_COMMAND, 
+            ERROR_SET1 (S_detControl_BAD_COMMAND,
                         "Command %d not currently implemented",
                         ERROR_LOG_NOW, commandNumber);
             errorNumber = S_detControl_BAD_COMMAND;
@@ -1655,6 +1700,48 @@ STATUS   detControl
    errorFree();
 
    return (OK);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detSigStub
+ *
+ *   INVOCATION:
+ *   detSigStub (pCommandName, commandNumber)
+ *
+ *   PARAMETERS: (">" input)
+ *   (>) pCommandName  (const char *)  Name of the signal-processing command.
+ *   (>) commandNumber (int)           Command number.
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   Always 0 (success).
+ *
+ *   PURPOSE:
+ *   Placeholder handler for the REL-845 signal-processing CAD commands.
+ *
+ *   DESCRIPTION:
+ *   Signal processing is not yet implemented for HRWFS (see REL-845). This
+ *   stub lets the CAD records and dm screens be exercised end to end: the
+ *   command is accepted and logged, and the CAR completes IDLE, but no signal
+ *   processing is performed. Each stub will be replaced by a real handler that
+ *   drives the ported aoHrwfsLib.c AO library.
+ *-
+ */
+
+LOCAL uint32 detSigStub
+   (
+   const char *    pCommandName,  /* Name of the signal-processing command.   */
+   int             commandNumber  /* Command number.                          */
+   )
+{
+   MESSAGE_LOG2 (MSG_LOG,
+                 "REL-845 signal processing not yet implemented: %s "
+                 "(command %d) - STUB accepted, no processing performed",
+                 pCommandName, commandNumber);
+
+   return (0);
 }
 
 /* -------------------------------------------------------------------------- */
