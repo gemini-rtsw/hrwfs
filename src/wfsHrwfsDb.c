@@ -932,6 +932,61 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("dc:oscan"),
       EPICS_DATA_TYPE_LONG
+   },
+
+   /* REL-845 signal processing status records (second slice). */
+
+   {
+      RECORD_NAME ("dc:aoProcessMode"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoDarkInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoFlatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoIntMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoContMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoCtrlInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:fgContMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoRms"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoThresh"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoTotal"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:seeing"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:jitter"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:r0"),
+      EPICS_DATA_TYPE_DOUBLE
    }
 };
 

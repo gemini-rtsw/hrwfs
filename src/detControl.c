@@ -218,6 +218,8 @@ extern AC_CC_STRUCT acCCId;     /* Contains all AG data - defined in wfsLib.c */
  */
 
 LOCAL uint32   detSigStub (const char * pCommandName, int commandNumber);
+LOCAL uint32   detSigSetProcessMode (const char * pCommandName,
+                                     const char * pModeName);
 
 LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix,
                          CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
@@ -1606,8 +1608,8 @@ STATUS   detControl
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_RESET)
          {
-            /* REL-845: reset signal processing (stub). */
-            errorNumber = detSigStub ("detSigReset", commandNumber);
+            /* REL-845: reset signal processing (stub); mode -> idle. */
+            errorNumber = detSigSetProcessMode ("detSigReset", "idle");
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_INIT)
@@ -1619,25 +1621,28 @@ STATUS   detControl
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_NONE)
          {
             /* REL-845: set processing mode to none (stub). */
-            errorNumber = detSigStub ("detSigModeNone", commandNumber);
+            errorNumber = detSigSetProcessMode ("detSigModeNone", "none");
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_DARK)
          {
             /* REL-845: set processing mode to sky/dark subtraction (stub). */
-            errorNumber = detSigStub ("detSigModeDark", commandNumber);
+            errorNumber =
+            detSigSetProcessMode ("detSigModeDark", "sky/dark subtraction");
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ_DARK)
          {
             /* REL-845: set processing mode to sequence sky/dark (stub). */
-            errorNumber = detSigStub ("detSigModeSeqDark", commandNumber);
+            errorNumber =
+            detSigSetProcessMode ("detSigModeSeqDark", "sequence sky/dark");
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ)
          {
             /* REL-845: set processing mode to sequence closed loop (stub). */
-            errorNumber = detSigStub ("detSigModeSeq", commandNumber);
+            errorNumber =
+            detSigSetProcessMode ("detSigModeSeq", "sequence closed loop");
          }
 
          else
@@ -1740,6 +1745,53 @@ LOCAL uint32 detSigStub
                  "REL-845 signal processing not yet implemented: %s "
                  "(command %d) - STUB accepted, no processing performed",
                  pCommandName, commandNumber);
+
+   return (0);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detSigSetProcessMode
+ *
+ *   INVOCATION:
+ *   detSigSetProcessMode (pCommandName, pModeName)
+ *
+ *   PARAMETERS: (">" input)
+ *   (>) pCommandName (const char *)  Name of the command (for logging).
+ *   (>) pModeName    (const char *)  Processing-mode name to publish.
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   0 on success, non-zero if the status record write fails.
+ *
+ *   PURPOSE:
+ *   Publish the selected signal-processing mode for the dm screens (REL-845).
+ *
+ *   DESCRIPTION:
+ *   Signal processing itself is not yet implemented (see detSigStub), but the
+ *   "set mode" commands can already report which mode was selected. This writes
+ *   the mode name to the dc:aoProcessMode status record so the Signal
+ *   Processing dm screen reflects the current mode. No processing is performed.
+ *-
+ */
+
+LOCAL uint32 detSigSetProcessMode
+   (
+   const char *    pCommandName,  /* Command name (for logging).              */
+   const char *    pModeName      /* Processing-mode name to publish.         */
+   )
+{
+   MESSAGE_LOG2 (MSG_LOG,
+                 "REL-845 %s: processing mode set to '%s' (STUB - mode "
+                 "recorded, no processing performed)",
+                 pCommandName, pModeName);
+
+   if (epToVxPipeWrite ("dc:aoProcessMode", (char *) pModeName, NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to write processing mode to aoProcessMode record");
+      return ((uint32) errnoGet());
+   }
 
    return (0);
 }
