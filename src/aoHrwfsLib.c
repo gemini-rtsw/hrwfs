@@ -39,8 +39,10 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdlib.h>
+#include <math.h>
 
 #include "errorLib.h"
+#include "matrixLib.h"
 #include "aoHrwfsLib.h"
 
 /* -------------------------------------------------------------------------- */
@@ -241,46 +243,620 @@ STATUS aoDarkSubtract (float * pImage, float * pDark, int xPixels, int yPixels)
 
 /* --- FITS / matrix / file I/O (geometry-independent; port from aoPWLib) --- */
 
-STATUS aoFitsImageFloatRead (char * pFitsFileName, float * pImageBuffer,
-                             int xBufferSize, int yBufferSize)
+STATUS aoFitsImageFloatRead (
+   char *     pFitsFileName,
+   float *    pImageBuffer,
+   int        xBufferSize,
+   int        yBufferSize
+   )
 {
-   /* TODO(REL-845): port from aoPWLib (uses fitsio.h). */
-   return (aoHrwfsNotImplemented ("aoFitsImageFloatRead"));
+   char       header[2880];
+   char       line[81];
+   char       restHeader[2880];
+   char       keyword[8];
+   char       *token;
+   char       *delim1 = "=";
+   char       *delim2 = "\0";
+
+   int        flag;
+   int        bufferSize;
+   int        pixelsNb;
+   int        bitpix;
+   int        naxis;
+   int        naxis1;
+   int        naxis2;
+
+   long       restSize;
+   long       lineSize=80;
+   long       nChar;
+   long       headerSize=0;
+
+   FILE       *pFile;
+
+#ifdef DEBUG
+   int        i;
+#endif
+
+   /* Open the FITS file */
+
+   pFile = fopen ( pFitsFileName, "r" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      ERROR_SET1 ( 0, "Can't open FITS file %s", ERROR_LOG_SAVE,
+                   pFitsFileName);
+      return (ERROR);
+   }
+
+   /* Read the first line */
+
+   nChar = fread ( header, sizeof (char), lineSize, pFile );
+
+   if ( nChar != lineSize )
+   {
+      ERROR_SET1 ( 0, "Can't read the first line of %s", ERROR_LOG_SAVE,
+                   pFitsFileName);
+      fclose ( pFile );
+      return (ERROR);
+   }
+
+   strncpy ( line, header, lineSize );
+   line[81]='\0';
+
+   /* Check this line contains SIMPLE keyword */
+
+   if ( strncmp ( "SIMPLE  ", line, 8 ) != 0 )
+   {
+      ERROR_SET1 ( 0, "File %s doesn't contain SIMPLE keyword", ERROR_LOG_SAVE,
+                   pFitsFileName);
+      fclose ( pFile );
+      return (ERROR);
+   }
+
+   headerSize += 80;
+
+   flag = TRUE;
+   while ( flag )
+   {
+      nChar = fread ( header, sizeof (char), lineSize, pFile );
+
+      if ( nChar != lineSize )
+      {
+         ERROR_SET1 ( 0, "Can't read the next line of %s", ERROR_LOG_SAVE,
+                      pFitsFileName);
+         fclose ( pFile );
+         return (ERROR);
+      }
+
+      strncpy ( line, header, lineSize );
+      line[81]= '\0';
+
+      strncpy ( keyword, line, 8 );
+
+      token = strtok ( line, delim1);
+      token = strtok ( NULL, delim2);
+
+      if ( strncmp ( "END     ", keyword, 8) == 0 ) 
+         flag = FALSE;
+      if ( strncmp ( "BITPIX  ", keyword, 8) == 0 ) 
+         sscanf ( token, "%d", &bitpix);
+      if ( strncmp ( "NAXIS   ", keyword, 8) == 0 ) 
+         sscanf ( token, "%d", &naxis);
+      if ( strncmp ( "NAXIS1  ", keyword, 8) == 0 ) 
+         sscanf ( token, "%d", &naxis1);
+      if ( strncmp ( "NAXIS2  ", keyword, 8) == 0 ) 
+         sscanf ( token, "%d", &naxis2);
+
+      headerSize += 80;
+   }
+
+   if ( headerSize % 2880 != 0 )
+   {
+      restSize = 2880 - (headerSize % 2880);
+      nChar = fread ( restHeader, sizeof (char), restSize, pFile );
+      if ( nChar != restSize )
+      {
+         ERROR_SET1 ( 0, "Can't read the rest of the header of %s", 
+                      ERROR_LOG_SAVE, pFitsFileName);
+         fclose ( pFile );
+         return (ERROR);
+      }
+   }
+
+   /* Now read the data */
+
+   bufferSize = xBufferSize * yBufferSize;
+   pixelsNb = naxis1 * naxis2;
+
+   if ( pixelsNb != bufferSize )
+   {
+      ERROR_SET2 ( 0, "Dark Image size %d not as expected %d",
+                   ERROR_LOG_SAVE, (int)pixelsNb, bufferSize);
+      fclose ( pFile );
+      return (ERROR);
+   }
+
+   if ( fread ( pImageBuffer, sizeof (float), bufferSize, pFile ) != 
+        bufferSize )
+   {
+      ERROR_SET1 ( 0, "Failed to read image from %s", ERROR_LOG_SAVE,
+                   pFitsFileName);
+      fclose ( pFile );
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   for ( i = 0 ; i < 10 ; i ++ )
+       printf ( "pixel %d = %f\n", i, *(pImageBuffer + i) );
+#endif
+
+   /* Close the FITS file */
+
+   fclose ( pFile );
+
+   return (OK);
 }
 
-STATUS aoFitsImageFloatWrite (char * pFitsFileName, float * pImageBuffer,
-                              int xBufferSize, int yBufferSize)
+STATUS aoFitsImageFloatWrite (
+   char *     pFitsFileName,
+   float *    pImageBuffer,
+   int        xBufferSize,
+   int        yBufferSize
+   )
 {
-   /* TODO(REL-845): port from aoPWLib (uses fitsio.h). */
-   return (aoHrwfsNotImplemented ("aoFitsImageFloatWrite"));
+   int        i;                /* index                                      */
+   int        bufferSize;       /* Size of the buffer to write                */
+   FILE       *pFile;           /* File descriptor                            */
+
+   /* Create the FITS file */
+
+   pFile = fopen ( pFitsFileName , "w" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      ERROR_SET1 ( 0, "Can't create FITS file %s", ERROR_LOG_SAVE,
+                   pFitsFileName );
+      return (ERROR);
+   }
+
+   /* Write a minimal header */
+
+   fprintf ( pFile, "SIMPLE  =                    T /                                                " );
+   fprintf ( pFile, "BITPIX  =                  -32 /                                                " );
+   fprintf ( pFile, "NAXIS   =                    2 /                                                " );
+   fprintf ( pFile, "NAXIS1  =                %5d /                                                ", xBufferSize );
+   fprintf ( pFile, "NAXIS2  =                %5d /                                                ", yBufferSize );
+   fprintf ( pFile, "BZERO   =                    0 /                                                " );
+   fprintf ( pFile, "EXTEND  =                    T /                                                " );
+   fprintf ( pFile, "END                                                                             ");
+
+   /* Fill the rest of the header with blanks: header 36 * 80 char */
+
+   for ( i = 0 ; i < 28 ; i ++ )
+       fprintf ( pFile, "                                                                                " );
+
+   /* Write the image to the Fits file */
+
+   bufferSize = xBufferSize * yBufferSize;
+
+   if ( fwrite ( pImageBuffer, sizeof (float), bufferSize, pFile ) != 
+        bufferSize )
+   {
+      ERROR_SET1 ( 0, "Failed to write image into %s",
+                   ERROR_LOG_SAVE, pFitsFileName );
+
+      fclose ( pFile );
+      return (ERROR);
+   }
+
+   /* Close the fits file */
+
+   fclose ( pFile ) ;
+
+   return ( OK ) ;
 }
 
-STATUS aoMatRead (char * pMatFileName, int typeExpected, AO_CCD_ID aoCcdId,
-                  AO_CTRL_ID aoCtrlId)
+STATUS aoMatRead (
+   char *     pMatFileName,
+   int        typeExpected,
+   AO_CCD_ID  aoCcdId,
+   AO_CTRL_ID aoCtrlId
+   )
 {
-   /* TODO(REL-845): port matrix file reader; sizes depend on SUBAP_NB. */
-   return (aoHrwfsNotImplemented ("aoMatRead"));
+
+   int        type;                 /* Type of the matrix         */
+   int        row, col;             /* Dimension of the matrix    */
+   int        i, j;                 /* Index                      */
+   float      value;                /* Element of the matrix      */
+   AO_MATRIX  mat;                  /* Matrix read                */
+   char       comment[STRING_SIZE]; /* First line of comments     */
+   FILE *     pFile;                /* File Id                    */
+
+   /* Open the file in read mode */
+
+   pFile = fopen ( pMatFileName, "r" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      ERROR_SET1 ( 0, "Failed to open the matrix file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      return (ERROR);
+   }
+
+   /* Read the first line: should be a comment line */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+                   "Failed to read line of comments from the matrix file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): %s\n" , comment );
+#endif
+
+   /* The next line contains the type of the matrix */
+
+   if ( (fscanf (pFile, "%d\n", &type)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+                   "Failed to read the type of the matrix in the file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( (type != AO_INT_MAT_TYPE) && (type != AO_CONT_MAT_TYPE) )
+   {
+      ERROR_SET1 ( 0,
+            "Type of the matrix is unrecognized: %d (should be 0 or 1)",
+            ERROR_LOG_SAVE, type );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+   if ( type != typeExpected )
+   {
+      ERROR_SET2 ( 0,
+            "Type of the matrix is not the one expected: %d (should be %d)",
+            ERROR_LOG_SAVE, type, typeExpected);
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): type of the matrix %s\n" ,
+            (type ? "CONTROL" : "INTERACTION") );
+#endif
+
+   /* Read the next line of comments */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+                   "Failed to read line of comments from the matrix file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): %s\n", comment );
+#endif
+
+   /* The next line contains the dimensions of the matrix */
+
+   if ( (fscanf (pFile, "%d %d\n", &row, &col)) == EOF )
+   {
+      ERROR_SET1 ( 0,
+                   "Failed to read the dimension of the matrix in the file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      fclose (pFile);
+      if (type == AO_INT_MAT_TYPE)
+         aoCtrlId->aoIntMatInitFlag = FALSE;
+      else
+         aoCtrlId->aoContMatInitFlag = FALSE;
+      return (ERROR);
+   }
+
+   if ( type == AO_INT_MAT_TYPE ) /* interaction matrix */
+   {
+      if ( (row != aoCcdId->centroidsNb) || (col != aoCtrlId->aoModeNb) )
+      {
+         ERROR_SET4 ( 0,
+            "Dimension of the matrix (%d,%d) are not the ones expected %d,%d)",
+            ERROR_LOG_SAVE, row, col, aoCcdId->centroidsNb, aoCtrlId->aoModeNb);
+         aoCtrlId->aoIntMatInitFlag = FALSE;
+         fclose (pFile);
+         return (ERROR);
+      }
+   }
+   else             /* control matrix */
+   {
+      if ( (row != aoCtrlId->aoModeNb) || (col != aoCcdId->centroidsNb) )
+      {
+         ERROR_SET4 ( 0,
+            "Dimension of the matrix (%d,%d) are not the ones expected %d,%d)",
+            ERROR_LOG_SAVE, row, col, aoCtrlId->aoModeNb, aoCcdId->centroidsNb);
+         aoCtrlId->aoContMatInitFlag = FALSE;
+         fclose (pFile);
+         return (ERROR);
+      }
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): dimensions of the matrix %d, %d\n", row, col );
+#endif
+
+   /* Read the next line of comments */
+
+   if ( fgets (comment, STRING_SIZE, pFile) == (char *)NULL )
+   {
+      ERROR_SET1 ( 0,
+                   "Failed to read line of comments from the matrix file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      if (type == AO_INT_MAT_TYPE)
+         aoCtrlId->aoIntMatInitFlag = FALSE;
+      else
+         aoCtrlId->aoContMatInitFlag = FALSE;
+      fclose (pFile);
+      return (ERROR);
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): %s\n", comment );
+#endif
+
+   /* Now read the matrix */
+
+   for ( i = 0 ; i < row ; i ++ )
+   {
+       for ( j = 0 ; j < col ; j ++ )
+       {
+           if ( (fscanf (pFile, "%f", &value)) != EOF )
+           {
+              *(mat + i*col + j) = (double)(value);
+           }
+           else
+           {
+              ERROR_SET1 ( 0, "Failed to read matrix from file %s",
+                           ERROR_LOG_SAVE, pMatFileName );
+              if (type == AO_INT_MAT_TYPE)
+                 aoCtrlId->aoIntMatInitFlag = FALSE;
+              else
+                 aoCtrlId->aoContMatInitFlag = FALSE;
+              fclose (pFile);
+              return (ERROR);
+           }
+       }
+   }
+
+   /* Close the file */
+
+   fclose (pFile);
+
+   /* Init the aoCtrlId structure */
+
+   if ( type == AO_INT_MAT_TYPE )
+   {
+      strcpy ( aoCtrlId->aoIntMatFileName, pMatFileName );
+      aoCtrlId->aoIntMatInitFlag = TRUE;
+      (void) copyMat ( mat, aoCtrlId->aoIntMat, row, col);
+      aoCtrlId->aoContMatInitFlag = FALSE;
+   }
+   else
+   {
+      strcpy ( aoCtrlId->aoContMatFileName, pMatFileName );
+      aoCtrlId->aoContMatInitFlag = TRUE;
+      (void) copyMat ( mat, aoCtrlId->aoContMat, row, col);
+   }
+
+#ifdef DEBUG
+   printf ( "aoMatRead(): matrix\n" );
+   for ( i = 0 ; i < row ; i ++ )
+   {
+       for ( j = 0 ; j < col ; j ++ )
+           printf ( "%f ", mat[i*col +j]);
+       printf ( "\n" );
+   }
+#endif
+   return (OK);
 }
 
-STATUS aoMatWrite (char * pMatFileName, double * pMat, int rowNb, int colNb,
-                   int type)
+STATUS aoMatWrite (
+   char *     pMatFileName,
+   double *   pMat,
+   int        rowNb,
+   int        colNb,
+   int        type
+   )
 {
-   /* TODO(REL-845): port matrix file writer. */
-   return (aoHrwfsNotImplemented ("aoMatWrite"));
+   int      i, j;                 /* Index                      */
+   FILE *   pFile;                /* File Id                    */
+
+   /* Open the file in write mode */
+
+   pFile = fopen ( pMatFileName, "w" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      ERROR_SET1 ( 0, "Failed to open the matrix file %s",
+                   ERROR_LOG_SAVE, pMatFileName );
+      return (ERROR);
+   }
+
+   /* Write the first line: should be a comment line */
+
+   (void) fprintf (pFile,
+          "# Type of the matrix (0: Interaction, 1: Control)\n");
+
+   /* Write the type of the matrix */
+
+   (void) fprintf (pFile, "%d\n", type);
+
+   /* Write the next line of comment */
+
+   (void) fprintf (pFile, "# Dimensions\n" );
+
+   /* Write the dimensions */
+
+   (void) fprintf (pFile, "%d %d\n", rowNb, colNb );
+
+   /* Write the next line of comments */
+
+   (void) fprintf (pFile, "# Matrix\n" );
+
+   /* Now write the matrix */
+
+   for ( i = 0 ; i < rowNb ; i ++ )
+   {
+       for ( j = 0 ; j < colNb ; j ++ )
+           (void) fprintf (pFile, "%f ", *(pMat + i*colNb + j) );
+       (void) fprintf (pFile, "\n" );
+   }
+     
+   /* Close the file */
+
+   fclose (pFile);
+
+
+#ifdef DEBUG
+   printf ( "aoMatWrite: Write matrix into %s done \n" , pMatFileName );
+#endif
+
+   return (OK);
 }
 
-STATUS aoImageFloatAverage (float * pImage, AO_CCD_ID aoCcdId,
-                            AO_CTRL_ID aoCtrlId, int imageNb)
+STATUS aoImageFloatAverage (
+   float *      pImage,
+   AO_CCD_ID    aoCcdId,
+   AO_CTRL_ID   aoCtrlId,
+   int          imageNb
+   )
 {
-   /* TODO(REL-845): accumulate/average into aoCtrlId->sumVect. */
-   return (aoHrwfsNotImplemented ("aoImageFloatAverage"));
+   int          imageSize;
+   float *      p;
+   float *      pi;
+   float *      ps;
+   float *      pMax;
+
+   /* Some initialisations */
+
+   imageSize = aoCcdId->pixelsNb;
+   pi = pImage;
+   ps = aoCtrlId->sumVect;
+   pMax = (float *)((int)ps + imageSize*sizeof(float));
+  
+   /* Coadd images */
+
+   if ( aoCtrlId->coaddCounter == 0 )
+   {
+      for ( p = ps ; p < pMax ; )
+      {
+          *(p++) = *(pi++);
+      }
+      aoCtrlId->coaddCounter ++;
+#ifdef DEBUG
+      printf ( "Pixel[0]=%f, Sum[0]=%f\n" , *pImage, aoCtrlId->sumVect[0]);
+#endif
+
+   }
+   else
+   {
+      if ( aoCtrlId->coaddCounter < imageNb )
+      {
+         for ( p = ps ; p < pMax ; p ++ )
+         {
+             *p = ( *(p) + *(pi++) );
+         }
+         aoCtrlId->coaddCounter ++;
+#ifdef DEBUG
+         printf ( "Pixel[0]=%f, Sum[0]=%f\n" , *pImage, aoCtrlId->sumVect[0]);
+#endif
+
+      }
+
+      if  ( aoCtrlId->coaddCounter == imageNb )
+      {
+          for ( p = ps ; p < pMax; p ++ )
+          {
+               *p = (*(p) / imageNb);
+          }
+          aoCtrlId->coaddCounter = 0;
+#ifdef DEBUG
+          printf ( "Sum[0]=%f\n" , aoCtrlId->sumVect[0]);
+#endif
+
+      }
+   }
+
+   return (OK);
 }
 
-STATUS aoRmsNoiseImageCompute (float * pImage, AO_CCD_ID aoCcdId,
-                               double * pRmsNoise, double * pMeanNoise)
+STATUS aoRmsNoiseImageCompute (
+   float *      pImage,
+   AO_CCD_ID    aoCcdId,
+   double *     pRmsNoise,
+   double *     pMeanNoise
+   )
 {
-   /* TODO(REL-845): compute RMS/mean of the noise. */
-   return (aoHrwfsNotImplemented ("aoRmsNoiseImageCompute"));
+   int          imageSize;
+   float *      p;
+   float *      pi;
+   float *      pMax;
+   double       value;
+   double       meanPixel;
+   double       variance;
+   double       rmsrms;
+
+   /* Some initialisations */
+
+   imageSize = aoCcdId->pixelsNb;
+   pi = pImage;
+   pMax = (float *)((int)pi + imageSize*sizeof(float));
+
+   /* Compute mean and variance */
+
+   meanPixel = 0.0;
+   variance = 0.0;
+
+   for ( p = pi ; p < pMax ; p ++ )
+   {
+       value = (double)(*p);
+
+       meanPixel += value;
+   
+       variance += (value * value);
+   }
+
+   meanPixel = meanPixel / (double)(aoCcdId->pixelsNb);
+
+   *pMeanNoise = meanPixel;
+
+   variance = variance / (double)(aoCcdId->pixelsNb);
+
+   rmsrms = variance - (meanPixel*meanPixel);
+
+   /* Compute the rms of the noise */
+
+   if ( rmsrms < 0.0 )
+   {
+      ERROR_SET (0, "Variance of the noise is negative" , ERROR_LOG_SAVE);
+      *pRmsNoise = 0.0;
+      return (ERROR);
+   }
+
+   *pRmsNoise = sqrt ( rmsrms );
+
+#ifdef DEBUG
+   printf ( "Mean=%f, rms=%f\n", (float)*pMeanNoise, (float)*pRmsNoise );
+#endif
+
+   return (OK);
 }
 
 STATUS aoScaleRead (char * pAoScaleFileName, AO_CTRL_ID aoCtrlId)
@@ -289,10 +865,44 @@ STATUS aoScaleRead (char * pAoScaleFileName, AO_CTRL_ID aoCtrlId)
    return (aoHrwfsNotImplemented ("aoScaleRead"));
 }
 
-STATUS aoScaleUpdate (double * pAoScaleVect, AO_CTRL_ID aoCtrlId)
+STATUS aoScaleUpdate (
+   double *   pAoScaleVect,
+   AO_CTRL_ID aoCtrlId
+   )
 {
-   /* TODO(REL-845): copy a scale-factor vector into the control context. */
-   return (aoHrwfsNotImplemented ("aoScaleUpdate"));
+
+   int      i;                            /* Index                            */
+
+   /* Update the aoCtrlId structure */
+
+   strcpy ( aoCtrlId->aoScaleFileName, "Through dm" );
+
+   aoCtrlId->aoModeNotUsedNb = 0;
+   for ( i = 0 ; i < aoCtrlId->aoModeNb ; i ++ )
+   {
+       aoCtrlId->aoScaleFactorVect[i] = pAoScaleVect[i];
+       if ( pAoScaleVect[i] == 0.0 )
+       {
+          aoCtrlId->aoModeUsedVect[i] = FALSE;
+          aoCtrlId->aoModeNotUsedNb += 1;
+       }
+       else
+       {
+          aoCtrlId->aoModeUsedVect[i] = TRUE;
+       }
+   }
+
+   aoCtrlId->aoModeUsedNb = aoCtrlId->aoModeNb - aoCtrlId->aoModeNotUsedNb;
+
+   aoCtrlId->aoScaleInitFlag = TRUE;
+
+#ifdef DEBUG
+   printf ( "aoScaleUpdate(): \n" );
+   for ( i = 0 ; i < aoCtrlId->aoModeNb ; i ++ )
+       printf ( "aO mode %d: %f\n" , i+1, aoCtrlId->aoScaleFactorVect[i]);
+#endif
+
+   return (OK);
 }
 
 STATUS aoDarkUpdate (char * pDarkFileName, AO_CCD_ID aoCcdId,
@@ -302,11 +912,65 @@ STATUS aoDarkUpdate (char * pDarkFileName, AO_CCD_ID aoCcdId,
    return (aoHrwfsNotImplemented ("aoDarkUpdate"));
 }
 
-STATUS aoCentroidsWrite (char * pCentroidsFileName, double * pCentroids,
-                         int centNb, char * pComment)
+STATUS aoCentroidsWrite (
+   char *     pCentroidsFileName,
+   double *   pCentroids,
+   int        centNb,
+   char *     pComment
+   )
 {
-   /* TODO(REL-845): write centroids to a text file. */
-   return (aoHrwfsNotImplemented ("aoCentroidsWrite"));
+   int      i;                    /* Index                      */
+   FILE *   pFile;                /* File Id                    */
+
+   /* Open the file in write mode */
+
+   pFile = fopen ( pCentroidsFileName, "w" );
+
+   if ( pFile == (FILE *)NULL )
+   {
+      ERROR_SET1 ( 0, "Failed to open the centroids file %s",
+                   ERROR_LOG_SAVE, pCentroidsFileName );
+      return (ERROR);
+   }
+
+   /* Write the first line: should be a comment line */
+
+   (void) fprintf (pFile,
+          "# Comments \n");
+
+   /* Write the comment line */
+
+   (void) fprintf (pFile, "%s\n", pComment);
+
+   /* Write the next line of comment */
+
+   (void) fprintf (pFile, "# Dimension\n" );
+
+   /* Write the dimension */
+
+   (void) fprintf (pFile, "%d\n", centNb );
+
+   /* Write the next line of comments */
+
+   (void) fprintf (pFile, "# Centroids\n" );
+
+   /* Now write the centroids */
+
+   for ( i = 0 ; i < centNb ; i ++ )
+   {
+       (void) fprintf (pFile, "%f\n", *(pCentroids + i) );
+   }
+
+   /* Close the file */
+
+   fclose (pFile);
+
+#ifdef DEBUG
+   printf ( "aoCentroidsWrite: Write centroids into %s done \n" ,
+            pCentroidsFileName );
+#endif
+
+   return (OK);
 }
 
 /* --- Geometry / calibration setup (needs HRWFS reference file & rotations) - */

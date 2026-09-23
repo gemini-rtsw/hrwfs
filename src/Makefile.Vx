@@ -25,6 +25,7 @@ DBDINSTALL =
 #SRCS.c	= $(wildcard ../*.c) 
 LIBSRCS.c       = \
         ../aoHrwfsLib.c \
+        ../matrixLib.c \
         ../cicsCarHealth.c \
         ../cicsLib.c \
         ../epToVxLib.c \
@@ -69,7 +70,7 @@ SCRIPTS	=
 LIBNAME	= wfsLibrariesHrwfs
 
 # INC is installed in INSTALL_INCLUDE
-INC	= ./wfsHrwfsDb.h ./aoHrwfsLib.h
+INC	= ./wfsHrwfsDb.h ./aoHrwfsLib.h ./matrixLib.h
 
 # MAN1 is installed in INSTALL_MAN/man1
 MAN1	=
