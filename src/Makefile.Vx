@@ -24,6 +24,7 @@ DBDINSTALL =
 # Add the source code files to this variable. The default has all .c files 
 #SRCS.c	= $(wildcard ../*.c) 
 LIBSRCS.c       = \
+        ../aoHrwfsLib.c \
         ../cicsCarHealth.c \
         ../cicsLib.c \
         ../epToVxLib.c \
@@ -68,7 +69,7 @@ SCRIPTS	=
 LIBNAME	= wfsLibrariesHrwfs
 
 # INC is installed in INSTALL_INCLUDE
-INC	= ./wfsHrwfsDb.h
+INC	= ./wfsHrwfsDb.h ./aoHrwfsLib.h
 
 # MAN1 is installed in INSTALL_MAN/man1
 MAN1	=
