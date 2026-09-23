@@ -46,13 +46,30 @@
 #define CCD_YSIZE            1024      /* Y size of the HRWFS CCD in pixels    */
 #define CCD_SIZE             (CCD_XSIZE * CCD_YSIZE)
 
-#define HRWFS_LENSLET_NB     18        /* Lenslets across the SH array         */
-#define HRWFS_SPOT_SEP       50        /* Nominal spot separation in pixels    */
+#define HRWFS_LENSLET_NB     18        /* Lenslets across the SH array (nsp)    */
+#define HRWFS_SPOT_SEP       50        /* Spot separation / px per subap        */
 #define HRWFS_APERTURE_RADIUS 450      /* Aperture radius in pixels            */
 #define HRWFS_X_CENTER       512       /* Nominal X centre of the array        */
 #define HRWFS_Y_CENTER       512       /* Nominal Y centre of the array        */
 #define HRWFS_OPD_SCALE      (-0.1625) /* OPD scaling factor (from doc)        */
 #define HRWFS_ZERNIKE_SCALE  (-1.4625) /* Zernike scaling factor (from doc)    */
+#define HRWFS_PSCALE         0.08125   /* Plate scale, arcsec/pixel (hrwfsAO)  */
+
+/*
+ * Algorithm reference: hrwfsAO.pro (F. Rigaut, v1.3, 2002). The above geometry
+ * is CONFIRMED there (nsp=18, npixps=50, pscale=0.08125, tdiam=8 m). HRWFS
+ * signal processing is simpler than PWFS:
+ *   - The interaction matrix is computed ANALYTICALLY from Zernike slopes
+ *     (zermes2), not measured on hardware; the control matrix is its
+ *     pseudo-inverse. So no hardware IM-measurement (detSigMeasAoIm) is needed.
+ *   - No software rotation: the Cass rotator is required at 0 deg; only a fixed
+ *     x/y offset + axis flip is applied (angleWithM1/M2 are unused for HRWFS).
+ *   - Centroiding is a two-pass centre-of-gravity per subaperture (getmes).
+ *   - Active subapertures form a circular annulus:
+ *     1.8 < sqrt((i-8.5)^2 + (j-8.5)^2) < 0.95*9.5 subaperture radii.
+ *   - Modes sent to the TCS: Zernikes [4,6,5,8,7,10,9,11..19], sign-flipped.
+ * See REL-845-signal-processing-plan.md sec. 6 for the full analysis.
+ */
 
 /*
  * SUBAP_NB sizes every fixed subaperture array (WFS_VECT, AO_MATRIX,
@@ -61,9 +78,10 @@
  * radius-450 aperture (~254, i.e. pi/4 * 18^2) are illuminated. We size to the
  * 324 bounding box so the buffers safely accommodate any active count.
  *
- * TODO(REL-845): confirm the exact active-subaperture count from the HRWFS SH
- * reference-spot file (used by hrwfsAO.pro / the sos/hrtuning procedure) before
- * freezing on-the-wire array widths and the diagnostic (aoDiag*) record fan-out.
+ * CONFIRMED by hrwfsAO.pro: nsp = 18, so 324 bounding-box subapertures. The
+ * active set is the annulus 1.8 < r < 0.95*9.5 subap radii (~240-250 active).
+ * The exact active count/map still comes from the reference file
+ * (hrwfs_refmes.fits) at runtime, which also sizes the aoDiag* record fan-out.
  */
 
 #define SUBAP_NB             324       /* Max subapertures (18x18 bounding box)*/
