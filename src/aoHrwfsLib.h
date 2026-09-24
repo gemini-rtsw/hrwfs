@@ -403,6 +403,8 @@ STATUS aoCentroidsWrite (char * pCentroidsFileName, double * pCentroids,
 
 /* Geometry / calibration setup (needs the HRWFS reference file & rotations). */
 STATUS aoRefRead (char * pRefFileName, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId);
+STATUS aoFindParam (float * pRawImage, int xSize, int ySize, AO_CCD_ID aoCcdId,
+                    AO_CTRL_ID aoCtrlId, int recentering, float * pOutImage);
 STATUS aoCtrlContextInit (char * pInitFileName, AO_CCD_ID aoCcdId,
                           AO_CTRL_ID aoCtrlId);
 STATUS aoCtrlFileRead (char * pInitFileName, char * pPath, char * pDarkFileName,

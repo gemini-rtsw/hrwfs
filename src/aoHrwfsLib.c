@@ -1070,6 +1070,204 @@ STATUS aoRefRead (char * pRefFileName, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId)
    return (OK);
 }
 
+/*
+ * aoBestOffset - offset in [-maxoff, maxoff] that best aligns prof to ref.
+ *
+ * hrwfsAO findparam uses correlate(ref, shift(prof, off)); because shift wraps,
+ * the shifted profile is a permutation of prof (same mean and variance), so the
+ * Pearson correlation is maximised by the same offset as the plain cross-
+ * correlation. We therefore maximise sum_k ref[k]*prof[(k-off) mod n].
+ */
+
+LOCAL int aoBestOffset (const double * ref, const double * prof, int n,
+                        int maxoff)
+{
+   int    best = 0;
+   int    off, k, idx;
+   double s, bestv = -1.0e300;
+
+   for (off = -maxoff; off <= maxoff; off++)
+   {
+      s = 0.0;
+      for (k = 0; k < n; k++)
+      {
+         idx = ((k - off) % n + n) % n;
+         s  += ref[k] * prof[idx];
+      }
+      if (s > bestv) { bestv = s; best = off; }
+   }
+   return (best);
+}
+
+/*+
+ * aoFindParam - sky/threshold, recentre and crop a raw HRWFS frame.
+ *
+ * Ported from hrwfsAO.pro findparam. Steps:
+ *   - estimate the sky (mean) and noise (stddev) from a corner region and
+ *     subtract sky + a 5-sigma threshold, clamping at zero;
+ *   - build column/row profiles and a comb of Gaussians (one per subaperture,
+ *     spacing npix, sigma 8), and cross-correlate to find the x/y recentre
+ *     offset (or use the fixed offsets -47,-18 when recentering == 0);
+ *   - shift the image by that offset (wrap) and crop to the nsp*npix grid.
+ * The prepared image is written to pOutImage (caller-allocated, nsp*npix square)
+ * and aoCcdId's pixel dimensions are set to the cropped grid so aoCentroids-
+ * Compute reads it correctly.
+ *
+ * Approximations vs the IDL: the sky uses a plain mean/stddev (not IDL mmm);
+ * the subaperture size is fixed at npix (the IDL autocorrelation result was
+ * discarded there too); the flux-based mask refinement is left to aoRefRead's
+ * geometric mask. NOTE: faithful but not yet numerically validated.
+ *-
+ */
+
+STATUS aoFindParam (float * pRawImage, int xSize, int ySize, AO_CCD_ID aoCcdId,
+                    AO_CTRL_ID aoCtrlId, int recentering, float * pOutImage)
+{
+   int      nsp, npx, npy, outW, outH, corner, npix;
+   int      a, b, c, r, i, k, cnt, zerox, zeroy, xoff, yoff;
+   float  * work = NULL;
+   double * totx = NULL;
+   double * toty = NULL;
+   double * refx = NULL;
+   double * refy = NULL;
+   double   sky, st, threshold, v, s, s2;
+   STATUS   rc = OK;
+
+   if ((pRawImage == NULL) || (aoCcdId == NULL) || (pOutImage == NULL))
+   {
+      ERROR_SET (0, "aoFindParam: NULL argument", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   nsp  = aoCcdId->xSubapNb;
+   npx  = aoCcdId->xRaster;
+   npy  = aoCcdId->yRaster;
+   outW = nsp * npx;
+   outH = nsp * npy;
+
+   if ((xSize < outW) || (ySize < outH))
+   {
+      ERROR_SET (0, "aoFindParam: frame smaller than the SH grid",
+                 ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   corner = 300;
+   if (corner > xSize) corner = xSize;
+   if (corner > ySize) corner = ySize;
+   npix = xSize * ySize;
+
+   work = (float *)  malloc ((size_t) npix * sizeof (float));
+   totx = (double *) malloc ((size_t) xSize * sizeof (double));
+   toty = (double *) malloc ((size_t) ySize * sizeof (double));
+   refx = (double *) malloc ((size_t) xSize * sizeof (double));
+   refy = (double *) malloc ((size_t) ySize * sizeof (double));
+   if (!work || !totx || !toty || !refx || !refy)
+   {
+      ERROR_SET (0, "aoFindParam: allocation failed", ERROR_LOG_SAVE);
+      free (work); free (totx); free (toty); free (refx); free (refy);
+      return (ERROR);
+   }
+
+   /* Sky (mean) and noise (stddev) from a corner region. */
+   s = s2 = 0.0;
+   cnt = 0;
+   for (b = 0; b < corner; b++)
+   {
+      for (a = 0; a < corner; a++)
+      {
+         v   = pRawImage[a + b * xSize];
+         s  += v;
+         s2 += v * v;
+         cnt++;
+      }
+   }
+   sky = (cnt > 0) ? (s / cnt) : 0.0;
+   st  = (cnt > 0) ? (s2 / cnt - sky * sky) : 0.0;
+   st  = (st > 0.0) ? sqrt (st) : 0.0;
+   threshold = 5.0 * st;
+
+   /* Subtract sky + threshold, clamp at zero. */
+   for (i = 0; i < npix; i++)
+   {
+      v = (double) pRawImage[i] - sky - threshold;
+      work[i] = (v > 0.0) ? (float) v : 0.0f;
+   }
+
+   /* Column profile, then the column-weighted row profile (as in findparam). */
+   for (c = 0; c < xSize; c++)
+   {
+      s = 0.0;
+      for (b = 0; b < ySize; b++) s += work[c + b * xSize];
+      totx[c] = s;
+   }
+   for (r = 0; r < ySize; r++)
+   {
+      s = 0.0;
+      for (c = 0; c < xSize; c++) s += work[c + r * xSize] * totx[c];
+      toty[r] = s;
+   }
+
+   /* Gaussian combs: one peak per subaperture, spacing npx/npy, sigma 8. */
+   zerox = 25 - (nsp / 2) * (npx - 50);
+   zeroy = 25 - (nsp / 2) * (npy - 50);
+   for (k = 0; k < xSize; k++)
+   {
+      s = 0.0;
+      for (i = 0; i < nsp; i++)
+      {
+         v  = (k - (zerox + i * npx)) / 8.0;
+         s += exp (-v * v);
+      }
+      refx[k] = s;
+   }
+   for (k = 0; k < ySize; k++)
+   {
+      s = 0.0;
+      for (i = 0; i < nsp; i++)
+      {
+         v  = (k - (zeroy + i * npy)) / 8.0;
+         s += exp (-v * v);
+      }
+      refy[k] = s;
+   }
+
+   /* Recentre offset: cross-correlation, or the fixed acquisition offsets. */
+   if (recentering != 0)
+   {
+      xoff = aoBestOffset (refx, totx, xSize, 200);
+      yoff = aoBestOffset (refy, toty, ySize, 200);
+   }
+   else
+   {
+      xoff = -47;
+      yoff = -18;
+   }
+
+   /* Shift (wrap) and crop to the nsp*npix grid. */
+   for (b = 0; b < outH; b++)
+   {
+      int sb = ((b - yoff) % ySize + ySize) % ySize;
+      for (a = 0; a < outW; a++)
+      {
+         int sa = ((a - xoff) % xSize + xSize) % xSize;
+         pOutImage[a + b * outW] = work[sa + sb * xSize];
+      }
+   }
+
+   aoCcdId->xPixels  = outW;
+   aoCcdId->yPixels  = outH;
+   aoCcdId->pixelsNb = outW * outH;
+   aoCtrlId->threshold = threshold;
+
+   free (work); free (totx); free (toty); free (refx); free (refy);
+
+   printf ("aoFindParam: sky=%.1f rms=%.1f offset=(%d,%d)\n",
+           sky, st, xoff, yoff);
+
+   return (rc);
+}
+
 STATUS aoCtrlContextInit (char * pInitFileName, AO_CCD_ID aoCcdId,
                           AO_CTRL_ID aoCtrlId)
 {

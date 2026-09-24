@@ -1936,8 +1936,9 @@ LOCAL void detSigProcessFrame
    OBS_ID          obsId          /* Observation context.                     */
    )
 {
-   int      nPixels, i, wfsStatus;
-   float *  pImage;
+   int      rawPix, outW, outH, i, wfsStatus;
+   float *  pRaw  = NULL;
+   float *  pPrep = NULL;
    double   tstamp, rms;
    double   zern [AO_MODE_NB];
    double   zerr [AO_MODE_NB];
@@ -1959,20 +1960,33 @@ LOCAL void detSigProcessFrame
       return;
    }
 
-   nPixels = obsId->xPixels * obsId->yPixels;
-   pImage  = (float *) malloc (nPixels * sizeof (float));
-   if (pImage == NULL)
+   rawPix = obsId->xPixels * obsId->yPixels;
+   outW   = obsId->aoCcdId->xSubapNb * obsId->aoCcdId->xRaster;
+   outH   = obsId->aoCcdId->ySubapNb * obsId->aoCcdId->yRaster;
+
+   pRaw  = (float *) malloc ((size_t) rawPix * sizeof (float));
+   pPrep = (float *) malloc ((size_t) outW * outH * sizeof (float));
+   if ((pRaw == NULL) || (pPrep == NULL))
    {
       ERROR_LOG ("detSigProcessFrame: image allocation failed");
+      free (pRaw);
+      free (pPrep);
       return;
    }
-   for (i = 0; i < nPixels; i++)
+
+   for (i = 0; i < rawPix; i++)
    {
-      pImage[i] = (float) obsId->pCurFrame[i];
+      pRaw[i] = (float) obsId->pCurFrame[i];
    }
 
-   if (aoModeCompute (pImage, 0, obsId->aoCcdId, obsId->aoCtrlId, 1, 0,
-                      zern, zerr, &tstamp, &wfsStatus) == OK)
+   /* Recentre + crop to the subaperture grid, then compute the modes. */
+   if (aoFindParam (pRaw, obsId->xPixels, obsId->yPixels, obsId->aoCcdId,
+                    obsId->aoCtrlId, 1, pPrep) != OK)
+   {
+      ERROR_LOG ("detSigProcessFrame: aoFindParam failed");
+   }
+   else if (aoModeCompute (pPrep, 0, obsId->aoCcdId, obsId->aoCtrlId, 1, 0,
+                           zern, zerr, &tstamp, &wfsStatus) == OK)
    {
       rms = 0.0;
       for (i = 0; i < obsId->aoCtrlId->aoModeNb; i++)
@@ -1987,7 +2001,7 @@ LOCAL void detSigProcessFrame
          ERROR_LOG ("Failed to write aoRms record");
       }
 
-      printf ("REL-845 aoModeCompute: tilt=%f tilt=%f focus=%f rms=%f\n",
+      printf ("REL-845 aoModeCompute: xtilt=%f ytilt=%f focus=%f rms=%f\n",
               zern[0], zern[1], zern[2], rms);
    }
    else
@@ -1995,7 +2009,8 @@ LOCAL void detSigProcessFrame
       ERROR_LOG ("detSigProcessFrame: aoModeCompute failed");
    }
 
-   free (pImage);
+   free (pRaw);
+   free (pPrep);
 }
 
 /* -------------------------------------------------------------------------- */
