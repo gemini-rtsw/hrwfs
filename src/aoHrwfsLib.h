@@ -79,9 +79,10 @@
  * 324 bounding box so the buffers safely accommodate any active count.
  *
  * CONFIRMED by hrwfsAO.pro: nsp = 18, so 324 bounding-box subapertures. The
- * active set is the annulus 1.8 < r < 0.95*9.5 subap radii (~240-250 active).
- * The exact active count/map still comes from the reference file
- * (hrwfs_refmes.fits) at runtime, which also sizes the aoDiag* record fan-out.
+ * active set is the annulus 1.8 < r < 0.95*9.5 subap radii, which
+ * tools/validate_ao.py computes to be 244 active subapertures (488 slopes).
+ * That validation also confirms the 150-mode fit is well-conditioned
+ * (cond ~277) and recovers modes to machine precision.
  */
 
 #define SUBAP_NB             324       /* Max subapertures (18x18 bounding box)*/
