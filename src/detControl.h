@@ -56,6 +56,7 @@
 #include "gemModNum.h"
 #include "epToVxLib.h"
 #include "sdsuLib.h"
+#include "aoHrwfsLib.h"   /* REL-845 signal processing (AO_CCD_ID/AO_CTRL_ID). */
 
 #ifndef NO_DHS
 #include "dhs.h"  
@@ -575,6 +576,13 @@ typedef   struct      /* Context structure used to describe an observation.   */
    DATREC_CONTEXT pAdc0Context ;      /* ADC 0 SIR record context structure   */
    DATREC_CONTEXT pAdc1Context ;      /* ADC 1 SIR record context structure   */
    DATREC_CONTEXT pOscanContext ;     /* oscan SIR record context structure   */
+
+   /* REL-845 signal processing (see aoHrwfsLib). */
+   int            sigMode ;           /* Active processing mode (AO_MODE_*).  */
+   AO_CCD_ID      aoCcdId ;           /* AO CCD geometry context.             */
+   AO_CTRL_ID     aoCtrlId ;          /* AO control context.                  */
+   long           aoFrameCount ;      /* Processed-frame counter published to  */
+                                      /* the TCS so it detects new Zernikes.  */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*
@@ -633,7 +641,28 @@ enum
                                /* Set connection with the DHS                 */
    DET_CONTROL_CMD_DHS_DISPLAY,/* Set display parameters for dhs QL           */
    DET_CONTROL_CMD_DEBUG,      /* Set debugging mode                          */
-   DET_CONTROL_CMD_SIMULATE    /* Set simulation mode                         */
+   DET_CONTROL_CMD_SIMULATE,   /* Set simulation mode                         */
+
+   /*
+    * REL-845 signal processing commands (subset of the PWFS set - fast guide,
+    * butterworth and global-guide-only modes are intentionally omitted for
+    * HRWFS). See REL-845-signal-processing-plan.md.
+    */
+
+   DET_CONTROL_CMD_SIG_RESET,          /* Reset signal processing.            */
+   DET_CONTROL_CMD_SIG_INIT,           /* Initialise signal processing.       */
+   DET_CONTROL_CMD_SIG_INIT_AO_GAIN,   /* Init AO gains.                      */
+   DET_CONTROL_CMD_SIG_INIT_AO_THRESH, /* Init AO thresholds.                */
+   DET_CONTROL_CMD_SIG_MODE_NONE,      /* No signal processing.               */
+   DET_CONTROL_CMD_SIG_MODE_DARK,      /* Sky/dark subtraction only.          */
+   DET_CONTROL_CMD_SIG_MODE_SEQ_DARK,  /* Sequence sky/dark mode.             */
+   DET_CONTROL_CMD_SIG_MODE_SEQ,       /* Sequence closed loop mode.          */
+   DET_CONTROL_CMD_SIG_MODE_AO,        /* Basic AO (single frame) mode.       */
+   DET_CONTROL_CMD_SIG_MEAS_AO_IM,     /* Measure AO interaction matrix.      */
+   DET_CONTROL_CMD_SIG_COMP_AO_MAT,    /* Compute AO int/control matrices.    */
+   DET_CONTROL_CMD_SIG_INIT_AST_MODEL, /* Init astigmatism zero-point model.  */
+   DET_CONTROL_CMD_SIG_INIT_TREF_MODEL,/* Init trefoil zero-point model.      */
+   DET_CONTROL_CMD_SIG_INIT_COMA_MODEL /* Init coma zero-point model.         */
    };
 
    /* Public variables */

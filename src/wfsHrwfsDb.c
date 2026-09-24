@@ -508,6 +508,102 @@ CAD_RECORD pWfsDbCadList [] =
       SIMULATION_MODE_SUPPORTED,
       40.0,
       CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "1", {"1", "500"}
+   },
+
+   /*
+    * REL-845 signal processing CAD records (first slice). Attribute lists are
+    * ported from the PWFS records in pwfs/src/wfsDb.c. Handlers are currently
+    * stubs (detSigStub in detControl.c). Some attributes (e.g. the FG control
+    * matrix on detSigInit) are vestigial from PWFS and will be removed when the
+    * dm screens are fully trimmed.
+    */
+
+   {
+      RECORD_NAME ("dc:detSigReset"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_RESET,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0
+   },
+   {
+      RECORD_NAME ("dc:detSigInit"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_INIT,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      300.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_STRING, DET_CONTROL_PAR_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, "defHRDark.fits", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, "defHRFlat.fits", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_D, EPICS_DATA_TYPE_DOUBLE, "0.0", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_E, EPICS_DATA_TYPE_DOUBLE, "512.0", {"0.0", "1024.0"},
+      CAD_ATTRIB_F, EPICS_DATA_TYPE_DOUBLE, "512.0", {"0.0", "1024.0"},
+      CAD_ATTRIB_G, EPICS_DATA_TYPE_DOUBLE, "0.0", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_H, EPICS_DATA_TYPE_STRING, "defHRRef.dat", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_I, EPICS_DATA_TYPE_STRING, "defAoIntMatHR.dat", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_J, EPICS_DATA_TYPE_STRING, "defAoContMatHR.dat", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_K, EPICS_DATA_TYPE_STRING, "none", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_L, EPICS_DATA_TYPE_DOUBLE, "1.0", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_M, EPICS_DATA_TYPE_STRING, "defSeeingCoeffMatHR.dat", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_N, EPICS_DATA_TYPE_STRING, "defSeeingCoeffVectHR.dat", {NO_ATTRIBUTE_LIMITS}
+   },
+   {
+      RECORD_NAME ("dc:detSigModeNone"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_MODE_NONE,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0
+   },
+   {
+      RECORD_NAME ("dc:detSigModeDark"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_MODE_DARK,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0
+   },
+   {
+      RECORD_NAME ("dc:detSigModeSeqDark"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_MODE_SEQ_DARK,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_LONG, "100", {"1", NO_HI_LIMIT},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_STRING, DET_CONTROL_PAR_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_C, EPICS_DATA_TYPE_STRING, "coadd.fits", {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_D, EPICS_DATA_TYPE_LONG, "100", {"1", NO_HI_LIMIT},
+      CAD_ATTRIB_E, EPICS_DATA_TYPE_DOUBLE, "2.5", {"0.0", NO_HI_LIMIT}
+   },
+   {
+      RECORD_NAME ("dc:detSigModeSeq"),
+      TASK_NAME ("hr", DET_CONTROL_TASK_NAME),
+      DET_CONTROL_CMD_SIG_MODE_SEQ,
+      STOP_DIRECTIVE_UNSUPPORTED,
+      SIMULATION_MODE_SUPPORTED,
+      40.0,
+      CAD_ATTRIB_A, EPICS_DATA_TYPE_DOUBLE, "1", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_B, EPICS_DATA_TYPE_DOUBLE, "10.0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_C, EPICS_DATA_TYPE_DOUBLE, "0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_D, EPICS_DATA_TYPE_DOUBLE, "0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_E, EPICS_DATA_TYPE_DOUBLE, "0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_F, EPICS_DATA_TYPE_DOUBLE, "0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_G, EPICS_DATA_TYPE_DOUBLE, "0", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_H, EPICS_DATA_TYPE_LONG, "0", {"0", "4"},
+      CAD_ATTRIB_I, EPICS_DATA_TYPE_DOUBLE, "40.0", {"0.005", NO_HI_LIMIT},
+      CAD_ATTRIB_J, EPICS_DATA_TYPE_LONG, "0", {"0", "1"},
+      CAD_ATTRIB_K, EPICS_DATA_TYPE_DOUBLE, "60.0", {"0.1", NO_HI_LIMIT},
+      CAD_ATTRIB_L, EPICS_DATA_TYPE_LONG, "0", {"0", "1"},
+      CAD_ATTRIB_M, EPICS_DATA_TYPE_DOUBLE, "0.1", {"0.1", NO_HI_LIMIT},
+      CAD_ATTRIB_N, EPICS_DATA_TYPE_STRING, DET_CONTROL_DATA_FILE_PATH, {NO_ATTRIBUTE_LIMITS},
+      CAD_ATTRIB_O, EPICS_DATA_TYPE_LONG, "1", {"0", "1"},
+      CAD_ATTRIB_P, EPICS_DATA_TYPE_LONG, "1", {"0", "1"},
+      CAD_ATTRIB_Q, EPICS_DATA_TYPE_LONG, "1", {"0", "1"},
+      CAD_ATTRIB_R, EPICS_DATA_TYPE_DOUBLE, "15.0", {"0.0", "100.0"},
+      CAD_ATTRIB_S, EPICS_DATA_TYPE_DOUBLE, "2.5", {"0.0", NO_HI_LIMIT},
+      CAD_ATTRIB_T, EPICS_DATA_TYPE_LONG, "1", {"0", "1"}
    }
 };
 
@@ -836,6 +932,152 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("dc:oscan"),
       EPICS_DATA_TYPE_LONG
+   },
+
+   /* REL-845 signal processing status records (second slice). */
+
+   {
+      RECORD_NAME ("dc:aoProcessMode"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoDarkInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoFlatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoIntMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoContMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoCtrlInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:fgContMatInit"),
+      EPICS_DATA_TYPE_STRING
+   },
+   {
+      RECORD_NAME ("dc:aoRms"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoThresh"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoTotal"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:seeing"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:jitter"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:r0"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+
+   /* REL-845 AO Zernike output records (aoZern1..aoZern19). */
+
+   {
+      RECORD_NAME ("dc:aoZern1"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern2"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern3"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern4"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern5"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern6"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern7"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern8"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern9"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern10"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern11"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern12"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern13"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern14"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern15"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern16"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern17"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern18"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern19"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoCounter"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:aoOffX"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoOffY"),
+      EPICS_DATA_TYPE_DOUBLE
    }
 };
 
