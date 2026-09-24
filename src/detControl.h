@@ -581,6 +581,8 @@ typedef   struct      /* Context structure used to describe an observation.   */
    int            sigMode ;           /* Active processing mode (AO_MODE_*).  */
    AO_CCD_ID      aoCcdId ;           /* AO CCD geometry context.             */
    AO_CTRL_ID     aoCtrlId ;          /* AO control context.                  */
+   long           aoFrameCount ;      /* Processed-frame counter published to  */
+                                      /* the TCS so it detects new Zernikes.  */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*

@@ -1067,6 +1067,18 @@ SIR_RECORD   pWfsDbSirList [] =
       RECORD_NAME ("dc:aoZern19"),
       EPICS_DATA_TYPE_DOUBLE
    },
+   {
+      RECORD_NAME ("dc:aoCounter"),
+      EPICS_DATA_TYPE_LONG
+   },
+   {
+      RECORD_NAME ("dc:aoOffX"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoOffY"),
+      EPICS_DATA_TYPE_DOUBLE
+   }
 };
 
 /* Determine the number of CAD, CAR and SIR records defined above. */

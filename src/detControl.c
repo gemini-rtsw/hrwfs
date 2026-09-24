@@ -2022,6 +2022,30 @@ LOCAL void detSigProcessFrame
          }
       }
 
+      /*
+       * Publish the pointing offsets and a frame counter for the TCS
+       * (tcsReadHrwfs reads these over channel access to drive M1/pointing and
+       * to detect new data).
+       */
+      obsId->aoFrameCount++;
+      if (epToVxPipeWrite ("dc:aoCounter",
+                           (char *) (int) & obsId->aoFrameCount, NULL) == ERROR)
+      {
+         ERROR_LOG ("Failed to write aoCounter record");
+      }
+      if (epToVxPipeWrite ("dc:aoOffX",
+                           (char *) (int) & obsId->aoCtrlId->recentreOffX,
+                           NULL) == ERROR)
+      {
+         ERROR_LOG ("Failed to write aoOffX record");
+      }
+      if (epToVxPipeWrite ("dc:aoOffY",
+                           (char *) (int) & obsId->aoCtrlId->recentreOffY,
+                           NULL) == ERROR)
+      {
+         ERROR_LOG ("Failed to write aoOffY record");
+      }
+
       printf ("REL-845 aoModeCompute: xtilt=%f ytilt=%f focus=%f rms=%f\n",
               zern[0], zern[1], zern[2], rms);
    }

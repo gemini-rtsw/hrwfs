@@ -1260,6 +1260,14 @@ STATUS aoFindParam (float * pRawImage, int xSize, int ySize, AO_CCD_ID aoCcdId,
    aoCcdId->pixelsNb = outW * outH;
    aoCtrlId->threshold = threshold;
 
+   /*
+    * Pointing offsets (arcsec) for the TCS, as in hrwfsAO.pro findparam:
+    * offsets = [(18 + ovsy)*0.08, -(47 + ovsx)*0.08] with ovsx/ovsy the
+    * recentre shift. 0.08 is the pointing plate scale.
+    */
+   aoCtrlId->recentreOffX = (18.0 + yoff) * 0.08;
+   aoCtrlId->recentreOffY = -(47.0 + xoff) * 0.08;
+
    free (work); free (totx); free (toty); free (refx); free (refy);
 
    printf ("aoFindParam: sky=%.1f rms=%.1f offset=(%d,%d)\n",

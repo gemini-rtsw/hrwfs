@@ -315,6 +315,9 @@ typedef struct
    double        seeingScaleFactor;    /* Seeing scale factor                  */
    double        aoThreshold;          /* Threshold above which gain increases */
    double        aoMaxThreshold;       /* Threshold above which values clamp   */
+   double        recentreOffX;         /* Pointing offset X (arcsec) from the  */
+                                       /* last aoFindParam recentre.           */
+   double        recentreOffY;         /* Pointing offset Y (arcsec).          */
 } AO_CTRL_ID_STRUCT, * AO_CTRL_ID;
 
 /*********************** Zero-point model structures (astig/trefoil/coma/foc) */
