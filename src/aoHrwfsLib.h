@@ -87,8 +87,23 @@
 #define SUBAP_NB             324       /* Max subapertures (18x18 bounding box)*/
 
 #define FG_MODE_NB           3         /* FG modes (NOT used for HRWFS)        */
-#define AO_MODE_NB           19        /* Max number of aO modes to correct    */
+
+/*
+ * Number of Zernike modes fitted. hrwfsAO.pro computes an analytic interaction
+ * matrix for many Zernikes and fits maxz=150 of them (to limit aliasing),
+ * then sends only AO_NCORR of them to the TCS. So AO_MODE_NB is the fit size,
+ * not the number output (contrast PWFS, which used 19).
+ */
+#define AO_MODE_NB           150       /* Zernike modes fitted (hrwfsAO maxz)  */
+#define AO_NCORR             16        /* Zernike modes sent to the TCS        */
 #define MODE_NB              (FG_MODE_NB + AO_MODE_NB)
+
+/*
+ * Zernike model grid used to build the analytic interaction matrix (zermes2):
+ * AO_NP model pixels per subaperture across an 18x18 grid, plus a 2 px border.
+ */
+#define AO_NP                20        /* Model pixels per subaperture         */
+#define AO_ZERN_DIM          (AO_NP * HRWFS_LENSLET_NB + 2) /* = 362           */
 
 #define AO_SUBAP_OFF         32767     /* Indicates no light on a subaperture  */
 #define AO_SH_OFF            65536     /* Indicates no light on the SH array   */
@@ -261,8 +276,14 @@ typedef struct
    SEEING_VECT   varianceSeeingVect;   /* Variance seeing vector               */
    AO_VECT       aoScaleFactorVect;    /* Scale factor per aO mode             */
    FG_VECT       fgScaleFactorVect;    /* FG scale factor (unused for HRWFS)   */
-   CIM_STRUCT    aoIntMatStruct[AO_MODE_NB]; /* Interaction-matrix measurement */
-   AO_MATRIX     aoIntMat;             /* aO interaction matrix                */
+   /*
+    * HRWFS interaction matrix is analytic (aoMatCompute), not measured, so the
+    * PWFS aoIntMatStruct[] measurement buffer is not needed. Layout of aoIntMat
+    * is mode-major: aoIntMat[mode*(2*SUBAP_NB) + slope], mode 0..AO_MODE_NB-1
+    * (Zernike mode+2), slope 0..2*SUBAP_NB-1 (all bounding-box subaps; the
+    * active-subaperture restriction and pseudo-inverse happen in aoModeCompute).
+    */
+   AO_MATRIX     aoIntMat;             /* aO interaction matrix (analytic)     */
    AO_MATRIX     aoContMat;            /* aO control matrix                    */
    FG_MATRIX     fgContMat;            /* FG control matrix (unused for HRWFS) */
    SEEING_MATRIX seeingCoeffMat;       /* Seeing coefficient matrix            */
@@ -414,8 +435,6 @@ STATUS aoModeAnalyze (float * pImage, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId,
                       double * pZernikesErrorsVect, int * pWfsStatus);
 
 /* Interaction / control matrix computation. */
-STATUS aoIntMatStructZero (AO_CTRL_ID aoCtrlId);
-STATUS aoIntMatStructShow (AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId);
 STATUS aoMatZero (AO_CTRL_ID aoCtrlId);
 STATUS aoMatCompute (AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId);
 

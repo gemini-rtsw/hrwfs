@@ -1057,28 +1057,257 @@ STATUS aoModeAnalyze (float * pImage, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId,
 
 /* --- Interaction / control matrix computation --------------------------- */
 
-STATUS aoIntMatStructZero (AO_CTRL_ID aoCtrlId)
+/*
+ * Zernike basis + analytic interaction matrix, ported from hrwfsAO.pro
+ * (zernumero / prepzernike / zernike_ext / zermes2, F. Rigaut). The model grid
+ * is stored column-major (idx = i + j*dim) to match the IDL shift() semantics.
+ *
+ * NOTE: this is a faithful translation but is NOT yet numerically validated -
+ * it compiles, but correctness needs a comparison against the IDL output and/or
+ * reference data (hrwfs_refmes.fits). See REL-845-signal-processing-plan.md.
+ */
+
+/* gamma(k+1) = k! for integer k >= 0. hrwfsAO used IDL gamma(); all arguments
+ * here are integers and Tornado 2.0.2 may lack C99 tgamma, so use a factorial. */
+LOCAL double aoFactorial (int k)
 {
-   /* TODO(REL-845): zero the interaction-matrix measurement structure. */
-   return (aoHrwfsNotImplemented ("aoIntMatStructZero"));
+   double f = 1.0;
+   int    i;
+
+   for (i = 2; i <= k; i++)
+   {
+      f *= (double) i;
+   }
+   return (f);
 }
 
-STATUS aoIntMatStructShow (AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId)
+/* Radial (n) and azimuthal (m) order of Zernike number zn (hrwfsAO zernumero). */
+LOCAL void aoZernumero (int zn, int * pN, int * pM)
 {
-   /* TODO(REL-845): display the interaction-matrix measurement structure. */
-   return (aoHrwfsNotImplemented ("aoIntMatStructShow"));
+   int j = 0;
+   int n, m;
+
+   for (n = 0; n <= 100; n++)
+   {
+      for (m = 0; m <= n; m++)
+      {
+         if (((n - m) % 2) == 0)
+         {
+            j++;
+            if (j == zn) { *pN = n; *pM = m; return; }
+            if (m != 0)
+            {
+               j++;
+               if (j == zn) { *pN = n; *pM = m; return; }
+            }
+         }
+      }
+   }
+   *pN = 0;
+   *pM = 0;
 }
+
+/*
+ * Extended, fringe-normalised Zernike zn on the prepared grid, written to z.
+ * rmod/teta/maskmod are dim*dim grids from the prepzernike step. Matches
+ * hrwfsAO zernike_ext(zn,/fringe): no sqrt(n+1) normalisation, result*maskmod.
+ */
+LOCAL void aoZernikeExt (int zn, int dim, const float * rmod,
+                         const float * teta, const float * maskmod, float * z)
+{
+   int    n, m, i, k, npix;
+   double denom, coef, val;
+
+   aoZernumero (zn, &n, &m);
+   npix = dim * dim;
+
+   for (k = 0; k < npix; k++)
+   {
+      val = 0.0;
+      for (i = 0; i <= (n - m) / 2; i++)
+      {
+         denom = aoFactorial (i) * aoFactorial ((n + m) / 2 - i)
+                 * aoFactorial ((n - m) / 2 - i);
+         coef = ((i % 2) ? -1.0 : 1.0) * aoFactorial (n - i) / denom;
+         val += coef * pow ((double) rmod[k], (double) (n - 2 * i));
+      }
+      if (m != 0)
+      {
+         if (zn % 2 == 1)                    /* odd  -> sine term  */
+            val *= sin (m * (double) teta[k]);
+         else                                /* even -> cosine term*/
+            val *= cos (m * (double) teta[k]);
+      }
+      z[k] = (float) (val * maskmod[k]);
+   }
+}
+
+/*+
+ * aoMatZero - zero the interaction and control matrices.
+ *-
+ */
 
 STATUS aoMatZero (AO_CTRL_ID aoCtrlId)
 {
-   /* TODO(REL-845): zero the interaction and control matrices. */
-   return (aoHrwfsNotImplemented ("aoMatZero"));
+   int i;
+
+   if (aoCtrlId == NULL)
+   {
+      ERROR_SET (0, "aoMatZero: NULL control context", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   for (i = 0; i < (2 * SUBAP_NB * AO_MODE_NB); i++)
+   {
+      aoCtrlId->aoIntMat[i]  = 0.0;
+      aoCtrlId->aoContMat[i] = 0.0;
+   }
+   aoCtrlId->aoIntMatInitFlag  = FALSE;
+   aoCtrlId->aoContMatInitFlag = FALSE;
+
+   return (OK);
 }
+
+/*+
+ * aoMatCompute - build the analytic aO interaction matrix.
+ *
+ * Ported from hrwfsAO.pro zermes2: for each fitted Zernike mode the analytic
+ * wavefront slopes are averaged over each subaperture, giving one row of the
+ * interaction matrix (all bounding-box subapertures). The control matrix (the
+ * mask-restricted pseudo-inverse) is built at observation time in aoModeCompute,
+ * so this routine populates only aoIntMat. No hardware is required.
+ *-
+ */
 
 STATUS aoMatCompute (AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId)
 {
-   /* TODO(REL-845): compute interaction + control matrix (SVD via matrixLib). */
-   return (aoHrwfsNotImplemented ("aoMatCompute"));
+   const int    nsp   = HRWFS_LENSLET_NB;              /* 18                   */
+   const int    np    = AO_NP;                         /* 20                   */
+   const int    dim   = AO_ZERN_DIM;                   /* 362                  */
+   const double tdiam = TELESCOPE_DIAMETER;            /* 8 m                  */
+   const double app   = HRWFS_PSCALE * RADIAN_TO_ARCSEC; /* rad per pixel      */
+   const double xc    = dim / 2.0 - 0.5;
+   const double yc    = dim / 2.0 - 0.5;
+   const double rad   = dim / 2.0 - 1.0;
+
+   float * rmod;
+   float * teta;
+   float * maskmod;
+   float * pup;
+   float * z;
+   float * zx;
+   float * zy;
+
+   int     npix = dim * dim;
+   int     i, j, ii, jj, k, mode;
+   double  x, y, rr;
+
+   if (aoCtrlId == NULL)
+   {
+      ERROR_SET (0, "aoMatCompute: NULL control context", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   rmod    = (float *) malloc (npix * sizeof (float));
+   teta    = (float *) malloc (npix * sizeof (float));
+   maskmod = (float *) malloc (npix * sizeof (float));
+   pup     = (float *) malloc (npix * sizeof (float));
+   z       = (float *) malloc (npix * sizeof (float));
+   zx      = (float *) malloc (npix * sizeof (float));
+   zy      = (float *) malloc (npix * sizeof (float));
+
+   if (!rmod || !teta || !maskmod || !pup || !z || !zx || !zy)
+   {
+      ERROR_SET (0, "aoMatCompute: grid allocation failed", ERROR_LOG_SAVE);
+      free (rmod); free (teta); free (maskmod); free (pup);
+      free (z); free (zx); free (zy);
+      return (ERROR);
+   }
+
+   /* prepzernike: build the polar grid, aperture mask (pup) and extended mask. */
+
+   for (j = 0; j < dim; j++)
+   {
+      for (i = 0; i < dim; i++)
+      {
+         k  = i + j * dim;
+         x  = (double) i - xc;
+         y  = (double) j - yc;
+         rr = sqrt (x * x + y * y) / rad;
+         maskmod[k] = (rr <= 1.2) ? 1.0f : 0.0f;
+         rmod[k]    = (float) rr * maskmod[k];
+         pup[k]     = (rr <= 1.0) ? 1.0f : 0.0f;
+         teta[k]    = ((x == 0.0) && (y == 0.0)) ? 0.0f : (float) atan2 (y, x);
+      }
+   }
+
+   /* For each fitted Zernike mode, average its slopes over each subaperture. */
+
+   for (mode = 0; mode < AO_MODE_NB; mode++)
+   {
+      aoZernikeExt (mode + 2, dim, rmod, teta, maskmod, z);
+
+      /* Slopes in pixels: gradient (microns/px) -> m -> rad over subap -> px. */
+
+      for (j = 0; j < dim; j++)
+      {
+         for (i = 0; i < dim; i++)
+         {
+            int    ip = ((i + 1) % dim) + j * dim;
+            int    im = ((i - 1 + dim) % dim) + j * dim;
+            int    jp = i + ((j + 1) % dim) * dim;
+            int    jm = i + ((j - 1 + dim) % dim) * dim;
+            double gx, gy;
+
+            k  = i + j * dim;
+            gx = (z[ip] - z[im]) * pup[k] / 2.0 * 1e-6;
+            gy = (z[jp] - z[jm]) * pup[k] / 2.0 * 1e-6;
+            gx = gx * np / (tdiam / nsp) / app;
+            gy = gy * np / (tdiam / nsp) / app;
+            zx[k] = (float) gx;
+            zy[k] = (float) gy;
+         }
+      }
+
+      for (j = 0; j < nsp; j++)
+      {
+         for (i = 0; i < nsp; i++)
+         {
+            double tpup = 0.0;
+            double sx   = 0.0;
+            double sy   = 0.0;
+            int    sub  = i + j * nsp;
+            double mesx, mesy;
+
+            for (jj = j * np + 1; jj <= (j + 1) * np; jj++)
+            {
+               for (ii = i * np + 1; ii <= (i + 1) * np; ii++)
+               {
+                  k     = ii + jj * dim;
+                  tpup += pup[k];
+                  sx   += zx[k];
+                  sy   += zy[k];
+               }
+            }
+
+            mesx = (tpup > 0.0) ? (sx / tpup) : 0.0;
+            mesy = (tpup > 0.0) ? (sy / tpup) : 0.0;
+
+            aoCtrlId->aoIntMat[mode * (2 * SUBAP_NB) + sub]             = mesx;
+            aoCtrlId->aoIntMat[mode * (2 * SUBAP_NB) + nsp * nsp + sub] = mesy;
+         }
+      }
+   }
+
+   free (rmod); free (teta); free (maskmod); free (pup);
+   free (z); free (zx); free (zy);
+
+   aoCtrlId->aoIntMatInitFlag = TRUE;
+
+   printf ("aoMatCompute: built analytic interaction matrix "
+           "(%d modes x %d slopes)\n", AO_MODE_NB, 2 * SUBAP_NB);
+
+   return (OK);
 }
 
 /* --- Zero-point models -------------------------------------------------- */
