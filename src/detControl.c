@@ -218,8 +218,11 @@ extern AC_CC_STRUCT acCCId;     /* Contains all AG data - defined in wfsLib.c */
  */
 
 LOCAL uint32   detSigStub (const char * pCommandName, int commandNumber);
-LOCAL uint32   detSigSetProcessMode (const char * pCommandName,
-                                     const char * pModeName);
+LOCAL uint32   detSigSetProcessMode (OBS_ID obsId, const char * pCommandName,
+                                     const char * pModeName, int modeCode);
+LOCAL uint32   detSigInitProc (OBS_ID obsId, CAD_CMD_CONTEXT cadCmdContext,
+                               int commandNumber);
+LOCAL void     detSigProcessFrame (OBS_ID obsId);
 
 LOCAL uint32   detSetup (const char * pWfsName, const char * pRecordPrefix,
                          CAD_CMD_CONTEXT cadCmdContext, int commandNumber,
@@ -1608,41 +1611,43 @@ STATUS   detControl
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_RESET)
          {
-            /* REL-845: reset signal processing (stub); mode -> idle. */
-            errorNumber = detSigSetProcessMode ("detSigReset", "idle");
+            /* REL-845: reset signal processing; mode -> idle/none. */
+            errorNumber =
+            detSigSetProcessMode (obsId, "detSigReset", "idle", AO_MODE_NONE);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_INIT)
          {
-            /* REL-845: initialise signal processing (stub). */
-            errorNumber = detSigStub ("detSigInit", commandNumber);
+            /* REL-845: initialise signal processing (contexts + matrices). */
+            errorNumber = detSigInitProc (obsId, cadCmdContext, commandNumber);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_NONE)
          {
-            /* REL-845: set processing mode to none (stub). */
-            errorNumber = detSigSetProcessMode ("detSigModeNone", "none");
+            /* REL-845: set processing mode to none. */
+            errorNumber = detSigSetProcessMode (obsId, "detSigModeNone",
+                                                "none", AO_MODE_NONE);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_DARK)
          {
-            /* REL-845: set processing mode to sky/dark subtraction (stub). */
-            errorNumber =
-            detSigSetProcessMode ("detSigModeDark", "sky/dark subtraction");
+            /* REL-845: set processing mode to sky/dark subtraction. */
+            errorNumber = detSigSetProcessMode (obsId, "detSigModeDark",
+                                       "sky/dark subtraction", AO_MODE_DARK);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ_DARK)
          {
-            /* REL-845: set processing mode to sequence sky/dark (stub). */
-            errorNumber =
-            detSigSetProcessMode ("detSigModeSeqDark", "sequence sky/dark");
+            /* REL-845: set processing mode to sequence sky/dark. */
+            errorNumber = detSigSetProcessMode (obsId, "detSigModeSeqDark",
+                                       "sequence sky/dark", AO_MODE_SEQ_DARK);
          }
 
          else if (commandNumber == DET_CONTROL_CMD_SIG_MODE_SEQ)
          {
-            /* REL-845: set processing mode to sequence closed loop (stub). */
-            errorNumber =
-            detSigSetProcessMode ("detSigModeSeq", "sequence closed loop");
+            /* REL-845: set processing mode to sequence closed loop. */
+            errorNumber = detSigSetProcessMode (obsId, "detSigModeSeq",
+                                    "sequence closed loop", AO_MODE_CLOSED_LOOP);
          }
 
          else
@@ -1756,35 +1761,39 @@ LOCAL uint32 detSigStub
  *   detSigSetProcessMode
  *
  *   INVOCATION:
- *   detSigSetProcessMode (pCommandName, pModeName)
+ *   detSigSetProcessMode (obsId, pCommandName, pModeName, modeCode)
  *
- *   PARAMETERS: (">" input)
- *   (>) pCommandName (const char *)  Name of the command (for logging).
- *   (>) pModeName    (const char *)  Processing-mode name to publish.
+ *   PARAMETERS: (">" input, "!" modified)
+ *   (!) obsId        (OBS_ID)       Observation context (sigMode updated).
+ *   (>) pCommandName (const char *) Name of the command (for logging).
+ *   (>) pModeName    (const char *) Processing-mode name to publish.
+ *   (>) modeCode     (int)          AO_MODE_* code to store in obsId->sigMode.
  *
  *   FUNCTION VALUE:
  *   (uint32)   0 on success, non-zero if the status record write fails.
  *
  *   PURPOSE:
- *   Publish the selected signal-processing mode for the dm screens (REL-845).
- *
- *   DESCRIPTION:
- *   Signal processing itself is not yet implemented (see detSigStub), but the
- *   "set mode" commands can already report which mode was selected. This writes
- *   the mode name to the dc:aoProcessMode status record so the Signal
- *   Processing dm screen reflects the current mode. No processing is performed.
+ *   Select the signal-processing mode (REL-845): record it in the observation
+ *   context so detObserveEnd processes frames accordingly, and publish its name
+ *   to the dc:aoProcessMode status record for the dm screens.
  *-
  */
 
 LOCAL uint32 detSigSetProcessMode
    (
+   OBS_ID          obsId,         /* Observation context (sigMode updated).   */
    const char *    pCommandName,  /* Command name (for logging).              */
-   const char *    pModeName      /* Processing-mode name to publish.         */
+   const char *    pModeName,     /* Processing-mode name to publish.         */
+   int             modeCode       /* AO_MODE_* code to store.                  */
    )
 {
+   if (obsId != NULL)
+   {
+      obsId->sigMode = modeCode;
+   }
+
    MESSAGE_LOG2 (MSG_LOG,
-                 "REL-845 %s: processing mode set to '%s' (STUB - mode "
-                 "recorded, no processing performed)",
+                 "REL-845 %s: processing mode set to '%s'",
                  pCommandName, pModeName);
 
    if (epToVxPipeWrite ("dc:aoProcessMode", (char *) pModeName, NULL) == ERROR)
@@ -1794,6 +1803,199 @@ LOCAL uint32 detSigSetProcessMode
    }
 
    return (0);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detSigInitProc
+ *
+ *   INVOCATION:
+ *   detSigInitProc (obsId, cadCmdContext, commandNumber)
+ *
+ *   PARAMETERS: (">" input, "!" modified)
+ *   (!) obsId         (OBS_ID)          Observation context (AO contexts set).
+ *   (>) cadCmdContext (CAD_CMD_CONTEXT) CAD command context.
+ *   (>) commandNumber (int)             Command number.
+ *
+ *   FUNCTION VALUE:
+ *   (uint32)   0 on success, non-zero on failure.
+ *
+ *   PURPOSE:
+ *   Initialise HRWFS signal processing (REL-845): create the AO contexts,
+ *   build the analytic interaction matrix and read the reference/mask.
+ *
+ *   DESCRIPTION:
+ *   Creates the AO CCD and control contexts (once), builds the analytic
+ *   interaction matrix (aoMatCompute) and reads the reference vector + active
+ *   subaperture mask (aoRefRead) using the reference-file attribute (H) of the
+ *   detSigInit record. The frame recentring done by hrwfsAO.pro findparam is
+ *   not yet ported, so measured centroids assume an already-aligned frame.
+ *-
+ */
+
+LOCAL uint32 detSigInitProc
+   (
+   OBS_ID          obsId,         /* Observation context.                     */
+   CAD_CMD_CONTEXT cadCmdContext, /* CAD command context.                     */
+   int             commandNumber  /* Command number.                          */
+   )
+{
+   char   pPath [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+   char   pRefFileName [EPICS_MAX_BYTES_STRING_ATTRIB + 1];
+   char   pFullRefName [(EPICS_MAX_BYTES_STRING_ATTRIB + 1) * 2];
+
+   if (obsId == NULL)
+   {
+      ERROR_SET (S_detControl_INTERNAL, "detSigInitProc: NULL obsId",
+                 ERROR_LOG_NOW);
+      return (S_detControl_INTERNAL);
+   }
+
+   /* Create the AO contexts on first use. */
+
+   if (obsId->aoCcdId == NULL)
+   {
+      obsId->aoCcdId = aoCcdContextCreate ();
+   }
+   if (obsId->aoCtrlId == NULL)
+   {
+      obsId->aoCtrlId = aoCtrlContextCreate ();
+   }
+   if ((obsId->aoCcdId == NULL) || (obsId->aoCtrlId == NULL))
+   {
+      ERROR_SET (0, "detSigInitProc: failed to create AO contexts",
+                 ERROR_LOG_NOW);
+      return (S_detControl_INTERNAL);
+   }
+
+   /* Reference file: attribute A = data path, attribute H = reference name. */
+
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 0, pPath);
+   EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 7, pRefFileName);
+   detCreateFileName (pPath, pRefFileName, pFullRefName);
+
+   /* Build the analytic interaction matrix and read the reference/mask. */
+
+   if (aoMatCompute (obsId->aoCcdId, obsId->aoCtrlId) != OK)
+   {
+      ERROR_SET (0, "detSigInitProc: aoMatCompute failed", ERROR_LOG_NOW);
+      return (S_detControl_INTERNAL);
+   }
+   if (aoRefRead (pFullRefName, obsId->aoCcdId, obsId->aoCtrlId) != OK)
+   {
+      ERROR_SET (0, "detSigInitProc: aoRefRead failed", ERROR_LOG_NOW);
+      return (S_detControl_INTERNAL);
+   }
+
+   obsId->aoCtrlId->initFlag = TRUE;
+   obsId->sigMode = AO_MODE_NONE;
+
+   MESSAGE_LOG (MSG_LOG, "REL-845 signal processing initialised");
+
+   if (epToVxPipeWrite ("dc:aoProcessMode", "initialized", NULL) == ERROR)
+   {
+      ERROR_LOG ("Failed to write processing mode to aoProcessMode record");
+   }
+
+   return (0);
+}
+
+/* -------------------------------------------------------------------------- */
+
+/*+
+ *   FUNCTION NAME:
+ *   detSigProcessFrame
+ *
+ *   INVOCATION:
+ *   detSigProcessFrame (obsId)
+ *
+ *   PARAMETERS: (">" input)
+ *   (>) obsId (OBS_ID)  Observation context (uses pCurFrame + AO contexts).
+ *
+ *   PURPOSE:
+ *   Run HRWFS signal processing on the just-unscrambled frame (REL-845).
+ *
+ *   DESCRIPTION:
+ *   For the closed-loop / AO processing modes, converts the unscrambled frame
+ *   to float, runs aoModeCompute to get the Zernike coefficients, stores the
+ *   RMS and publishes it. Silently returns for non-processing modes or before
+ *   the AO contexts are initialised. Errors are logged but never abort the
+ *   observation.
+ *
+ *   NOTE (REL-845): the frame recentring/cropping done by hrwfsAO.pro findparam
+ *   is not yet ported, so the AO CCD geometry must already match the frame for
+ *   the centroids to be meaningful. TCS publication of the AO_NCORR Zernikes
+ *   (aoZ record) is a later step.
+ *-
+ */
+
+LOCAL void detSigProcessFrame
+   (
+   OBS_ID          obsId          /* Observation context.                     */
+   )
+{
+   int      nPixels, i, wfsStatus;
+   float *  pImage;
+   double   tstamp, rms;
+   double   zern [AO_MODE_NB];
+   double   zerr [AO_MODE_NB];
+
+   if (obsId == NULL)
+   {
+      return;
+   }
+
+   /* Only the closed-loop / AO modes compute Zernikes. */
+   if ((obsId->sigMode != AO_MODE_CLOSED_LOOP) &&
+       (obsId->sigMode != AO_MODE_AO))
+   {
+      return;
+   }
+   if ((obsId->aoCcdId == NULL) || (obsId->aoCtrlId == NULL) ||
+       (!obsId->aoCtrlId->initFlag) || (obsId->pCurFrame == NULL))
+   {
+      return;
+   }
+
+   nPixels = obsId->xPixels * obsId->yPixels;
+   pImage  = (float *) malloc (nPixels * sizeof (float));
+   if (pImage == NULL)
+   {
+      ERROR_LOG ("detSigProcessFrame: image allocation failed");
+      return;
+   }
+   for (i = 0; i < nPixels; i++)
+   {
+      pImage[i] = (float) obsId->pCurFrame[i];
+   }
+
+   if (aoModeCompute (pImage, 0, obsId->aoCcdId, obsId->aoCtrlId, 1, 0,
+                      zern, zerr, &tstamp, &wfsStatus) == OK)
+   {
+      rms = 0.0;
+      for (i = 0; i < obsId->aoCtrlId->aoModeNb; i++)
+      {
+         rms += zern[i] * zern[i];
+      }
+      rms = sqrt (rms);
+      obsId->aoCtrlId->rms = rms;
+
+      if (epToVxPipeWrite ("dc:aoRms", (char *) (int) & rms, NULL) == ERROR)
+      {
+         ERROR_LOG ("Failed to write aoRms record");
+      }
+
+      printf ("REL-845 aoModeCompute: tilt=%f tilt=%f focus=%f rms=%f\n",
+              zern[0], zern[1], zern[2], rms);
+   }
+   else
+   {
+      ERROR_LOG ("detSigProcessFrame: aoModeCompute failed");
+   }
+
+   free (pImage);
 }
 
 /* -------------------------------------------------------------------------- */
@@ -6591,6 +6793,13 @@ void detObserveEnd
             goto ERROR_EXIT;
          }
       }
+
+      /*
+       * REL-845: run HRWFS signal processing on the unscrambled frame (only
+       * for the closed-loop / AO modes; a no-op otherwise).
+       */
+
+      detSigProcessFrame ( obsId );
 
       /*
        * Convert the time stamps from Gemini raw time into Universal Time

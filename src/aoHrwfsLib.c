@@ -975,11 +975,99 @@ STATUS aoCentroidsWrite (
 
 /* --- Geometry / calibration setup (needs HRWFS reference file & rotations) - */
 
+/*+
+ * aoRefRead - build the active-subaperture mask and load the reference vector.
+ *
+ * The active-subaperture map is the circular annulus from hrwfsAO.pro findparam:
+ * a subaperture (i,j) is used when 1.8 < r < 0.95*(nsp+1)/2 where r is the
+ * distance (in subaperture units) from the array centre (nsp/2 - 0.5). The
+ * flux-based refinement in findparam (premask > max/8) is omitted here - the
+ * geometric aperture is stable and does not need an image.
+ *
+ * The reference centroid vector (refWfsVect, 2*nsub values: x refs then y refs)
+ * is read from pRefFileName as whitespace-separated doubles (the hrwfsAO
+ * hrwfs_refmes data). If the file is absent it is left zeroed (uncalibrated,
+ * so the pipeline still runs for integration testing) and a warning is logged.
+ *-
+ */
+
 STATUS aoRefRead (char * pRefFileName, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId)
 {
-   /* TODO(REL-845): read the SH reference-spot file; this defines the active
-    * subaperture map and reference centroids. Blocked on the reference file. */
-   return (aoHrwfsNotImplemented ("aoRefRead"));
+   int    nsp, nsub, i, j, k, used;
+   double centre, rin, rout, dist;
+   FILE * fp;
+
+   if ((aoCcdId == NULL) || (aoCtrlId == NULL))
+   {
+      ERROR_SET (0, "aoRefRead: NULL context", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   nsp    = aoCcdId->xSubapNb;
+   nsub   = nsp * nsp;
+   centre = nsp / 2.0 - 0.5;                 /* 8.5 for nsp = 18              */
+   rin    = 1.8;                             /* inner radius (subap units)    */
+   rout   = 0.95 * (nsp + 1.0) / 2.0;        /* 9.025 for nsp = 18            */
+
+   /* Active-subaperture mask from the annular aperture geometry. */
+   used = 0;
+   for (j = 0; j < nsp; j++)
+   {
+      for (i = 0; i < nsp; i++)
+      {
+         k    = i + j * nsp;
+         dist = sqrt ((i - centre) * (i - centre) + (j - centre) * (j - centre));
+         if ((dist > rin) && (dist < rout))
+         {
+            aoCcdId->subapUsedVect[k] = 1;
+            used++;
+         }
+         else
+         {
+            aoCcdId->subapUsedVect[k] = 0;
+         }
+      }
+   }
+   aoCcdId->subapUsedNb    = used;
+   aoCcdId->subapNotUsedNb = nsub - used;
+   aoCcdId->centroidsNb    = 2 * used;
+
+   /* Reference centroid vector (default zero if the file is unavailable). */
+   for (i = 0; i < 2 * nsub; i++)
+   {
+      aoCtrlId->refWfsVect[i] = 0.0;
+   }
+
+   fp = (pRefFileName != NULL) ? fopen (pRefFileName, "r") : NULL;
+   if (fp != NULL)
+   {
+      int    n = 0;
+      double val;
+      while ((n < 2 * nsub) && (fscanf (fp, "%lf", &val) == 1))
+      {
+         aoCtrlId->refWfsVect[n++] = val;
+      }
+      fclose (fp);
+      if (n != 2 * nsub)
+      {
+         printf ("aoRefRead: WARNING - reference file %s had %d of %d values\n",
+                 pRefFileName, n, 2 * nsub);
+      }
+      strncpy (aoCtrlId->refVectFileName, pRefFileName, STRING_SIZE - 1);
+      aoCtrlId->refVectFileName[STRING_SIZE - 1] = '\0';
+   }
+   else
+   {
+      printf ("aoRefRead: WARNING - reference file %s not found; using a zero "
+              "reference (uncalibrated)\n",
+              (pRefFileName != NULL) ? pRefFileName : "(null)");
+   }
+
+   aoCtrlId->refInitFlag = TRUE;
+
+   printf ("aoRefRead: %d active subapertures (of %d)\n", used, nsub);
+
+   return (OK);
 }
 
 STATUS aoCtrlContextInit (char * pInitFileName, AO_CCD_ID aoCcdId,

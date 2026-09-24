@@ -56,6 +56,7 @@
 #include "gemModNum.h"
 #include "epToVxLib.h"
 #include "sdsuLib.h"
+#include "aoHrwfsLib.h"   /* REL-845 signal processing (AO_CCD_ID/AO_CTRL_ID). */
 
 #ifndef NO_DHS
 #include "dhs.h"  
@@ -575,6 +576,11 @@ typedef   struct      /* Context structure used to describe an observation.   */
    DATREC_CONTEXT pAdc0Context ;      /* ADC 0 SIR record context structure   */
    DATREC_CONTEXT pAdc1Context ;      /* ADC 1 SIR record context structure   */
    DATREC_CONTEXT pOscanContext ;     /* oscan SIR record context structure   */
+
+   /* REL-845 signal processing (see aoHrwfsLib). */
+   int            sigMode ;           /* Active processing mode (AO_MODE_*).  */
+   AO_CCD_ID      aoCcdId ;           /* AO CCD geometry context.             */
+   AO_CTRL_ID     aoCtrlId ;          /* AO control context.                  */
 } OBS_ID_STRUCT, * OBS_ID;
 
    /*
