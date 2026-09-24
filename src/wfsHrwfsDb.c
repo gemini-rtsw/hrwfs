@@ -987,7 +987,86 @@ SIR_RECORD   pWfsDbSirList [] =
    {
       RECORD_NAME ("dc:r0"),
       EPICS_DATA_TYPE_DOUBLE
-   }
+   },
+
+   /* REL-845 AO Zernike output records (aoZern1..aoZern19). */
+
+   {
+      RECORD_NAME ("dc:aoZern1"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern2"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern3"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern4"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern5"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern6"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern7"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern8"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern9"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern10"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern11"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern12"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern13"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern14"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern15"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern16"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern17"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern18"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
+   {
+      RECORD_NAME ("dc:aoZern19"),
+      EPICS_DATA_TYPE_DOUBLE
+   },
 };
 
 /* Determine the number of CAD, CAR and SIR records defined above. */

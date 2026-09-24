@@ -2001,6 +2001,27 @@ LOCAL void detSigProcessFrame
          ERROR_LOG ("Failed to write aoRms record");
       }
 
+      /*
+       * Publish the low-order fitted Zernikes for the TCS / display. These are
+       * the measured wavefront coefficients; the TCS correction is their
+       * negative for the modes it uses (see aoModeCompute / hrwfsAO ncor).
+       */
+      {
+         char zname [32];
+         int  m;
+         int  nout = obsId->aoCtrlId->aoModeNb;
+
+         if (nout > 19) nout = 19;
+         for (m = 0; m < nout; m++)
+         {
+            sprintf (zname, "dc:aoZern%d", m + 1);
+            if (epToVxPipeWrite (zname, (char *) (int) & zern[m], NULL) == ERROR)
+            {
+               ERROR_LOG ("Failed to write aoZern record");
+            }
+         }
+      }
+
       printf ("REL-845 aoModeCompute: xtilt=%f ytilt=%f focus=%f rms=%f\n",
               zern[0], zern[1], zern[2], rms);
    }
