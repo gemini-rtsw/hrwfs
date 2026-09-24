@@ -1026,25 +1026,294 @@ STATUS aoTotalThresholdCompute (float * pImage, AO_CCD_ID aoCcdId,
    return (aoHrwfsNotImplemented ("aoTotalThresholdCompute"));
 }
 
+/*+
+ * aoCentroidsCompute - per-subaperture centre-of-gravity centroids.
+ *
+ * Ported from hrwfsAO.pro getmes: for each subaperture, threshold at max/3 and
+ * take the centre of gravity (first pass), then re-take it inside a disk of
+ * radius npix/4 around that estimate (second pass, to reject neighbouring
+ * spots), and clamp. Assumes pImage is the recentred frame with the
+ * subaperture grid aligned (geometry from aoCcdId: xSubapNb, xRaster, xPixels).
+ * Centroids are written to pCentroidsVect as [x(0..nsub-1), y(0..nsub-1)],
+ * each relative to its subaperture centre in pixels.
+ *
+ * NOTE: faithful IDL translation, not yet numerically validated.
+ *-
+ */
+
 STATUS aoCentroidsCompute (float * pImage, AO_CCD_ID aoCcdId,
                            AO_CTRL_ID aoCtrlId, double * pThreshVect,
                            double * pTotalCountsVect, double * pCentroidsVect,
                            double * pErrorCentroidsVect, int * pWfsStatus)
 {
-   /* TODO(REL-845): compute per-subaperture centroids. Needs the reference
-    * map from aoRefRead. */
-   return (aoHrwfsNotImplemented ("aoCentroidsCompute"));
+   int    nsp, npx, npy, stride, i, j, a, b;
+   double win;
+
+   if ((pImage == NULL) || (aoCcdId == NULL) || (pCentroidsVect == NULL))
+   {
+      ERROR_SET (0, "aoCentroidsCompute: NULL argument", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   nsp    = aoCcdId->xSubapNb;      /* subapertures across (18)              */
+   npx    = aoCcdId->xRaster;       /* pixels per subaperture in X (50)      */
+   npy    = aoCcdId->yRaster;       /* pixels per subaperture in Y (50)      */
+   stride = aoCcdId->xPixels;       /* image row stride (nsp * npx)          */
+   win    = npx / 4.0;              /* second-pass window radius             */
+
+   for (j = 0; j < nsp; j++)
+   {
+      for (i = 0; i < nsp; i++)
+      {
+         double smax = 0.0;
+         double sum, sumx, sumy, gx, gy, v, clamp;
+         int    firstpix = 1;
+         int    xc0, yc0;
+
+         /* Subaperture maximum (for the max/3 threshold). */
+         for (b = 0; b < npy; b++)
+         {
+            for (a = 0; a < npx; a++)
+            {
+               v = pImage[(i * npx + a) + (j * npy + b) * stride];
+               if (firstpix || (v > smax)) { smax = v; firstpix = 0; }
+            }
+         }
+
+         /* First-pass centre of gravity (threshold at max/3). */
+         sum = sumx = sumy = 0.0;
+         for (b = 0; b < npy; b++)
+         {
+            for (a = 0; a < npx; a++)
+            {
+               v = pImage[(i * npx + a) + (j * npy + b) * stride] - smax / 3.0;
+               if (v < 0.0) v = 0.0;
+               sum  += v;
+               sumx += v * (a - npx / 2.0 + 0.5);
+               sumy += v * (b - npy / 2.0 + 0.5);
+            }
+         }
+         gx = (sum > 0.0) ? (sumx / sum) : 0.0;
+         gy = (sum > 0.0) ? (sumy / sum) : 0.0;
+
+         /* Second pass: restrict to a disk around the first estimate. */
+         xc0 = npx / 2 + (int) gx;
+         yc0 = npy / 2 + (int) gy;
+         sum = sumx = sumy = 0.0;
+         for (b = 0; b < npy; b++)
+         {
+            for (a = 0; a < npx; a++)
+            {
+               double dx = a - xc0;
+               double dy = b - yc0;
+               if ((dx * dx + dy * dy) >= (win * win)) continue;
+               v = pImage[(i * npx + a) + (j * npy + b) * stride] - smax / 3.0;
+               if (v < 0.0) v = 0.0;
+               sum  += v;
+               sumx += v * (a - npx / 2.0 + 0.5);
+               sumy += v * (b - npy / 2.0 + 0.5);
+            }
+         }
+         gx = (sum > 0.0) ? (sumx / sum) : 0.0;
+         gy = (sum > 0.0) ? (sumy / sum) : 0.0;
+
+         /* Clamp with a 1.2 safety factor (as in getmes). */
+         clamp = 1.2 * npx / 2.0;
+         if (gx >  clamp) gx =  clamp;
+         if (gx < -clamp) gx = -clamp;
+         if (gy >  clamp) gy =  clamp;
+         if (gy < -clamp) gy = -clamp;
+
+         pCentroidsVect[i + j * nsp]               = gx;
+         pCentroidsVect[nsp * nsp + i + j * nsp]   = gy;
+         if (pTotalCountsVect != NULL)
+            pTotalCountsVect[i + j * nsp] = sum;
+      }
+   }
+
+   if (pWfsStatus != NULL) *pWfsStatus = 0;
+
+   return (OK);
 }
+
+/*
+ * aoContMatCompute - build the control matrix (mask-restricted pseudo-inverse
+ * of the analytic interaction matrix), C = (Ma^T Ma)^-1 Ma^T, where Ma is the
+ * interaction matrix restricted to the active slopes [nAct x nmodes]. C is
+ * stored row-major in aoContMat as [nmodes x nAct]. Ported from the matcom
+ * computation in hrwfsAO.pro hrwfs(). Computed once per mask (cached via
+ * aoContMatInitFlag).
+ */
+
+LOCAL STATUS aoContMatCompute (AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId,
+                               const int * activeIdx, int nAct)
+{
+   int      nmodes = aoCtrlId->aoModeNb;
+   double * Ma;
+   double * Mt;
+   double * MtM;
+   double * C;
+   double   det;
+   int      mode, s;
+   STATUS   status = OK;
+
+   Ma  = (double *) malloc ((size_t) nAct * nmodes * sizeof (double));
+   Mt  = (double *) malloc ((size_t) nmodes * nAct * sizeof (double));
+   MtM = (double *) malloc ((size_t) nmodes * nmodes * sizeof (double));
+   C   = (double *) malloc ((size_t) nmodes * nAct * sizeof (double));
+
+   if (!Ma || !Mt || !MtM || !C)
+   {
+      ERROR_SET (0, "aoContMatCompute: allocation failed", ERROR_LOG_SAVE);
+      free (Ma); free (Mt); free (MtM); free (C);
+      return (ERROR);
+   }
+
+   /* Ma[s][mode] = interaction response of active slope s to mode. */
+   for (s = 0; s < nAct; s++)
+   {
+      for (mode = 0; mode < nmodes; mode++)
+      {
+         Ma[s * nmodes + mode] =
+            aoCtrlId->aoIntMat[mode * (2 * SUBAP_NB) + activeIdx[s]];
+      }
+   }
+
+   if ((transMat (Ma, nAct, nmodes, Mt) != OK) ||
+       (multMatMat (Mt, nmodes, nAct, Ma, nAct, nmodes, MtM, nmodes, nmodes)
+        != OK) ||
+       (invSqMat (MtM, nmodes, &det) != OK) ||
+       (multMatMat (MtM, nmodes, nmodes, Mt, nmodes, nAct, C, nmodes, nAct)
+        != OK))
+   {
+      ERROR_SET (0, "aoContMatCompute: matrix operation failed (singular?)",
+                 ERROR_LOG_SAVE);
+      status = ERROR;
+   }
+   else
+   {
+      (void) copyMat (C, aoCtrlId->aoContMat, nmodes, nAct);
+      aoCtrlId->aoContMatInitFlag = TRUE;
+   }
+
+   free (Ma); free (Mt); free (MtM); free (C);
+   return (status);
+}
+
+/*+
+ * aoModeCompute - compute Zernike modes from an image.
+ *
+ * Ported from hrwfsAO.pro hrwfs(): centroids - reference -> mask-restricted
+ * pseudo-inverse -> Zernike coefficients. pZernikesVect is filled with all
+ * aoModeNb fitted Zernikes (mode k = Zernike k+2). The TCS correction is
+ * -pZernikesVect[m] for the AO_NCORR modes in aoCorrModes (applied where the
+ * values are published). The control matrix is built once and cached.
+ *
+ * NOTE: faithful IDL translation, not yet numerically validated (needs
+ * hrwfs_refmes.fits and a comparison against the IDL output).
+ *-
+ */
 
 STATUS aoModeCompute (float * pImage, int imageStatus, AO_CCD_ID aoCcdId,
                       AO_CTRL_ID aoCtrlId, int imageNb, int pauseNb,
                       double * pZernikesVect, double * pZernikesErrorsVect,
                       double * pTime, int * pWfsStatus)
 {
-   /* TODO(REL-845): centroids -> control matrix -> zernikes. Core routine
-    * called from detObserveEnd for the sequence/AO modes. Needs the control
-    * matrix and rotation geometry. */
-   return (aoHrwfsNotImplemented ("aoModeCompute"));
+   int      nsp, nsub, nmodes, nAct, i, s, status = 0;
+   int    * activeIdx = NULL;
+   double * cent = NULL;
+   double * mes  = NULL;
+   double * sActive = NULL;
+   STATUS   rc = OK;
+
+   if ((pImage == NULL) || (aoCcdId == NULL) || (aoCtrlId == NULL) ||
+       (pZernikesVect == NULL))
+   {
+      ERROR_SET (0, "aoModeCompute: NULL argument", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+   if (!aoCtrlId->aoIntMatInitFlag)
+   {
+      ERROR_SET (0, "aoModeCompute: interaction matrix not computed "
+                 "(call aoMatCompute)", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+   if (aoCcdId->subapUsedNb <= 0)
+   {
+      ERROR_SET (0, "aoModeCompute: reference/subaperture mask not "
+                 "initialised", ERROR_LOG_SAVE);
+      return (ERROR);
+   }
+
+   nsp    = aoCcdId->xSubapNb;
+   nsub   = nsp * nsp;
+   nmodes = aoCtrlId->aoModeNb;
+   nAct   = 2 * aoCcdId->subapUsedNb;
+
+   activeIdx = (int *)    malloc ((size_t) nAct * sizeof (int));
+   cent      = (double *) malloc ((size_t) 2 * nsub * sizeof (double));
+   mes       = (double *) malloc ((size_t) 2 * nsub * sizeof (double));
+   sActive   = (double *) malloc ((size_t) nAct * sizeof (double));
+
+   if (!activeIdx || !cent || !mes || !sActive)
+   {
+      ERROR_SET (0, "aoModeCompute: allocation failed", ERROR_LOG_SAVE);
+      rc = ERROR;
+      goto cleanup;
+   }
+
+   /* Active slope indices: used x-slopes then used y-slopes (as ind in IDL). */
+   s = 0;
+   for (i = 0; i < nsub; i++)
+      if (aoCcdId->subapUsedVect[i]) activeIdx[s++] = i;
+   for (i = 0; i < nsub; i++)
+      if (aoCcdId->subapUsedVect[i]) activeIdx[s++] = nsub + i;
+
+   /* Centroids, then subtract the reference (mes = cent - refWfsVect). */
+   if (aoCentroidsCompute (pImage, aoCcdId, aoCtrlId, NULL, NULL, cent, NULL,
+                           &status) != OK)
+   {
+      rc = ERROR;
+      goto cleanup;
+   }
+   for (i = 0; i < 2 * nsub; i++)
+      mes[i] = cent[i] - aoCtrlId->refWfsVect[i];
+
+   /* Control matrix (build once for this mask). */
+   aoCcdId->centroidsNb = nAct;
+   if (!aoCtrlId->aoContMatInitFlag)
+   {
+      if (aoContMatCompute (aoCcdId, aoCtrlId, activeIdx, nAct) != OK)
+      {
+         rc = ERROR;
+         goto cleanup;
+      }
+   }
+
+   /* res = C * (active measured slopes). */
+   for (s = 0; s < nAct; s++)
+      sActive[s] = mes[activeIdx[s]];
+
+   if (multMatVect (aoCtrlId->aoContMat, nmodes, nAct, sActive, nAct,
+                    pZernikesVect, nmodes) != OK)
+   {
+      ERROR_SET (0, "aoModeCompute: control-matrix multiply failed",
+                 ERROR_LOG_SAVE);
+      rc = ERROR;
+      goto cleanup;
+   }
+
+   if (pZernikesErrorsVect != NULL)
+      for (i = 0; i < nmodes; i++) pZernikesErrorsVect[i] = 0.0;
+   if (pTime != NULL) *pTime = 0.0;
+   if (pWfsStatus != NULL) *pWfsStatus = status;
+
+cleanup:
+   free (activeIdx);
+   free (cent);
+   free (mes);
+   free (sActive);
+   return (rc);
 }
 
 STATUS aoModeAnalyze (float * pImage, AO_CCD_ID aoCcdId, AO_CTRL_ID aoCtrlId,
