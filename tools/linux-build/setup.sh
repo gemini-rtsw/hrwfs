@@ -8,7 +8,11 @@
 # path into the generated config, so it cannot be baked into an image.
 set -e
 
-TOP="$(cd "$(dirname "$0")/../.." && pwd)"
+# pwd -P: the PHYSICAL path. The top Makefile compares .applTop against make's
+# $(CURDIR), which is always physical; a logical path through a symlink would
+# look like a moved checkout and re-run setup mid-build -- which in the spec
+# would silently undo its APPLIC_IOCPATH rewrite.
+TOP="$(cd "$(dirname "$0")/../.." && pwd -P)"
 cd "$TOP"
 
 # Environment: prefer the RPM-installed profile script, fall back to the repo
@@ -37,7 +41,10 @@ touch capfast/O.$HOST_ARCH/*.db
 # `[ "..." -ne "" ]` is a numeric test on a string and misbehaves) and minus
 # the trailing $1, which would set APPLIC_IOCPATH. The spec sets that to the
 # deploy path; a developer build leaves it empty and cd's into the checkout.
-SITE="${APPLIC_SITE:-MK}"
+# The build's values (site, deploy path, library versions) live in one file
+# shared with the Makefile and the spec -- see build.conf.
+. "$TOP/tools/linux-build/build.conf"
+SITE="${APPLIC_SITE:-$SITE}"
 cp -f IMP_Startup$SITE.hrwfs IMP_Startup.hrwfs
 
 # Invoke through perl explicitly: applSetup.pl's shebang is the Solaris path
@@ -78,24 +85,32 @@ SUP=/gemini/epics3.13.4/support
 # Only files that existed BEFORE are restored -- if a file legitimately comes
 # from the template, it is not in the stash and is left alone.
 STASH=$(mktemp -d)
-for f in local.vws resource.def UAE.dist; do
-    [ -f "startup/$f" ] && cp -p "startup/$f" "$STASH/$f"
+# Paths are repo-relative; the stash flattens them ("/" -> "_").
+#
+# The top-level Makefile is on the list for the same reason: applSetup
+# replaces it with the UAE template, whose first line is a bare
+# `include .applTop`. That silently deleted the rule that lets plain `make`
+# bootstrap a fresh checkout -- setup.sh, triggered BY that rule, removed it.
+VERSIONED="startup/local.vws startup/resource.def startup/UAE.dist Makefile"
+for f in $VERSIONED; do
+    [ -f "$f" ] && cp -p "$f" "$STASH/${f//\//_}"
 done
 
 perl "$APPLSETUP" -T ppc604 -I adl -I capfast -I src -I startup \
              -I docs -I dspsrc -I par -I db \
-             -d $SUP/astlib/V1-4 \
-             -d $SUP/slalib/V1-9-4 \
-             -d $SUP/timelib/V1-8-6 \
-             -d $SUP/cfitsio/V4-1 \
+             -d $SUP/astlib/$ASTLIB_VER \
+             -d $SUP/slalib/$SLALIB_VER \
+             -d $SUP/timelib/$TIMELIB_VER \
+             -d $SUP/cfitsio/$CFITSIO_VER \
              -d /gemini/dhs/dhs -S "$SITE"
 
 # Put back the versioned startup files applSetup just overwrote (see above).
-for f in local.vws resource.def UAE.dist; do
-    if [ -f "$STASH/$f" ]; then
-        if ! cmp -s "$STASH/$f" "startup/$f"; then
-            echo "  restoring startup/$f (applSetup replaced it with the site template)"
-            cp -p "$STASH/$f" "startup/$f"
+for f in $VERSIONED; do
+    k="$STASH/${f//\//_}"
+    if [ -f "$k" ]; then
+        if ! cmp -s "$k" "$f"; then
+            echo "  restoring $f (applSetup replaced it with its template)"
+            cp -p "$k" "$f"
         fi
     fi
 done
@@ -103,9 +118,10 @@ done
 # Verify BEFORE discarding the stash: shipping the template's file server
 # instead of ours is a silent, bootable, wrong result, so a failed restore
 # must stop the build rather than be discovered at a crate.
-for f in local.vws resource.def UAE.dist; do
-    if [ -f "$STASH/$f" ] && ! cmp -s "$STASH/$f" "startup/$f"; then
-        echo "ERROR: startup/$f was not restored after applSetup" >&2
+for f in $VERSIONED; do
+    k="$STASH/${f//\//_}"
+    if [ -f "$k" ] && ! cmp -s "$k" "$f"; then
+        echo "ERROR: $f was not restored after applSetup" >&2
         rm -rf "$STASH"; exit 1
     fi
 done
@@ -126,6 +142,26 @@ sed -i '/^DIRS += dspsrc$/d' Makefile.Dirs
 # CFLAGS chain and assigned nowhere, so it is a free hook; it goes in the
 # generated config so a plain `make` picks it up as well as the spec's.
 echo "DEBUG_CFLAGS = -gstabs" >> config/CONFIG.Defs
+
+# Everything the spec used to do AFTER setup now happens inside the build, so a
+# local `make` and the pipeline produce the same files. Both come from
+# build.conf, included here so every sub-directory make sees them:
+#
+#   APPLIC_IOCPATH -- where the generated startup scripts cd. Must be host:path;
+#     CONFIG_APPLIC takes DIST_PATH from the part after the colon, and a bare
+#     path gives cd "". This used to be a sed in the spec, so a local build
+#     cd'd into the checkout and never matched the RPM.
+#   USR_VWS_FLAGS -- macTest macros for the support-library versions. The
+#     startup .vws name $(slalib_ver) etc., and macTest substitutes them the
+#     same way it already does $(iocpath). This replaces a post-build sed in
+#     the spec that left @SLALIB_VER@ placeholders in every local build.
+cat >> config/CONFIG.Defs <<EOF
+
+include $TOP/tools/linux-build/build.conf
+APPLIC_IOCPATH = \$(IOCPATH_HOST):\$(DEPLOY)
+USR_VWS_FLAGS += slalib_ver=\$(SLALIB_VER) timelib_ver=\$(TIMELIB_VER)
+USR_VWS_FLAGS += astlib_ver=\$(ASTLIB_VER) cfitsio_ver=\$(CFITSIO_VER)
+EOF
 
 # applSetup failing leaves no config/, and the top-level Makefile uses
 # `-include $(APPLIC_TOP)/config/CONFIG` -- so gmake would silently fall
