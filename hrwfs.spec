@@ -28,10 +28,18 @@
 # bump from leaving the crate loading a different version than was tested --
 # for VxWorks that is a real hazard, because ld at boot means the copy on the
 # file server IS the running code, not merely something linked against.
-%global slalib_ver  V1-9-4
-%global timelib_ver V1-8-6
-%global astlib_ver  V1-4
-%global cfitsio_ver V4-1
+# Read from tools/linux-build/build.conf, the single source shared with
+# setup.sh and the Makefile, so a local build and this one cannot disagree.
+# rpmbuild runs from the repository root (build_rpm.sh does `cd /work`), the
+# same assumption the git_hash macro already makes.
+%define buildconf() %(. tools/linux-build/build.conf 2>/dev/null && echo $%1)
+%global slalib_ver  %{buildconf SLALIB_VER}
+%global timelib_ver %{buildconf TIMELIB_VER}
+%global astlib_ver  %{buildconf ASTLIB_VER}
+%global cfitsio_ver %{buildconf CFITSIO_VER}
+%if "%{slalib_ver}" == ""
+%{error:tools/linux-build/build.conf not readable -- rpmbuild must run from the repository root}
+%endif
 
 %global slalib_nvr  1.9.4-1.git4a156f2%{?dist}
 %global timelib_nvr 1.8.6-1.git63b2b74%{?dist}
@@ -39,10 +47,7 @@
 %global cfitsio_nvr 4.1-1.git819bc30%{?dist}
 
 %global supdir  /gemini/epics3.13.4/support
-%global deploy  /gemini/epics3.13.4/hrwfs/hrwfs
-# Host half of APPLIC_IOCPATH. Only the path half reaches the startup scripts;
-# this exists because CONFIG_APPLIC splits the value on a colon.
-%global iocpath_host mkotcsbootv2-lv1
+%global deploy  %{buildconf DEPLOY}
 
 # $GIT_HASH first: build_rpm.sh computes it on the HOST and passes it in.
 %define git_hash %(if [ -n "$GIT_HASH" ]; then echo "$GIT_HASH"; else git rev-parse --short HEAD 2>/dev/null || echo nogit; fi)
@@ -115,88 +120,18 @@ Pulls the pinned hrwfs build dependencies into a dev container.
 %setup -q
 
 %build
-. /etc/profile.d/gem7.sh
-
-# Bootstrap is shared with interactive use, so a developer build and this one
-# run identical steps. APPLIC_SITE selects which site's conditionals compile
-# in: five #if (MK) blocks in the sources mean MK and CP objects genuinely
-# differ, so one package cannot serve both.
-APPLIC_SITE=%{?site}%{!?site:MK} ./tools/linux-build/setup.sh
-
-# Re-home APPLIC_IOCPATH to the deploy path BEFORE building. This is the path
-# the IOC cd's into at boot -- $(iocpath) in the .vws sources -- and
-# applSetup.pl leaves it empty, which makes macTest fall back to
-# APPLIC_INSTALL. Under rpmbuild that is /root/rpmbuild/BUILD/..., a directory
-# that exists on no crate, so the generated startup and local would cd into
-# nothing and the boot would stop there with no clue why.
+# Exactly what a developer runs. All build logic -- setup, the deploy path,
+# the library versions -- lives in the repository (Makefile, setup.sh,
+# build.conf), so this is the same command, producing the same files, as a
+# local `make` in the same container. It used to be a dozen lines of sed after
+# setup.sh, which a local build never ran; the two outputs quietly differed.
 #
-# It is deliberately NOT set by setup.sh: a developer build wants to cd into
-# its own checkout, and only the packaged copy should name the deploy path.
-#
-# The value must be HOST:PATH, not a bare path. CONFIG_APPLIC derives
-#     DIST_PATH = $(word 2, $(subst :, ,$(APPLIC_IOCPATH)))
-# and VWS_FLAGS then passes iocpath=$(DIST_PATH) to macTest, so a value with
-# no colon yields an empty word 2 and the startup gets `cd ""` -- which fails
-# as surely as the build path did, just less visibly. The host half is
-# vestigial (it was rdist's target and nothing uses rdist now) but it has to
-# be there for the split.
-sed -i 's|^APPLIC_IOCPATH *=.*|APPLIC_IOCPATH = %{iocpath_host}:%{deploy}|' config/CONFIG.Defs
-grep -q "^APPLIC_IOCPATH = %{iocpath_host}:%{deploy}$" config/CONFIG.Defs || {
-    echo "ERROR: APPLIC_IOCPATH was not re-homed" >&2
-    grep '^APPLIC_' config/CONFIG.Defs >&2; exit 1; }
+# APPLIC_SITE selects which site's #if (MK)/(CP) blocks compile in; the
+# default comes from build.conf.
+make %{?site:APPLIC_SITE=%{site}}
 
-make
-
-# Substitute the support-library versions into the generated startup scripts.
-# The .vws sources carry @LIB_VER@ placeholders rather than literal version
-# directories, so the paths the crate ld's and the versions pinned above
-# cannot drift apart -- one %%global changes both. gmoscc uses the same
-# pattern for its @VERSION@ string, for the same reason: a hand-maintained
-# copy went three releases stale.
-sed -i -e 's|@SLALIB_VER@|%{slalib_ver}|g' \
-       -e 's|@TIMELIB_VER@|%{timelib_ver}|g' \
-       -e 's|@ASTLIB_VER@|%{astlib_ver}|g' \
-       -e 's|@CFITSIO_VER@|%{cfitsio_ver}|g' \
-       bin/ppc604/startup* bin/ppc604/local 2>/dev/null || :
-
-# A surviving placeholder is a crate that stops at the first ld, on the
-# instrument, with nothing linking it back to here. Cheaper to fail the build.
-if grep -rlI '@[A-Z_]*_VER@' bin 2>/dev/null | grep -q .; then
-    echo "ERROR: unsubstituted version placeholders remain:" >&2
-    grep -rlI '@[A-Z_]*_VER@' bin >&2
-    exit 1
-fi
-
-# ...and the substitution must actually have produced the pinned paths, or the
-# check above passed for the wrong reason.
-for v in %{slalib_ver} %{timelib_ver} %{astlib_ver} %{cfitsio_ver}; do
-    grep -q "%{supdir}/[a-z]*/$v/" bin/ppc604/startup || {
-        echo "ERROR: bin/ppc604/startup does not reference $v" >&2; exit 1; }
-done
-
-# The boot cd must name the deploy path, not the build directory. This is the
-# check that would have caught the rpmbuild path shipping in the startup.
-for f in bin/ppc604/startup bin/ppc604/local; do
-    grep -q 'cd "%{deploy}"' "$f" || {
-        echo "ERROR: $f does not cd to %{deploy}:" >&2
-        grep '^cd ' "$f" >&2; exit 1; }
-done
-if grep -rlI '/root/rpmbuild' bin 2>/dev/null | grep -q .; then
-    echo "ERROR: the rpmbuild directory appears in files that will ship:" >&2
-    grep -rlI '/root/rpmbuild' bin >&2; exit 1
-fi
-
-# The ten modules the startup script loads. A missing one is a crate that
-# stops mid-boot.
-for f in wfsLibrariesHrwfs wfsHrwfsDb detControl seqControl autoPath \
-         simpleLogHrwfs wfsResourceMonitor hrwfsConfig wfsSite fpscr \
-         gemini.Support; do
-    [ -f "bin/ppc604/$f" ] || { echo "ERROR: bin/ppc604/$f was not built" >&2; exit 1; }
-done
-# ...and the two databases, which Capfast can no longer regenerate.
-for f in data/hrwfsTop.db data/hrwfsSadTop.db dbd/gemini.dbd; do
-    [ -f "$f" ] || { echo "ERROR: $f missing" >&2; exit 1; }
-done
+# The same checks a developer can run by hand after a local build.
+./tools/linux-build/check-build.sh
 
 %install
 # Mirror the historical rdist payload (startup/UAE.dist): bin/<arch>, include,
