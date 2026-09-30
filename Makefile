@@ -25,18 +25,18 @@ endif
 	./tools/linux-build/setup.sh
 
 # The build needs the GEM7 environment -- HOST_ARCH above all, or CONFIG
-# resolves CONFIG_HOST_ARCH.unsupported and stops. A login shell gets it from
-# /etc/profile.d/gem7.sh, but a docker exec or non-login shell does not, so
-# supply the same values here when the shell has not. Exported, so every
-# sub-directory make inherits them.
-ifeq ($(HOST_ARCH),)
-  export EPICS          := /usr/software/dev/packages/epics/epics3.13.4GEM7
-  export EPICS_BASE     := $(EPICS)/base
-  export HOST_ARCH      := Linux
-  export WIND_BASE      := /usr/software/dev/packages/vxworks/tornado2.0/ppc
-  export WIND_HOST_TYPE := x86-linux
-  export PATH := $(EPICS_BASE)/bin/$(HOST_ARCH):$(EPICS)/extensions/bin/$(HOST_ARCH):$(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin:$(PATH)
-endif
+# resolves CONFIG_HOST_ARCH.<whatever> and stops. Set it UNCONDITIONALLY: this
+# tree only builds against GEM7, and the pipeline's build container already
+# carries ADE's EPICS 3.14 environment (HOST_ARCH=linux-x86_64), which must not
+# win. A makefile assignment overrides the environment, and `export` passes
+# the values to every sub-directory make. Same values as
+# /etc/profile.d/gem7.sh, which the spec used to source for the same reason.
+export EPICS          := /usr/software/dev/packages/epics/epics3.13.4GEM7
+export EPICS_BASE     := $(EPICS)/base
+export HOST_ARCH      := Linux
+export WIND_BASE      := /usr/software/dev/packages/vxworks/tornado2.0/ppc
+export WIND_HOST_TYPE := x86-linux
+export PATH := $(EPICS_BASE)/bin/$(HOST_ARCH):$(EPICS)/extensions/bin/$(HOST_ARCH):$(WIND_BASE)/host/$(WIND_HOST_TYPE)/bin:$(PATH)
 
 include .applTop
 -include $(APPLIC_TOP)/config/CONFIG
