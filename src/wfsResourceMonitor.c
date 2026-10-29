@@ -313,8 +313,10 @@ STATUS   wfsResourceMonitor
        */
 
       memPartInfoGet (memSysPartId, & partStats);
-      ramFractionUsed = (long) (100 * partStats.numBytesAlloc /
-         (partStats.numBytesAlloc + partStats.numBytesFree));
+      /* Divide before multiplying: 100 * numBytesAlloc overflows 32 bits
+       * once more than ~21 MB is allocated, which wrapped this reading. */
+      ramFractionUsed = (long) (partStats.numBytesAlloc /
+         ((partStats.numBytesAlloc + partStats.numBytesFree) / 100));
       ramLargestFreeBlk = (long) (partStats.maxBlockSizeFree / 1024);
 
       /*
