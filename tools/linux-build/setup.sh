@@ -58,10 +58,10 @@ APPLSETUP="$EPICS_BASE/bin/$HOST_ARCH/applSetup.pl"
 # GEM7 IOCs and must not be what this build resolves against; they also record
 # nothing, which is the problem the packaging exists to fix.
 #
-# These versions also appear in hrwfs.spec's %global block. The spec is
-# authoritative: it substitutes them into the generated startup scripts and
-# fails the build if the result does not name the pinned versions, so the two
-# cannot silently diverge.
+# The versions come from build.conf, the same file the Makefile and the spec
+# read, so the -d paths here, the `ld <` paths in the generated startup
+# scripts and the RPM's Requires cannot diverge. check-build.sh fails the build
+# if the startup scripts name anything else.
 SUP=/gemini/epics3.13.4/support
 # applSetup OVERWRITES the application's own startup files from the site
 # templates. In an existing startup directory it copies, unconditionally:
