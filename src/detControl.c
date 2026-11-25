@@ -2069,6 +2069,14 @@ uint32 detExposure
    obsId->exposedRQ = 1 * exposure;
    sdsuId->exposureTicks = (int) (exposure * sysClkRateGet());
 
+   /*
+    * The standard exposure/observe command path does not provide an
+    * inter-image pause, so default it to zero (no pause). The engineering
+    * "detObserve" command overrides this from its own attribute.
+    */
+
+   sdsuId->interFrameDelayTicks = 0;
+
    /* 
     * Set up the observation mode context 
     */
@@ -4428,6 +4436,8 @@ uint32 detObserveStart
    long           nframe;          /* Number of frames.                       */
    long           nframePerDataset;/* Number of frames per dataset            */
    double         exposure;        /* Exposure time in seconds.               */
+   double         pause;           /* Pause between two consecutive images    */
+                                   /* in seconds (0 = no pause).              */
 
    uint32         sdsuNframe;      /* Value for SDSU parameter NFRAME.        */
    uint32         expTim;          /* Exp. time in SDSU units from T_EXPTIM.  */
@@ -4520,6 +4530,7 @@ uint32 detObserveStart
       EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 5, pFilePath);
       EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 6, pOutFileName);
       EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 7, pSimFileName);
+      EPTOVX_CAD_ATTRIB_GET (cadCmdContext, commandNumber, 8, (char *) & pause);
 
       /* Check the number of frames is sensible */
 
@@ -5137,8 +5148,29 @@ uint32 detObserveStart
          obsId->exposedRQ = 1 * exposure;
          sdsuId->exposureTicks = (int) (exposure * sysClkRateGet());
 
-         /* 
-          * Set up the the total integration time requested 
+         /*
+          * Set up the pause inserted between two consecutive images. A value
+          * of 0 means no pause; any positive value adds a settle delay (in
+          * seconds) between frames, e.g. to let M1/M2 finish moving into
+          * position during tuning before the next image is taken.
+          */
+
+         if ( pause < 0.0 )
+         {
+            ERROR_SET1 (S_detControl_BAD_ATTRIBUTE,
+                        "Invalid pause between images, %f seconds.",
+                        ERROR_LOG_NOW, pause);
+            errorNumber = S_detControl_BAD_ATTRIBUTE;
+            return (errorNumber);
+         }
+
+         sdsuId->interFrameDelayTicks = (int) (pause * sysClkRateGet());
+
+         MESSAGE_LOG1 (MSG_LOG,
+                       "Pause between images set to %f seconds", pause);
+
+         /*
+          * Set up the the total integration time requested
           */
 
          if (epToVxPipeWrite( NULL, (char *)(int)(&obsId->exposedRQ), 

@@ -330,6 +330,11 @@ typedef struct             /* Context structure used as handle to controller  */
   int             readMethod;     /* Flag to indicate how to read the CCD     */
   double          readoutTime;    /* Readout Time of the CCD - depends of nb  */
                                   /* of pixels reads                          */
+  int             interFrameDelayTicks;
+                                  /* Settle delay inserted between two        */
+                                  /* consecutive frames of an observation, in */
+                                  /* clock ticks (0 = no pause). Used to let   */
+                                  /* M1/M2 settle during tuning.              */
  } SDSU_ID_STRUCT, * SDSU_ID;
 
 typedef struct      /* Defines an SDSU primitive command */
